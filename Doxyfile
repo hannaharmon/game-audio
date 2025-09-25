@@ -1,0 +1,39 @@
+# Doxyfile for miniaudio game audio module
+
+# Project information
+PROJECT_NAME           = "Game Audio Module"
+PROJECT_NUMBER         = 1.0
+PROJECT_BRIEF          = "A C++ audio system using miniaudio"
+OUTPUT_DIRECTORY       = docs
+
+# Input settings
+INPUT                  = audio/
+FILE_PATTERNS          = *.h *.cc *.cpp
+RECURSIVE              = YES
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = YES
+EXTRACT_STATIC         = YES
+
+# Output settings
+GENERATE_HTML          = YES
+HTML_OUTPUT            = html
+GENERATE_LATEX         = NO
+
+# Diagram settings
+HAVE_DOT               = NO
+CLASS_DIAGRAMS         = YES
+CLASS_GRAPH            = YES
+COLLABORATION_GRAPH    = YES
+INCLUDE_GRAPH          = YES
+INCLUDED_BY_GRAPH      = YES
+CALL_GRAPH             = YES
+CALLER_GRAPH           = YES
+
+# Other settings
+OPTIMIZE_OUTPUT_FOR_C  = NO
+BUILTIN_STL_SUPPORT    = YES
+SORT_BRIEF_DOCS        = YES
+SORT_MEMBERS_CTORS_1ST = YES
+SHOW_USED_FILES        = YES
+SHOW_FILES             = YES
+SHOW_NAMESPACES        = YES
