@@ -97,6 +97,32 @@ cmake ..
 cmake --build .
 ```
 
+## Running
+
+After building the project, you can run the test application to verify everything is working correctly:
+
+### Windows
+```cmd
+cd build\Debug
+test_audio.exe
+```
+
+### macOS/Linux
+```bash
+cd build
+./test_audio
+```
+
+When the test application is running, you can use the following commands:
+- `v [0.0-1.0]` - Set master volume (e.g., `v 0.5` for 50% volume)
+- `m [0.0-1.0]` - Set music volume
+- `s [0.0-1.0]` - Set SFX volume
+- `x` - Play a sound effect
+- `b` - Toggle battle mode (fades in/out different layers)
+- `q` - Quit the application
+
+The test application demonstrates layered music with multiple instrument tracks that can be faded in and out independently, as well as sound effect playback.
+
 ## Future Enhancements
 
 Planned future enhancements include:
