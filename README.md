@@ -10,19 +10,29 @@ This audio module provides a high-level interface for managing game audio. It su
 - **Sound Groups**: Categorize and control collections of sounds
 - **Volume Control**: Master volume, group volume, and individual sound volume
 - **Smooth Transitions**: Fade sounds in and out with customizable durations
+- **Random Sound Containers**: Play randomized sounds with pitch variation (similar to Wwise random containers)
+- **Music Player**: High-level music track management with smooth transitions
+- **SFX Player**: Centralized sound effect playback system
 
 ## Architecture
 
 The system uses a layered architecture:
 
+### Core Components
 - **AudioManager**: User-facing API (singleton) - the main interface for game code
 - **AudioTrack**: Manages collections of synchronized audio layers
 - **AudioGroup**: Groups sounds together for collective control
 - **Sound**: Wraps individual sound instances
 - **AudioSystem**: Low-level integration with miniaudio
 
+### High-Level Utilities
+- **MusicPlayer**: Singleton for managing music tracks and transitions between game states
+- **SFXPlayer**: Singleton for playing sound effects with randomization
+- **RandomSoundContainer**: Container for playing randomized sounds with pitch variation and repeat avoidance
+
 ## Usage Example
 
+### Basic Setup
 ```cpp
 // Initialize the audio system
 auto& audio = audio::AudioManager::GetInstance();
@@ -65,6 +75,48 @@ audio.FadeLayer(music_track, "melody", 0.7f, 2000ms);
 audio.StartSound(sfx);
 ```
 
+### Using High-Level Components
+
+#### Music Player
+```cpp
+// Initialize the music player
+auto& music = audio::MusicPlayer::Get();
+music.Initialize(music_group);
+
+// Fade to a specific track
+music.FadeTo("parchment", 2.0f);  // Fade to parchment music over 2 seconds
+
+// Set track volume
+music.SetVolume("notebook", 0.8f);
+```
+
+#### SFX Player
+```cpp
+// Initialize the SFX player
+auto& sfx = audio::SFXPlayer::Get();
+sfx.Initialize(sfx_group);
+
+// Play sound effects (automatically randomized if multiple variants exist)
+sfx.Play("footstep");
+sfx.PlayWithVolume("explosion", 0.5f);
+```
+
+#### Random Sound Container
+```cpp
+// Create a random sound container with configuration
+audio::RandomSoundContainerConfig config;
+config.avoidRepeat = true;        // Don't play the same sound twice in a row
+config.pitchMin = 0.95f;          // Slightly lower pitch
+config.pitchMax = 1.05f;          // Slightly higher pitch
+config.group = sfx_group;
+
+auto footsteps = std::make_unique<audio::RandomSoundContainer>("footsteps", config);
+footsteps->LoadFromFolder("sound_files/footsteps");  // Load all .wav files from folder
+
+// Play a random footstep sound
+footsteps->Play();
+```
+
 ## Documentation
 
 The codebase is documented using Doxygen. To generate the documentation:
@@ -97,6 +149,41 @@ cmake ..
 cmake --build .
 ```
 
+### Platform-Specific Notes
+
+#### Windows
+The project links against `winmm` automatically. Build outputs will be in `build/Debug` or `build/Release`.
+
+#### macOS/Linux
+No additional dependencies required. The miniaudio library handles platform-specific audio backends automatically.
+
+## Project Structure
+
+```
+miniaudio/
+├── audio/                    # Audio system source files
+│   ├── audio_manager.h/cpp   # Main API
+│   ├── audio_system.h/cpp    # Low-level miniaudio interface
+│   ├── audio_track.h/cpp     # Layered music tracks
+│   ├── audio_group.h/cpp     # Sound grouping
+│   ├── sound.h/cpp           # Individual sounds
+│   ├── music_player.h/cpp    # High-level music management
+│   ├── sfx_player.h/cpp      # High-level SFX management
+│   └── random_sound_container.h/cpp  # Randomized sound playback
+├── include/
+│   └── miniaudio/            # miniaudio library
+│       ├── miniaudio.h
+│       └── miniaudio.cpp
+├── examples/                 # Example applications
+│   ├── test_audio.cpp        # Basic test with instrument layers
+│   └── test_audio_2.cpp      # Advanced test with mode switching
+├── sound_files/              # Audio assets
+├── docs/                     # Generated documentation
+├── CMakeLists.txt            # Build configuration
+├── Doxyfile                  # Doxygen configuration
+└── README.md                 # This file
+```
+
 ## Running
 
 After building the project, you can run the test application to verify everything is working correctly:
@@ -113,20 +200,46 @@ cd build
 ./test_audio
 ```
 
+### Test Application Commands
+
 When the test application is running, you can use the following commands:
+
+#### test_audio.cpp (Basic Example)
 - `v [0.0-1.0]` - Set master volume (e.g., `v 0.5` for 50% volume)
 - `m [0.0-1.0]` - Set music volume
 - `s [0.0-1.0]` - Set SFX volume
 - `x` - Play a sound effect
-- `b` - Toggle battle mode (fades in/out different layers)
+- `b` - Toggle battle mode (fades in/out different instrument layers)
 - `q` - Quit the application
 
-The test application demonstrates layered music with multiple instrument tracks that can be faded in and out independently, as well as sound effect playback.
+#### test_audio_2.cpp (Advanced Example)
+- `v [0.0-1.0]` - Set master volume
+- `m [0.0-1.0]` - Set music volume
+- `s [0.0-1.0]` - Set SFX volume
+- `x` - Play a random sound effect
+- `o` - Toggle music on/off (fade in/out)
+- `t` - Toggle music type (digital/strings)
+- `b` - Toggle battle mode (calm/intense)
+- `q` - Quit the application
+
+The test applications demonstrate:
+- Layered music with multiple synchronized audio tracks
+- Independent volume control for each layer
+- Smooth crossfading between layers
+- Dynamic music adaptation based on game state
+- Sound effect playback with randomization
 
 ## Future Enhancements
 
 Planned future enhancements include:
-- 3D audio positioning
-- DSP effects (reverb, EQ)
-- Advanced music transitions
-- Random sound variations
+- 3D audio positioning and spatialization
+- DSP effects (reverb, EQ, compression)
+- Advanced music transitions (crossfade, stinger support)
+- Streaming audio for large files
+- Audio resource pooling and memory management
+- MIDI support
+- Recording and voice chat integration
+
+## License
+
+This project uses the miniaudio library, which is available under public domain or MIT-0 license.

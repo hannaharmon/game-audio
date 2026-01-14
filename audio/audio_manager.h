@@ -8,6 +8,7 @@
 #include <chrono>
 #include <string>
 #include <memory>
+#include <vector>
 
 /**
  * @file audio_manager.h
@@ -227,6 +228,14 @@ public:
     void SetGroupVolume(GroupHandle group, float volume);
     
     /**
+     * @brief Get the current volume for an audio group
+     * 
+     * @param group Handle to the group
+     * @return float Current volume level (0.0 to 1.0)
+     */
+    float GetGroupVolume(GroupHandle group) const;
+    
+    /**
      * @brief Fade a group's volume to a target value over time
      * 
      * @param group Handle to the group
@@ -246,6 +255,15 @@ public:
      * @return SoundHandle Handle to the loaded sound
      */
     SoundHandle LoadSound(const string& filepath);
+    
+    /**
+     * @brief Load a sound from a file and assign it to a group
+     * 
+     * @param filepath Path to the audio file
+     * @param group Handle to the audio group to assign the sound to
+     * @return SoundHandle Handle to the loaded sound
+     */
+    SoundHandle LoadSound(const string& filepath, GroupHandle group);
     
     /**
      * @brief Unload a previously loaded sound
@@ -280,12 +298,31 @@ public:
     void SetSoundVolume(SoundHandle sound, float volume);
     
     /**
+     * @brief Set the pitch of a sound for its next playback
+     * 
+     * @param sound Handle to the sound
+     * @param pitch Pitch multiplier (1.0 = normal, 0.5 = half speed, 2.0 = double speed)
+     */
+    void SetSoundPitch(SoundHandle sound, float pitch);
+    
+    /**
      * @brief Check if a sound is currently playing
      * 
      * @param sound Handle to the sound
      * @return bool True if the sound is playing, false otherwise
      */
     bool IsSoundPlaying(SoundHandle sound) const;
+    
+    /**
+     * @brief Play a random sound from a folder
+     * 
+     * Loads all .wav files from the specified folder and plays one randomly.
+     * Sounds are cached after first load for efficiency.
+     * 
+     * @param folderPath Path to the folder containing sound files
+     * @param group Optional group handle to assign the sounds to
+     */
+    void PlayRandomSoundFromFolder(const string& folderPath, GroupHandle group = 0);
     ///@}
 
 private:
@@ -330,8 +367,9 @@ private:
     unique_ptr<AudioSystem> audio_system_;   ///< Core audio system
     unordered_map<TrackHandle, unique_ptr<AudioTrack>> tracks_;  ///< Track storage
     unordered_map<GroupHandle, unique_ptr<AudioGroup>> groups_;  ///< Group storage
-    unordered_map<SoundHandle, shared_ptr<Sound>> sounds_;       ///< Sound storage
+    unordered_map<SoundHandle, unique_ptr<Sound>> sounds_;       ///< Sound storage
     unordered_map<string, GroupHandle> group_names_;             ///< Name-to-handle mapping for groups
+    unordered_map<string, std::vector<SoundHandle>> folder_sounds_; ///< Cached sounds per folder
     ///@}
 
     ///@name Threading

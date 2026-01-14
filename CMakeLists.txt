@@ -14,18 +14,22 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Add executable
 add_executable(test_audio
-    audio/test_audio.cpp
-    audio/audio_system.cc
-    audio/audio_group.cc
-    audio/sound.cc
-    audio/audio_track.cc
-    audio/audio_manager.cc
-    audio/miniaudio.cpp
+    examples/test_audio_2.cpp
+    audio/audio_system.cpp
+    audio/audio_group.cpp
+    audio/sound.cpp
+    audio/audio_track.cpp
+    audio/audio_manager.cpp
+    audio/music_player.cpp
+    audio/sfx_player.cpp
+    audio/random_sound_container.cpp
+    include/miniaudio/miniaudio.cpp
 )
 
 # Include directories
 target_include_directories(test_audio PRIVATE
     ${CMAKE_SOURCE_DIR}/audio
+    ${CMAKE_SOURCE_DIR}/include
 )
 
 # On Windows, we might need to link with these libraries
