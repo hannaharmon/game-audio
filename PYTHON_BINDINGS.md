@@ -1,8 +1,8 @@
 # Game Audio Module - Python Bindings Setup Guide
 
-> **For Python Users**: This is your primary guide. The Python API is a 1:1 mapping of the C++ API, so C++ method names translate directly to Python (e.g., `Initialize()` → `initialize()`). The [online C++ API documentation](https://github.com/<your-username>/<repo-name>/wiki) provides detailed parameter information applicable to both languages.
+> **For Python Users**: This is your primary guide. The Python API is a 1:1 mapping of the C++ API, so C++ method names translate directly to Python (e.g., `Initialize()` → `initialize()`). The [online C++ API documentation](https://hannaharmon.github.io/game-audio) provides detailed parameter information applicable to both languages.
 > 
-> **For C++ Users**: See the [README.md](README.md#c-integration) for CMake integration instructions and the [online API docs](https://github.com/<your-username>/<repo-name>/wiki) for full API reference.
+> **For C++ Users**: See the [README.md](README.md#c-integration) for CMake integration instructions and the [online API docs](https://hannaharmon.github.io/game-audio) for full API reference.
 
 This document explains how to use the audio module in Python projects, including Basilisk engine projects.
 
