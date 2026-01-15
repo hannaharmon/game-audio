@@ -10,7 +10,7 @@ A C++20 audio system built on miniaudio with full Python bindings for game devel
 - **Smooth Transitions**: Fade sounds in/out with customizable durations
 - **Random Sound Containers**: Randomized playback with pitch variation (Wwise-style)
 - **High-Level API**: `MusicPlayer` and `SFXPlayer` singletons for easy integration
-- **Python Bindings**: Full pybind11 bindings for Python projects (including Basilisk engine)
+- **Python Bindings**: Full pybind11 bindings for Python projects (including [Basilisk engine](https://github.com/BasiliskGroup/BasiliskEngine))
 - **Cross-Platform**: Windows, macOS, Linux via miniaudio
 
 ## Quick Start

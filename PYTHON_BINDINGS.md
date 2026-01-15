@@ -4,7 +4,7 @@
 > 
 > **For C++ Users**: See the [README.md](README.md#c-integration) for CMake integration instructions and the [online API docs](https://hannaharmon.github.io/game-audio) for full API reference.
 
-This document explains how to use the audio module in Python projects, including Basilisk engine projects.
+This document explains how to use the audio module in Python projects, including [Basilisk engine](https://github.com/BasiliskGroup/BasiliskEngine) projects.
 
 ## Quick Start
 
@@ -58,7 +58,7 @@ audio.set_master_volume(0.8)
 
 ## Using with Basilisk Engine
 
-If you're using this audio module with the Basilisk game engine, you can integrate it in your project's CMakeLists.txt:
+If you're using this audio module with the [Basilisk game engine](https://github.com/BasiliskGroup/BasiliskEngine), you can integrate it in your project's CMakeLists.txt:
 
 ### Method 1: As a Subdirectory
 
