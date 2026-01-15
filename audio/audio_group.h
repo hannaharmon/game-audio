@@ -1,5 +1,4 @@
-#ifndef AUDIO_AUDIO_GROUP_H_
-#define AUDIO_AUDIO_GROUP_H_
+#pragma once
 
 #include "miniaudio/miniaudio.h"
 #include <chrono>
@@ -161,5 +160,3 @@ class AudioGroup {
 };
 
 }  // namespace audio
-
-#endif  // AUDIO_AUDIO_GROUP_H_

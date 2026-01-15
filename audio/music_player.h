@@ -1,5 +1,4 @@
-#ifndef MUSIC_PLAYER_H
-#define MUSIC_PLAYER_H
+#pragma once
 
 #include "audio_manager.h"
 #include <string>
@@ -87,5 +86,3 @@ public:
 };
 
 } // namespace audio
-
-#endif // MUSIC_PLAYER_H

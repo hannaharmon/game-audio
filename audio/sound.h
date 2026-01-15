@@ -1,5 +1,4 @@
-#ifndef AUDIO_SOUND_H_
-#define AUDIO_SOUND_H_
+#pragma once
 
 #include "miniaudio/miniaudio.h"
 #include <memory>
@@ -182,5 +181,3 @@ class Sound {
 };
 
 }  // namespace audio
-
-#endif  // AUDIO_SOUND_H_

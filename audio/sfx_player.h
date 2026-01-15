@@ -1,5 +1,4 @@
-#ifndef SFX_PLAYER_H
-#define SFX_PLAYER_H
+#pragma once
 
 #include "random_sound_container.h"
 #include "audio_manager.h"
@@ -59,5 +58,3 @@ public:
 };
 
 } // namespace audio
-
-#endif // SFX_PLAYER_H

@@ -19,6 +19,11 @@
 #include "../audio/audio_manager.h"
 using namespace std::chrono_literals;
 
+// Define default sound directory (can be overridden via compile definition)
+#ifndef SOUND_FILES_DIR
+#define SOUND_FILES_DIR "../../sound_files/"
+#endif
+
 /**
  * @brief Process user input commands for audio control
  * 
@@ -35,15 +40,28 @@ using namespace std::chrono_literals;
  * @param music_group Handle to the music group
  * @param sfx_group Handle to the SFX group
  * @param sfx Handle to the sound effect
+ * @param sound_dir Directory containing sound files
  */
 void ProcessInput(const std::string& input,
                  audio::TrackHandle music_track,
                  audio::GroupHandle music_group,
                  audio::GroupHandle sfx_group,
-                 audio::SoundHandle sfx);
+                 audio::SoundHandle sfx,
+                 const std::string& sound_dir);
 
-int main() {
+int main(int argc, char* argv[]) {
     try {
+        // Get sound directory from command line or use compile-time default
+        std::string sound_dir = SOUND_FILES_DIR;
+        if (argc > 1) {
+            sound_dir = argv[1];
+            // Ensure trailing slash
+            if (!sound_dir.empty() && sound_dir.back() != '/' && sound_dir.back() != '\\') {
+                sound_dir += '/';
+            }
+        }
+        
+        std::cout << "Sound directory: " << sound_dir << "\n";
         std::cout << "Starting audio test program...\n";
         
         // Get the audio manager instance and initialize it
@@ -68,8 +86,7 @@ int main() {
         auto music_track = audio.CreateTrack();
         
         std::cout << "Adding layers to music track...\n";
-        // Add all our layers to the music track using relative paths
-        std::string sound_dir = "../sound_files/";
+        // Add all our layers to the music track
         audio.AddLayer(music_track, "kick", sound_dir + "kick.wav", "music");
         audio.AddLayer(music_track, "clap", sound_dir + "clap.wav", "music");
         audio.AddLayer(music_track, "bass", sound_dir + "double_bass.wav", "music");
@@ -123,7 +140,7 @@ int main() {
         while (running) {
             // Process any pending input
             if (!input.empty()) {
-                ProcessInput(input, music_track, music_group, sfx_group, sfx);
+                ProcessInput(input, music_track, music_group, sfx_group, sfx, sound_dir);
                 input.clear();
             }
 
@@ -148,7 +165,8 @@ void ProcessInput(const std::string& input,
                  audio::TrackHandle music_track,
                  audio::GroupHandle music_group,
                  audio::GroupHandle sfx_group,
-                 audio::SoundHandle sfx) {
+                 audio::SoundHandle sfx,
+                 const std::string& sound_dir) {
     if (input.empty()) return;
 
     auto& audio = audio::AudioManager::GetInstance();

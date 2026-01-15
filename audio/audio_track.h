@@ -1,5 +1,4 @@
-#ifndef AUDIO_AUDIO_TRACK_H_
-#define AUDIO_AUDIO_TRACK_H_
+#pragma once
 
 #include <string>
 #include <unordered_map>
@@ -170,5 +169,3 @@ class AudioTrack {
 };
 
 }  // namespace audio
-
-#endif  // AUDIO_AUDIO_TRACK_H_

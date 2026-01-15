@@ -140,14 +140,18 @@ The codebase is documented using Doxygen. To generate the documentation:
 
 ## Building
 
-The project uses CMake for building:
+The project uses CMake and builds two executables:
 
 ```bash
 mkdir build
 cd build
 cmake ..
-cmake --build .
+cmake --build . --config Debug
 ```
+
+**Build Outputs:**
+- `test_audio.exe` - Interactive test application for manual testing
+- `test_automated.exe` - Automated test suite (50 tests, no user input required)
 
 ### Platform-Specific Notes
 
@@ -155,34 +159,96 @@ cmake --build .
 The project links against `winmm` automatically. Build outputs will be in `build/Debug` or `build/Release`.
 
 #### macOS/Linux
-No additional dependencies required. The miniaudio library handles platform-specific audio backends automatically.
+No additional dependencies required. The miniaudio library handles platform-specific audio backends automatically (ALSA/PulseAudio on Linux, Core Audio on macOS).
+
+## Testing
+
+A comprehensive automated test suite with **70 tests** verifies system reliability:
+
+```powershell
+# Run all tests (Windows)
+cd tests
+.\run_all_tests.ps1
+```
+
+**Test Suite Includes:**
+
+**Functional Tests (50 tests)** - `test_automated.exe`
+- System initialization & shutdown
+- Master volume control
+- Audio group operations (create, destroy, volume, fading)
+- Sound loading/unloading (with and without groups)
+- Sound playback control (play, stop, volume, pitch)
+- Multi-layer track operations
+- Multiple concurrent sound instances
+- Random sound folder playback
+- Error handling for invalid handles/files
+- Mass resource cleanup
+- Concurrent operations
+- Edge cases (rapid create/destroy, etc.)
+
+**Cross-Platform Tests (20 tests)** - `test_cross_platform.ps1`
+- Platform-specific code isolation
+- Standard library usage validation
+- Path handling compatibility
+- Compiler compatibility
+- Build system portability
+- Type safety verification
+
+All tests run automatically and verify actual behavior (not just "doesn't crash"). The system is production-ready when all tests pass.
+
+## Configuration
+
+1. **Command-line argument** (highest priority):
+   ```bash
+   ./test_audio "/path/to/sounds/"
+   ```
+
+2. **CMake compile-time definition** (default):
+   ```cmake
+   target_compile_definitions(test_audio PRIVATE SOUND_FILES_DIR="/path/to/sounds/")
+   ```
+
+3. **Fallback default** (if neither above is set):
+   ```cpp
+   #define SOUND_FILES_DIR "../../sound_files/"
+   ```
 
 ## Project Structure
 
 ```
-miniaudio/
-├── audio/                    # Audio system source files
-│   ├── audio_manager.h/cpp   # Main API
-│   ├── audio_system.h/cpp    # Low-level miniaudio interface
-│   ├── audio_track.h/cpp     # Layered music tracks
-│   ├── audio_group.h/cpp     # Sound grouping
-│   ├── sound.h/cpp           # Individual sounds
-│   ├── music_player.h/cpp    # High-level music management
-│   ├── sfx_player.h/cpp      # High-level SFX management
-│   └── random_sound_container.h/cpp  # Randomized sound playback
-├── include/
-│   └── miniaudio/            # miniaudio library
-│       ├── miniaudio.h
-│       └── miniaudio.cpp
-├── examples/                 # Example applications
-│   ├── test_audio.cpp        # Basic test with instrument layers
-│   └── test_audio_2.cpp      # Advanced test with mode switching
-├── sound_files/              # Audio assets
-├── docs/                     # Generated documentation
-├── CMakeLists.txt            # Build configuration
-├── Doxyfile                  # Doxygen configuration
-└── README.md                 # This file
+audio/
+├── audio_system.h/cpp        # Core audio backend (miniaudio wrapper)
+├── audio_manager.h/cpp       # High-level audio management
+├── audio_group.h/cpp         # Volume groups system
+├── audio_track.h/cpp         # Multi-layer audio tracks
+├── sound.h/cpp               # Sound data management
+├── music_player.h            # High-level music management (header-only)
+├── sfx_player.h/cpp          # High-level SFX management
+└── random_sound_container.h/cpp  # Randomized sound playback
+include/
+└── miniaudio/                # miniaudio library
+    ├── miniaudio.h
+    └── miniaudio.cpp
+examples/                     # Example applications
+├── test_audio.cpp            # Basic test with instrument layers
+└── test_audio_2.cpp          # Advanced test with mode switching
+tests/                        # Automated test suite
+├── test_automated.cpp        # 50 functional tests
+├── run_all_tests.ps1         # Main test runner
+└── test_cross_platform.ps1   # 20 platform compatibility tests
+sound_files/                  # Audio assets
+build/                        # Build output directory
+└── Debug/
+    ├── test_audio.exe        # Interactive test application
+    └── test_automated.exe    # Automated test suite
+docs/                         # Generated documentation
+CMakeLists.txt                # Build configuration
+Doxyfile                      # Doxygen configuration
+README.md                     # This file
 ```
+
+**Note:** All headers use `#pragma once` for consistency and simplicity.
 
 ## Running
 
