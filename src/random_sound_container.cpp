@@ -21,7 +21,7 @@ RandomSoundContainer::~RandomSoundContainer() {
     // Unload all sounds
     AudioManager& audio = AudioManager::GetInstance();
     for (SoundHandle sound : sounds_) {
-        audio.UnloadSound(sound);
+        audio.DestroySound(sound);
     }
 }
 

@@ -3,12 +3,13 @@
 # Project information
 PROJECT_NAME           = "Game Audio Module"
 PROJECT_NUMBER         = 1.0
-PROJECT_BRIEF          = "A C++ audio system using miniaudio"
+PROJECT_BRIEF          = "A C++ audio system using miniaudio with Python bindings"
 OUTPUT_DIRECTORY       = docs
 
 # Input settings
-INPUT                  = audio/
-FILE_PATTERNS          = *.h *.cc *.cpp
+INPUT                  = src/ README.md PYTHON_BINDINGS.md
+FILE_PATTERNS          = *.h *.cc *.cpp *.md
+USE_MDFILE_AS_MAINPAGE = README.md
 RECURSIVE              = YES
 EXTRACT_ALL            = YES
 EXTRACT_PRIVATE        = YES

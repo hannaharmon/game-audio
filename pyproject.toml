@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=42", "wheel", "cmake>=3.10", "pybind11>=2.6.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "game-audio-py"
+version = "1.0.0"
+description = "Python bindings for Game Audio Module - a C++ audio system built on miniaudio"
+readme = "README.md"
+requires-python = ">=3.7"
+license = {text = "MIT"}
+authors = [
+    {name = "Your Name", email = "your.email@example.com"}
+]
+keywords = ["audio", "game", "sound", "music", "miniaudio", "pybind11"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Multimedia :: Sound/Audio",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: C++",
+]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/game-audio-module"
+Documentation = "https://yourusername.github.io/game-audio-module"
+Repository = "https://github.com/yourusername/game-audio-module"
+Issues = "https://github.com/yourusername/game-audio-module/issues"
+
+[tool.setuptools]
+packages = ["audio_py"]

@@ -13,8 +13,97 @@ This audio module provides a high-level interface for managing game audio. It su
 - **Random Sound Containers**: Play randomized sounds with pitch variation (similar to Wwise random containers)
 - **Music Player**: High-level music track management with smooth transitions
 - **SFX Player**: Centralized sound effect playback system
+- **Python Bindings**: Use the full audio system from Python projects via pybind11
 
-## Architecture
+## Python Usage
+
+The audio module can be used directly from Python projects, including those using the Basilisk game engine.
+
+### Installation
+
+#### Option 1: Build and Install Locally
+
+```bash
+mkdir build
+cd build
+cmake ..
+cmake --build . --config Release
+cmake --install . --prefix ../python
+cd ..
+pip install -e .
+```
+
+#### Option 2: Add as CMake Dependency (Basilisk-style)
+
+In your Python project's `CMakeLists.txt`:
+
+```cmake
+# Add the audio module as a subdirectory or via FetchContent
+add_subdirectory(path/to/audio_module)
+
+# Link your project to the audio module (if needed)
+# The audio_py module will be built automatically
+```
+
+### Python API Example
+
+```python
+import audio_py
+from datetime import timedelta
+
+# Initialize the audio system
+audio = audio_py.AudioManager.get_instance()
+audio.initialize()
+
+# Create audio groups
+music_group = audio.create_group("music")
+sfx_group = audio.create_group("sfx")
+
+# Set volumes
+audio.set_master_volume(0.8)
+audio.set_group_volume(music_group, 0.7)
+
+# High-level music control
+music = audio_py.MusicPlayer.get()
+music.initialize(music_group)
+music.fade_to("parchment", 2.0)  # Fade to track over 2 seconds
+
+# High-level SFX control
+sfx = audio_py.SFXPlayer.get()
+sfx.initialize(sfx_group)
+sfx.play("footstep")
+
+# Random sound containers
+config = audio_py.RandomSoundContainerConfig()
+config.avoid_repeat = True
+config.pitch_min = 0.95
+config.pitch_max = 1.05
+
+footsteps = audio_py.RandomSoundContainer("footsteps", config)
+footsteps.load_from_folder("sound_files/footsteps")
+footsteps.play()
+
+# Cleanup
+audio.shutdown()
+```
+
+See [examples/python_example.py](examples/python_example.py) for a complete working example.
+
+### Running Python Examples
+
+After building the project:
+
+```bash
+# Run the interactive Python example (mirrors test_audio_2.cpp)
+python examples/python_interactive.py
+
+# Run the Python tests
+python tests/test_python.py
+```
+
+The Python bindings are in `build/Debug/audio_py.pyd` (Windows) or `build/audio_py.so` (Linux/Mac). The examples automatically add this to the Python path.
+
+## C++ Usage Example
 
 The system uses a layered architecture:
 
@@ -30,7 +119,12 @@ The system uses a layered architecture:
 - **SFXPlayer**: Singleton for playing sound effects with randomization
 - **RandomSoundContainer**: Container for playing randomized sounds with pitch variation and repeat avoidance
 
-## Usage Example
+### Python Bindings
+- **audio_py**: Python module exposing the full C++ API via pybind11
+- Compatible with Basilisk game engine and other Python projects
+- Automatic type stub generation for IDE autocomplete support
+
+## C++ Usage Example
 
 ### Basic Setup
 ```cpp
@@ -119,28 +213,55 @@ footsteps->Play();
 
 ## Documentation
 
-The codebase is documented using Doxygen. To generate the documentation:
+The codebase is documented using Doxygen.
 
-1. Ensure Doxygen is installed on your system
-   - Windows: Download and install from [Doxygen's website](https://www.doxygen.nl/download.html)
-   - macOS: `brew install doxygen`
-   - Linux: `sudo apt-get install doxygen` (Ubuntu/Debian) or `sudo yum install doxygen` (Fedora/CentOS)
+### Viewing Documentation
 
-2. Run the documentation generation script:
-   - Windows: `generate_docs.bat`
-   - Linux/Mac: `./generate_docs.sh`
-   
-   Alternatively, if you're using CMake:
-   ```bash
-   cd build
-   cmake --build . --target docs
-   ```
+**C++ API Reference**: Full Doxygen documentation is automatically generated and deployed to GitHub Pages on every commit. Visit the [online documentation](https://github.com/<your-username>/<repo-name>/wiki) for the complete C++ API reference.
 
-3. Open `docs/html/index.html` in a web browser
+**Python API**: See [PYTHON_BINDINGS.md](PYTHON_BINDINGS.md) for Python-specific usage, examples, and integration guides.
+
+### C++ Integration
+
+To use this audio module in a C++ project, add it as a CMake dependency:
+
+```cmake
+# Method 1: Via FetchContent (recommended)
+include(FetchContent)
+FetchContent_Declare(
+    audio_module
+    GIT_REPOSITORY https://github.com/<your-username>/<repo-name>
+    GIT_TAG main
+)
+FetchContent_MakeAvailable(audio_module)
+
+# Link to your target
+target_link_libraries(your_game PRIVATE audio_module)
+
+# Method 2: As a subdirectory
+add_subdirectory(path/to/audio_module)
+target_link_libraries(your_game PRIVATE audio_module)
+```
+
+Then include headers:
+```cpp
+#include "audio_manager.h"
+#include "music_player.h"
+#include "sfx_player.h"
+```
+
+### Building Documentation Locally (optional)
+
+If you need to build docs locally:
+```bash
+cd build
+cmake --build . --target docs
+# Open docs/html/index.html
+```
 
 ## Building
 
-The project uses CMake and builds two executables:
+The project uses CMake and builds two C++ executables plus optional Python bindings:
 
 ```bash
 mkdir build
@@ -152,6 +273,16 @@ cmake --build . --config Debug
 **Build Outputs:**
 - `test_audio.exe` - Interactive test application for manual testing
 - `test_automated.exe` - Automated test suite (50 tests, no user input required)
+- `audio_py` - Python module (if Python bindings are enabled)
+
+### Build Options
+
+- **`BUILD_PYTHON_BINDINGS`** (default: ON) - Build Python bindings via pybind11
+
+To disable Python bindings:
+```bash
+cmake .. -DBUILD_PYTHON_BINDINGS=OFF
+```
 
 ### Platform-Specific Notes
 
@@ -226,13 +357,22 @@ audio/
 ├── music_player.h            # High-level music management (header-only)
 ├── sfx_player.h/cpp          # High-level SFX management
 └── random_sound_container.h/cpp  # Randomized sound playback
+bindings/                     # Python bindings (pybind11)
+├── bindings.cpp              # Main pybind11 module
+├── audio_manager.cpp         # AudioManager bindings
+├── music_player.cpp          # MusicPlayer bindings
+├── sfx_player.cpp            # SFXPlayer bindings
+└── random_sound_container.cpp  # RandomSoundContainer bindings
+audio_py/                     # Python package
+└── __init__.py               # Python package initialization
 include/
 └── miniaudio/                # miniaudio library
     ├── miniaudio.h
     └── miniaudio.cpp
 examples/                     # Example applications
 ├── test_audio.cpp            # Basic test with instrument layers
-└── test_audio_2.cpp          # Advanced test with mode switching
+├── test_audio_2.cpp          # Advanced test with mode switching
+└── python_example.py         # Python usage example
 tests/                        # Automated test suite
 ├── test_automated.cpp        # 50 functional tests
 ├── run_all_tests.ps1         # Main test runner
@@ -241,9 +381,11 @@ sound_files/                  # Audio assets
 build/                        # Build output directory
 └── Debug/
     ├── test_audio.exe        # Interactive test application
-    └── test_automated.exe    # Automated test suite
+    ├── test_automated.exe    # Automated test suite
+    └── audio_py.pyd          # Python module (Windows) / .so (Linux/Mac)
 docs/                         # Generated documentation
 CMakeLists.txt                # Build configuration
+pyproject.toml                # Python package configuration
 Doxyfile                      # Doxygen configuration
 README.md                     # This file
 ```

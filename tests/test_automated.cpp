@@ -5,7 +5,7 @@
  * without requiring user input. Tests return 0 on success, 1 on failure.
  */
 
-#include "../audio/audio_manager.h"
+#include "../src/audio_manager.h"
 #include <iostream>
 #include <cassert>
 #include <thread>
@@ -130,8 +130,8 @@ void test_sound_loading() {
     ASSERT(sound2 != sound, "Different load calls should return different handles")
     
     // Test unloading
-    audio.UnloadSound(sound);
-    audio.UnloadSound(sound2);
+    audio.DestroySound(sound);
+    audio.DestroySound(sound2);
     ASSERT(true, "Sound unloading should not crash")
     
     audio.DestroyGroup(group);
@@ -170,7 +170,7 @@ void test_sound_playback() {
     ASSERT(true, "Pitch modification should work")
     audio.StopSound(sound);
     
-    audio.UnloadSound(sound);
+    audio.DestroySound(sound);
     
     END_TEST
 }
@@ -238,7 +238,7 @@ void test_multiple_instances() {
     wait_ms(200);
     audio.StopSound(sound);
     
-    audio.UnloadSound(sound);
+    audio.DestroySound(sound);
     
     END_TEST
 }
@@ -274,7 +274,7 @@ void test_error_handling() {
     SoundHandle invalidSound = audio.LoadSound("nonexistent_file.wav");
     ASSERT(true, "Loading invalid file should not crash")
     if (invalidSound != 0) {
-        audio.UnloadSound(invalidSound);
+        audio.DestroySound(invalidSound);
     }
     
     // Test operations on invalid handles
@@ -284,7 +284,7 @@ void test_error_handling() {
     audio.SetSoundVolume(9999, 0.5f);
     ASSERT(true, "Setting volume on invalid sound should not crash")
     
-    audio.UnloadSound(9999);
+    audio.DestroySound(9999);
     ASSERT(true, "Unloading invalid sound should not crash")
     
     // Test operations on invalid track
@@ -327,7 +327,7 @@ void test_resource_cleanup() {
     // Clean up all resources
     for (auto g : groups) audio.DestroyGroup(g);
     for (auto t : tracks) audio.DestroyTrack(t);
-    for (auto s : sounds) audio.UnloadSound(s);
+    for (auto s : sounds) audio.DestroySound(s);
     
     ASSERT(true, "Mass resource cleanup should complete")
     
@@ -358,8 +358,8 @@ void test_concurrent_operations() {
     
     audio.StopSound(sound1);
     audio.StopSound(sound2);
-    audio.UnloadSound(sound1);
-    audio.UnloadSound(sound2);
+    audio.DestroySound(sound1);
+    audio.DestroySound(sound2);
     audio.DestroyGroup(music);
     audio.DestroyGroup(sfx);
     
@@ -378,7 +378,7 @@ void test_edge_cases() {
     
     // Load and immediately unload
     SoundHandle s = audio.LoadSound(sound_dir + "/digital_base.wav");
-    audio.UnloadSound(s);
+    audio.DestroySound(s);
     ASSERT(true, "Immediate unload should work")
     
     // Create track, add layer, remove layer, destroy track
@@ -392,7 +392,7 @@ void test_edge_cases() {
     SoundHandle s2 = audio.LoadSound(sound_dir + "/digital_base.wav");
     audio.StartSound(s2);
     audio.StopSound(s2);
-    audio.UnloadSound(s2);
+    audio.DestroySound(s2);
     ASSERT(true, "Immediate play/stop should work")
     
     // Remove non-existent layer

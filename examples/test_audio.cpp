@@ -16,7 +16,7 @@
 #include <stdexcept>
 #include <string>
 
-#include "../audio/audio_manager.h"
+#include "../src/audio_manager.h"
 using namespace std::chrono_literals;
 
 // Define default sound directory (can be overridden via compile definition)

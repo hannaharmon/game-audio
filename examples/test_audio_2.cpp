@@ -18,7 +18,7 @@
 #include <cstdlib>
 #include <ctime>
 
-#include "../audio/audio_manager.h"
+#include "../src/audio_manager.h"
 using namespace std::chrono_literals;
 
 bool digital_mode = true;

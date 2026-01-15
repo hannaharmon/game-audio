@@ -54,6 +54,11 @@ bool AudioManager::Initialize() {
         return false;
     }
 
+    // Re-create audio system if it was destroyed during shutdown
+    if (!audio_system_) {
+        audio_system_ = make_unique<AudioSystem>();
+    }
+
     running_ = true;
 
     update_thread_ = thread([this]() {
@@ -125,7 +130,8 @@ void AudioManager::Shutdown() {
     groups_.clear();  // Clear groups before audio system
     group_names_.clear();
 
-    // Audio system will be cleaned up by its destructor
+    // Explicitly destroy the audio system to ensure miniaudio threads are stopped
+    audio_system_.reset();
 }
 
 // System control
@@ -331,7 +337,7 @@ SoundHandle AudioManager::LoadSound(const string& filepath, GroupHandle group) {
     return handle;
 }
 
-void AudioManager::UnloadSound(SoundHandle sound) {
+void AudioManager::DestroySound(SoundHandle sound) {
     lock_guard<mutex> lock(resource_mutex_);
     auto it = sounds_.find(sound);
     if (it != sounds_.end()) {

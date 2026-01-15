@@ -39,6 +39,7 @@ public:
     
     // Singleton access (Meyers singleton - thread-safe, automatic cleanup)
     static SFXPlayer& Get();
+    static SFXPlayer& GetInstance();  // Alias for consistency with AudioManager
     
     // Initialize with SFX group (must be called before first use)
     void Initialize(GroupHandle sfx_group);

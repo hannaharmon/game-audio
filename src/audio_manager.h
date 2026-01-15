@@ -266,11 +266,11 @@ public:
     SoundHandle LoadSound(const string& filepath, GroupHandle group);
     
     /**
-     * @brief Unload a previously loaded sound
+     * @brief Destroy a previously loaded sound
      * 
-     * @param sound Handle to the sound to unload
+     * @param sound Handle to the sound to destroy
      */
-    void UnloadSound(SoundHandle sound);
+    void DestroySound(SoundHandle sound);
     
     /**
      * @brief Start playing a sound

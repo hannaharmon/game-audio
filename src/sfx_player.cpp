@@ -144,4 +144,8 @@ SFXPlayer& SFXPlayer::Get() {
     return instance;
 }
 
+SFXPlayer& SFXPlayer::GetInstance() {
+    return Get();  // Alias for consistency with AudioManager
+}
+
 } // namespace audio
