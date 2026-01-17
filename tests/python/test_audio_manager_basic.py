@@ -195,26 +195,9 @@ def test_random_sound_container():
     audio.shutdown()
     print("PASS")
 
-def test_sfx_player():
-    """Test 9: SFX Player functionality"""
-    print("Test 9: SFX Player... ", end="")
-    audio = audio_py.AudioManager.get_instance()
-    audio.initialize()
-    
-    sfx_group = audio.create_group("sfx")
-    sfx = audio_py.SFXPlayer.get_instance()
-    sfx.initialize(sfx_group)
-    
-    # Note: SFXPlayer.play() would need sounds to be pre-loaded
-    # This just tests initialization
-    
-    audio.destroy_group(sfx_group)
-    audio.shutdown()
-    print("PASS")
-
 def test_handle_types():
-    """Test 10: Handle type representations"""
-    print("Test 10: Handle types... ", end="")
+    """Test 9: Handle type representations"""
+    print("Test 9: Handle types... ", end="")
     audio = audio_py.AudioManager.get_instance()
     audio.initialize()
     
@@ -245,7 +228,6 @@ def run_all_tests():
         test_layered_track,
         test_layer_fading,
         test_random_sound_container,
-        test_sfx_player,
         test_handle_types,
     ]
     

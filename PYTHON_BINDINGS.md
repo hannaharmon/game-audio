@@ -101,26 +101,6 @@ audio.shutdown()
 audio.set_master_volume(0.8)
 ```
 
-### MusicPlayer (Singleton)
-High-level music management.
-
-```python
-music = audio_py.MusicPlayer.get()
-music.initialize(music_group)
-music.fade_to("track_name", 2.0)  # 2 second fade
-music.stop_all()
-```
-
-### SFXPlayer (Singleton)
-Centralized sound effects playback.
-
-```python
-sfx = audio_py.SFXPlayer.get()
-sfx.initialize(sfx_group)
-sfx.play("explosion")
-sfx.play_with_volume("footstep", 0.5)
-```
-
 ### RandomSoundContainer
 Randomized sound playback with pitch variation.
 

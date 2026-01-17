@@ -27,7 +27,6 @@ set(AUDIO_SOURCES
     src/sound.cpp
     src/audio_track.cpp
     src/audio_manager.cpp
-    src/sfx_player.cpp
     src/random_sound_container.cpp
     include/miniaudio/miniaudio.cpp
 )

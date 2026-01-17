@@ -507,52 +507,6 @@ def test_container_many_sounds():
     return True
 
 
-# === SFX PLAYER TESTS ===
-
-@test("Test 24: SFX Player rapid playback")
-def test_sfx_rapid_playback():
-    """Test SFX player with rapid consecutive plays."""
-    audio = audio_py.AudioManager.get_instance()
-    audio.set_master_volume(0.05)
-    
-    sfx_group = audio.create_group("sfx")
-    sfx = audio_py.SFXPlayer.get_instance()
-    sfx.initialize(sfx_group)
-    
-    sound_file = os.path.join(os.path.dirname(__file__), '..', 'sound_files', 'touch_1.wav')
-    
-    if os.path.exists(sound_file):
-        # SFXPlayer uses load_sound via AudioManager
-        handle = audio.load_sound(sound_file, sfx_group)
-        if handle != 0:
-            for i in range(20):
-                audio.start_sound(handle)
-                time.sleep(0.02)  # 20ms between plays
-            audio.destroy_sound(handle)
-    
-    audio.destroy_group(sfx_group)
-    audio.set_master_volume(0.5)
-    return True
-
-
-@test("Test 25: SFX Player with invalid handle")
-def test_sfx_invalid_handle():
-    """Test SFX player operations with invalid handle."""
-    audio = audio_py.AudioManager.get_instance()
-    sfx_group = audio.create_group("sfx")
-    sfx = audio_py.SFXPlayer.get_instance()
-    sfx.initialize(sfx_group)
-    
-    try:
-        audio.start_sound(99999)
-        audio.stop_sound(99999)
-        audio.destroy_group(sfx_group)
-        return True
-    except:
-        audio.destroy_group(sfx_group)
-        return True
-
-
 # === RESOURCE CLEANUP TESTS ===
 
 @test("Test 26: Track cleanup with layers")
@@ -688,8 +642,6 @@ def run_comprehensive_tests():
     test_empty_container()
     test_container_extreme_pitch()
     test_container_many_sounds()
-    test_sfx_rapid_playback()
-    test_sfx_invalid_handle()
     test_track_cleanup_with_layers()
     test_group_cleanup_with_sounds()
     test_platform_detection()

@@ -51,19 +51,6 @@ sfx = audio.load_sound("sound_files/explosion.wav", sfx_group)
 audio.start_sound(sfx)
 print("Played sound effect")
 
-# High-level API examples
-# Initialize the music player
-music = audio_py.MusicPlayer.get()
-music.initialize(music_group)
-music.fade_to("parchment", 2.0)
-print("Music player: faded to parchment")
-
-# Initialize the SFX player
-sfx_player = audio_py.SFXPlayer.get()
-sfx_player.initialize(sfx_group)
-sfx_player.play("footstep")
-print("SFX player: played footstep")
-
 # Random sound container example
 config = audio_py.RandomSoundContainerConfig()
 config.avoid_repeat = True

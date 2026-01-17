@@ -19,14 +19,7 @@ Example usage:
     >>> audio.set_master_volume(0.8)
     >>> audio.set_group_volume(music_group, 0.7)
     >>> 
-    >>> # Use high-level players
-    >>> music = audio_py.MusicPlayer.get()
-    >>> music.initialize(music_group)
-    >>> music.fade_to("parchment", 2.0)
-    >>> 
-    >>> sfx = audio_py.SFXPlayer.get()
-    >>> sfx.initialize(sfx_group)
-    >>> sfx.play("footstep")
+    >>> # Use the core primitives to build your own playback helpers
 """
 
 __version__ = "1.0.0"
@@ -44,8 +37,6 @@ except ImportError:
 __all__ = [
     # Core classes
     'AudioManager',
-    'MusicPlayer', 
-    'SFXPlayer',
     'RandomSoundContainer',
     'RandomSoundContainerConfig',
     

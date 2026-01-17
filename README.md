@@ -9,7 +9,7 @@ A C++20 audio system built on miniaudio with full Python bindings for game devel
 - **Volume Control**: Master, group, and individual sound volume
 - **Smooth Transitions**: Fade sounds in/out with customizable durations
 - **Random Sound Containers**: Randomized playback with pitch variation (Wwise-style)
-- **High-Level API**: `MusicPlayer` and `SFXPlayer` singletons for easy integration
+- **High-Level API**: Core primitives designed for user-defined wrappers
 - **Python Bindings**: Full pybind11 bindings for Python projects (including [Basilisk engine](https://github.com/BasiliskGroup/BasiliskEngine))
 - **Cross-Platform**: Windows, macOS, Linux via miniaudio
 
@@ -39,15 +39,6 @@ audio.initialize()
 # Create groups and play
 music_group = audio.create_group("music")
 sfx_group = audio.create_group("sfx")
-
-# High-level API
-music = audio_py.MusicPlayer.get()
-music.initialize(music_group)
-music.fade_to("parchment", 2.0)
-
-sfx = audio_py.SFXPlayer.get_instance()
-sfx.initialize(sfx_group)
-sfx.play("footstep")
 
 # Cleanup
 audio.shutdown()
@@ -82,11 +73,6 @@ audio.Initialize();
 // Create groups
 auto music = audio.CreateGroup("music");
 auto sfx = audio.CreateGroup("sfx");
-
-// High-level API
-auto& player = audio::MusicPlayer::Get();
-player.Initialize(music);
-player.FadeTo("parchment", 2.0f);
 
 // Cleanup
 audio.Shutdown();
@@ -132,8 +118,6 @@ cmake --build . --config Release
 - `AudioSystem` - miniaudio wrapper
 
 **High-Level Utilities:**
-- `MusicPlayer` - Music transitions and state management
-- `SFXPlayer` - Sound effect playback with randomization
 - `RandomSoundContainer` - Wwise-style random containers
 
 ## Testing
