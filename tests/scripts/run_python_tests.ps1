@@ -27,7 +27,8 @@ Write-Host "Python: $(python --version)"
 Write-Host ""
 
 # Check if build exists
-$buildPath = Join-Path $PSScriptRoot ".." $buildDir
+$repoRoot = Join-Path (Join-Path $PSScriptRoot "..") ".."
+$buildPath = Join-Path $repoRoot $buildDir
 if (-not (Test-Path $buildPath)) {
     Write-Host "ERROR: Build directory not found at $buildPath" -ForegroundColor Red
     Write-Host "Please build the project first with:" -ForegroundColor Yellow
@@ -39,13 +40,23 @@ if (-not (Test-Path $buildPath)) {
     exit 1
 }
 
+# Change to build directory so Python can find audio_py module
+$env:PYTHONPATH = $buildPath
+Write-Host "Working directory: $buildPath"
+Write-Host ""
+
 Write-Host "Running basic tests..." -ForegroundColor Cyan
-python (Join-Path $PSScriptRoot "test_python.py")
+python (Join-Path $repoRoot "tests\python\test_audio_manager_basic.py")
 $basicResult = $LASTEXITCODE
 
 Write-Host ""
+Write-Host "Running error handling tests..." -ForegroundColor Cyan
+python (Join-Path $repoRoot "tests\python\test_audio_manager_error_handling.py")
+$errorResult = $LASTEXITCODE
+
+Write-Host ""
 Write-Host "Running comprehensive tests..." -ForegroundColor Cyan
-python (Join-Path $PSScriptRoot "test_comprehensive.py")
+python (Join-Path $repoRoot "tests\python\test_audio_manager_comprehensive.py")
 $comprehensiveResult = $LASTEXITCODE
 
 Write-Host ""
@@ -59,6 +70,12 @@ if ($basicResult -eq 0) {
     Write-Host "Basic Tests: FAILED" -ForegroundColor Red
 }
 
+if ($errorResult -eq 0) {
+    Write-Host "Error Handling Tests: PASSED" -ForegroundColor Green
+} else {
+    Write-Host "Error Handling Tests: FAILED" -ForegroundColor Red
+}
+
 if ($comprehensiveResult -eq 0) {
     Write-Host "Comprehensive Tests: PASSED" -ForegroundColor Green
 } else {
@@ -67,7 +84,7 @@ if ($comprehensiveResult -eq 0) {
 
 Write-Host ""
 
-if ($basicResult -eq 0 -and $comprehensiveResult -eq 0) {
+if ($basicResult -eq 0 -and $errorResult -eq 0 -and $comprehensiveResult -eq 0) {
     Write-Host "All tests passed on $platform!" -ForegroundColor Green
     exit 0
 } else {

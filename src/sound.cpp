@@ -1,10 +1,23 @@
 #define NOMINMAX  // Prevent Windows from defining min/max macros
 #include "sound.h"
 #include "audio_group.h"
+#include "audio_manager.h"
 #include <iostream>
 #include <algorithm>
+#include <fstream>
 
 namespace audio {
+
+std::unique_ptr<Sound> Sound::Create(ma_engine* engine, const std::string& filepath, AudioGroup* group) {
+  // Validate that file exists
+  std::ifstream file(filepath, std::ios::binary);
+  if (!file.good()) {
+    throw FileLoadException("File not found or cannot be opened: " + filepath);
+  }
+  file.close();
+  
+  return std::unique_ptr<Sound>(new Sound(engine, filepath, group));
+}
 
 SoundInstance::SoundInstance() : sound(nullptr), finished(false) {}
 

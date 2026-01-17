@@ -9,6 +9,7 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <stdexcept>
 
 /**
  * @file audio_manager.h
@@ -17,6 +18,46 @@
  * This file contains the AudioManager class which serves as the primary
  * interface for all audio functionality in the game engine.
  */
+
+namespace audio {
+
+/**
+ * @brief Exception thrown when an audio operation fails
+ */
+class AudioException : public std::runtime_error {
+public:
+    explicit AudioException(const std::string& message) 
+        : std::runtime_error(message) {}
+};
+
+/**
+ * @brief Exception thrown when an invalid handle is used
+ */
+class InvalidHandleException : public AudioException {
+public:
+    explicit InvalidHandleException(const std::string& message)
+        : AudioException(message) {}
+};
+
+/**
+ * @brief Exception thrown when a file cannot be loaded
+ */
+class FileLoadException : public AudioException {
+public:
+    explicit FileLoadException(const std::string& message)
+        : AudioException(message) {}
+};
+
+/**
+ * @brief Exception thrown when the audio system is not initialized
+ */
+class NotInitializedException : public AudioException {
+public:
+    explicit NotInitializedException(const std::string& message)
+        : AudioException(message) {}
+};
+
+} // namespace audio
 
 // Forward declarations
 namespace audio {
@@ -139,6 +180,7 @@ public:
      * All layers in the track will begin playing.
      * 
      * @param track Handle to the track to play
+     * @throws InvalidHandleException If the track handle is invalid
      */
     void PlayTrack(TrackHandle track);
     
@@ -148,6 +190,7 @@ public:
      * All layers in the track will stop playing.
      * 
      * @param track Handle to the track to stop
+     * @throws InvalidHandleException If the track handle is invalid
      */
     void StopTrack(TrackHandle track);
     
@@ -166,6 +209,8 @@ public:
      * @param layerName Name identifier for the layer
      * @param filepath Path to the audio file
      * @param group Optional name of the group this layer should belong to
+     * @throws InvalidHandleException If the track handle is invalid
+     * @throws FileLoadException If the audio file cannot be loaded
      */
     void AddLayer(TrackHandle track, const string& layerName, const string& filepath, const string& group = "");
     
@@ -207,6 +252,7 @@ public:
      * 
      * @param name Optional name for the group
      * @return GroupHandle Handle to the newly created group
+     * @throws AudioException If group creation fails
      */
     GroupHandle CreateGroup(const string& name = "");
     
@@ -224,6 +270,7 @@ public:
      * 
      * @param group Handle to the group
      * @param volume Volume level (0.0 to 1.0)
+     * @throws InvalidHandleException If the group handle is invalid
      */
     void SetGroupVolume(GroupHandle group, float volume);
     
@@ -253,6 +300,7 @@ public:
      * 
      * @param filepath Path to the audio file
      * @return SoundHandle Handle to the loaded sound
+     * @throws FileLoadException If the file cannot be found or loaded
      */
     SoundHandle LoadSound(const string& filepath);
     
@@ -262,6 +310,7 @@ public:
      * @param filepath Path to the audio file
      * @param group Handle to the audio group to assign the sound to
      * @return SoundHandle Handle to the loaded sound
+     * @throws FileLoadException If the file cannot be found or loaded
      */
     SoundHandle LoadSound(const string& filepath, GroupHandle group);
     
@@ -279,6 +328,7 @@ public:
      * with the Windows PlaySound macro.
      * 
      * @param sound Handle to the sound to play
+     * @throws InvalidHandleException If the sound handle is invalid
      */
     void StartSound(SoundHandle sound);
     
@@ -286,6 +336,7 @@ public:
      * @brief Stop a currently playing sound
      * 
      * @param sound Handle to the sound to stop
+     * @throws InvalidHandleException If the sound handle is invalid
      */
     void StopSound(SoundHandle sound);
     
@@ -294,6 +345,7 @@ public:
      * 
      * @param sound Handle to the sound
      * @param volume Volume level (0.0 to 1.0)
+     * @throws InvalidHandleException If the sound handle is invalid
      */
     void SetSoundVolume(SoundHandle sound, float volume);
     

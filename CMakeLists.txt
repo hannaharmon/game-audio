@@ -59,13 +59,23 @@ if(BUILD_AUDIO_EXAMPLES)
 endif()
 
 if(BUILD_AUDIO_TESTS)
-    # Automated test executable
-    add_executable(test_automated
-        tests/test_automated.cpp
+    # Automated test executable - basic functionality
+    add_executable(test_audio_manager_basic
+        tests/cpp/test_audio_manager_basic.cpp
     )
-    target_link_libraries(test_automated PRIVATE audio_lib)
+    target_link_libraries(test_audio_manager_basic PRIVATE audio_lib)
     
-    target_compile_definitions(test_automated PRIVATE
+    target_compile_definitions(test_audio_manager_basic PRIVATE
+        SOUND_FILES_DIR="${CMAKE_SOURCE_DIR}/sound_files/"
+    )
+    
+    # Automated test executable - error handling
+    add_executable(test_audio_manager_error_handling
+        tests/cpp/test_audio_manager_error_handling.cpp
+    )
+    target_link_libraries(test_audio_manager_error_handling PRIVATE audio_lib)
+    
+    target_compile_definitions(test_audio_manager_error_handling PRIVATE
         SOUND_FILES_DIR="${CMAKE_SOURCE_DIR}/sound_files/"
     )
 endif()

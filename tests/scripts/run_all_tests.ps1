@@ -26,39 +26,29 @@ function Write-Test {
 # ============================================================================
 Write-TestHeader "BUILD VERIFICATION"
 
-Write-Test "Automated test executable exists" (Test-Path "..\build\Debug\test_automated.exe")
-Write-Test "Interactive test executable exists" (Test-Path "..\build\Debug\test_audio.exe")
-Write-Test "CMakeLists.txt exists" (Test-Path "..\CMakeLists.txt")
-Write-Test "Sound files directory exists" (Test-Path "..\sound_files")
+Write-Test "Basic tests executable exists" (Test-Path "..\..\build\Debug\test_audio_manager_basic.exe")
+Write-Test "Error handling tests executable exists" (Test-Path "..\..\build\Debug\test_audio_manager_error_handling.exe")
+Write-Test "Interactive test executable exists" (Test-Path "..\..\build\Debug\test_audio.exe")
+Write-Test "CMakeLists.txt exists" (Test-Path "..\..\CMakeLists.txt")
+Write-Test "Sound files directory exists" (Test-Path "..\..\sound_files")
 
 # ============================================================================
-Write-TestHeader "AUTOMATED FUNCTIONAL TESTS"
+Write-TestHeader "C++ TESTS"
 
-if (Test-Path "..\build\Debug\test_automated.exe") {
-    Write-Host "`nRunning comprehensive automated test suite...`n" -ForegroundColor Yellow
-    
-    $test_output = & "..\build\Debug\test_automated.exe" 2>&1
-    $test_exit_code = $LASTEXITCODE
-    
-    # Display test output
-    $test_output | ForEach-Object { Write-Host $_ }
-    
-    # Check results
-    Write-Host "" # blank line
-    Write-Test "All automated tests passed" ($test_exit_code -eq 0)
-    
-    # Parse test results from output
-    $passed_match = $test_output | Select-String "Passed: (\d+)"
-    $failed_match = $test_output | Select-String "Failed: (\d+)"
-    
-    if ($passed_match) {
-        $tests_run = $passed_match.Matches[0].Groups[1].Value
-        Write-Host "Automated suite: $tests_run tests completed" -ForegroundColor Cyan
-    }
-} else {
-    Write-Host "Automated test executable not found!" -ForegroundColor Red
-    $TestsFailed++
-}
+Write-Host "`nRunning C++ test suite...`n" -ForegroundColor Yellow
+& "$PSScriptRoot\run_cpp_tests.ps1"
+$cpp_exit_code = $LASTEXITCODE
+Write-Host "" # blank line
+Write-Test "All C++ tests passed" ($cpp_exit_code -eq 0)
+
+# ============================================================================
+Write-TestHeader "PYTHON TESTS"
+
+Write-Host "`nRunning Python test suite...`n" -ForegroundColor Yellow
+& "$PSScriptRoot\run_python_tests.ps1"
+$python_exit_code = $LASTEXITCODE
+Write-Host "" # blank line
+Write-Test "All Python tests passed" ($python_exit_code -eq 0)
 
 # ============================================================================
 Write-TestHeader "CROSS-PLATFORM COMPATIBILITY"
@@ -78,7 +68,7 @@ Write-Host "Total Tests: $($TestsPassed + $TestsFailed)" -ForegroundColor White
 Write-Host "Passed: $TestsPassed" -ForegroundColor Green
 Write-Host "Failed: $TestsFailed" -ForegroundColor $(if ($TestsFailed -gt 0) { "Red" } else { "Green" })
 
-if ($TestsFailed -eq 0 -and $cross_platform_exit -eq 0) {
+if ($TestsFailed -eq 0 -and $cross_platform_exit -eq 0 -and $cpp_exit_code -eq 0 -and $python_exit_code -eq 0) {
     Write-Host "`nAll tests passed" -ForegroundColor Green
     exit 0
 } else {

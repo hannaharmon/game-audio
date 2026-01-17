@@ -107,9 +107,14 @@ mkdir build && cd build
 cmake ..
 cmake --build . --config Release
 
-# Run tests
-cd tests
-./run_all_tests.ps1  # 70 automated tests
+# Run all tests (C++ + Python)
+./tests/scripts/run_all_tests.ps1
+
+# Run only C++ tests
+./tests/scripts/run_cpp_tests.ps1
+
+# Run only Python tests
+./tests/scripts/run_python_tests.ps1
 ```
 
 **Build Options:**
@@ -133,10 +138,27 @@ cd tests
 
 ## Testing
 
-70 automated tests covering:
-- Functional correctness (50 tests)
-- Cross-platform compatibility (20 tests)
-- Error handling and edge cases
+**Test Organization:**
+```
+tests/
+  cpp/                      # C++ tests
+    test_audio_manager_basic.cpp
+    test_audio_manager_error_handling.cpp
+  python/                   # Python tests
+    test_audio_manager_basic.py
+    test_audio_manager_error_handling.py
+    test_audio_manager_comprehensive.py
+  scripts/                  # Test runners
+    run_all_tests.ps1
+    run_cpp_tests.ps1
+    run_python_tests.ps1
+```
+
+**79 automated tests covering:**
+- C++ functionality (42 tests)
+- C++ error handling (37 tests)
+- Python bindings (52 tests: 10 basic + 12 error + 30 comprehensive)
+- Cross-platform compatibility
 - Resource management and cleanup
 
 ## Documentation

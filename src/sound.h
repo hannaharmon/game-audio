@@ -74,10 +74,9 @@ class Sound {
    * @param filepath Path to the audio file
    * @param group Optional audio group this sound belongs to
    * @return std::unique_ptr<Sound> Unique pointer to a new Sound
+   * @throws FileLoadException if the file cannot be accessed
    */
-  static std::unique_ptr<Sound> Create(ma_engine* engine, const std::string& filepath, AudioGroup* group = nullptr) {
-    return std::unique_ptr<Sound>(new Sound(engine, filepath, group));
-  }
+  static std::unique_ptr<Sound> Create(ma_engine* engine, const std::string& filepath, AudioGroup* group = nullptr);
  
  private:
   /**
