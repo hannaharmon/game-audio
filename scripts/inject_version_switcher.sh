@@ -88,23 +88,55 @@ EOFHERE
 VERSION_SWITCHER_HTML=$(cat "$TEMP_FILE")
 rm -f "$TEMP_FILE"
 
-# Inject into all HTML files in docs directory
-find "${DOCS_DIR}" -name "*.html" -type f | while read -r html_file; do
-    # Check if file already has version switcher
-    if ! grep -q "version-switcher-container" "$html_file"; then
-        # Inject before closing </body> tag
-        # Use a more robust approach: escape special characters for sed
-        ESCAPED_HTML=$(printf '%s\n' "$VERSION_SWITCHER_HTML" | sed 's/[[\.*^$()+?{|]/\\&/g')
-        # Actually, better to use a different approach - append to a temp file and use it
-        TEMP_INJECT=$(mktemp)
-        printf '%s\n' "$VERSION_SWITCHER_HTML" > "$TEMP_INJECT"
-        # Use perl for more reliable multi-line replacement
-        perl -i -pe "BEGIN{undef \$/;} s|</body>|$(cat "$TEMP_INJECT")\n</body>|gs" "$html_file" 2>/dev/null || {
-            # Fallback: simple sed (may have issues with special chars)
-            sed -i "s|</body>|$(cat "$TEMP_INJECT")\n</body>|" "$html_file"
-        }
-        rm -f "$TEMP_INJECT"
-    fi
-done
+# Save switcher HTML to temp file for Python script
+SWITCHER_TEMP=$(mktemp)
+printf '%s\n' "$VERSION_SWITCHER_HTML" > "$SWITCHER_TEMP"
 
-echo "Version switcher injected into all HTML files in ${DOCS_DIR}"
+# Inject into all HTML files in docs directory using Python
+python3 << PYTHON_SCRIPT
+import os
+import sys
+import glob
+
+docs_dir = "${DOCS_DIR}"
+switcher_file = "${SWITCHER_TEMP}"
+
+# Read switcher HTML
+with open(switcher_file, 'r', encoding='utf-8') as f:
+    switcher_html = f.read()
+
+# Find all HTML files
+html_files = []
+for root, dirs, files in os.walk(docs_dir):
+    for file in files:
+        if file.endswith('.html'):
+            html_files.append(os.path.join(root, file))
+
+injected_count = 0
+for html_file in html_files:
+    try:
+        with open(html_file, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        # Skip if already injected
+        if 'version-switcher-container' in content:
+            continue
+        
+        # Inject before </body>
+        if '</body>' in content:
+            content = content.replace('</body>', switcher_html + '\n</body>')
+        else:
+            # No </body> tag, append at end
+            content = content + '\n' + switcher_html
+        
+        with open(html_file, 'w', encoding='utf-8') as f:
+            f.write(content)
+        
+        injected_count += 1
+    except Exception as e:
+        print(f"Warning: Failed to inject into {html_file}: {e}", file=sys.stderr)
+
+print(f"Version switcher injected into {injected_count} of {len(html_files)} HTML files")
+PYTHON_SCRIPT
+
+rm -f "$SWITCHER_TEMP"
