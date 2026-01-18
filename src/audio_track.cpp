@@ -128,11 +128,7 @@ void AudioTrack::Update() {
         layer.current_volume = new_volume;
         layer.sound->SetVolume(layer.current_volume);
       }
-      
-
     }
-    
-    layer.sound->SetVolume(layer.current_volume);
   }
 }
 

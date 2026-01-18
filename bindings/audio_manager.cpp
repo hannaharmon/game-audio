@@ -4,7 +4,7 @@
 #include <pybind11/operators.h>
 #include <functional>
 
-#include "../src/audio_manager.h"
+#include "audio_manager.h"
 
 namespace py = pybind11;
 using namespace audio;

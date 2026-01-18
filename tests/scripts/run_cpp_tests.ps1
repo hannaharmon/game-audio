@@ -46,52 +46,56 @@ if (-not (Test-Path $buildDir)) {
     exit 1
 }
 
-# Run basic functionality tests
-Write-Host "Running basic functionality tests..." -ForegroundColor Cyan
-$basicExe = Join-Path $buildDir "test_audio_manager_basic$exe"
-if (Test-Path $basicExe) {
-    & $basicExe
-    $basicResult = $LASTEXITCODE
-} else {
-    Write-Host "ERROR: Basic tests executable not found at $basicExe" -ForegroundColor Red
-    $basicResult = 1
-}
+# Test executables organized by functionality
+$testExecutables = @(
+    "test_audio_initialization",
+    "test_audio_volume",
+    "test_audio_groups",
+    "test_audio_sounds",
+    "test_audio_tracks",
+    "test_audio_validation",
+    "test_audio_threading",
+    "test_audio_resources"
+)
 
-Write-Host ""
+$testResults = @{}
+$allPassed = $true
 
-# Run error handling tests
-Write-Host "Running error handling tests..." -ForegroundColor Cyan
-$errorExe = Join-Path $buildDir "test_audio_manager_error_handling$exe"
-if (Test-Path $errorExe) {
-    & $errorExe
-    $errorResult = $LASTEXITCODE
-} else {
-    Write-Host "ERROR: Error handling tests executable not found at $errorExe" -ForegroundColor Red
-    $errorResult = 1
+foreach ($testName in $testExecutables) {
+    Write-Host "Running $testName..." -ForegroundColor Cyan
+    $testExe = Join-Path $buildDir "$testName$exe"
+    if (Test-Path $testExe) {
+        & $testExe
+        $result = $LASTEXITCODE
+        $testResults[$testName] = $result
+        if ($result -ne 0) {
+            $allPassed = $false
+        }
+    } else {
+        Write-Host "ERROR: $testName executable not found at $testExe" -ForegroundColor Red
+        $testResults[$testName] = 1
+        $allPassed = $false
+    }
+    Write-Host ""
 }
 
 Pop-Location
 
-Write-Host ""
 Write-Host "==================================="
 Write-Host "C++ Test Summary"
 Write-Host "==================================="
 
-if ($basicResult -eq 0) {
-    Write-Host "Basic Tests: PASSED" -ForegroundColor Green
-} else {
-    Write-Host "Basic Tests: FAILED" -ForegroundColor Red
-}
-
-if ($errorResult -eq 0) {
-    Write-Host "Error Handling Tests: PASSED" -ForegroundColor Green
-} else {
-    Write-Host "Error Handling Tests: FAILED" -ForegroundColor Red
+foreach ($testName in $testExecutables) {
+    if ($testResults[$testName] -eq 0) {
+        Write-Host "$testName : PASSED" -ForegroundColor Green
+    } else {
+        Write-Host "$testName : FAILED" -ForegroundColor Red
+    }
 }
 
 Write-Host ""
 
-if ($basicResult -eq 0 -and $errorResult -eq 0) {
+if ($allPassed) {
     Write-Host "All C++ tests passed on $platform!" -ForegroundColor Green
     exit 0
 } else {

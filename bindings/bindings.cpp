@@ -2,7 +2,7 @@
 #include <pybind11/stl.h>
 #include <pybind11/chrono.h>
 
-#include "../src/audio_manager.h"
+#include "audio_manager.h"
 
 namespace py = pybind11;
 
@@ -14,11 +14,15 @@ void bind_audio_session(py::module_&);
 PYBIND11_MODULE(audio_py, m) {
     m.doc() = "Python bindings for the Game Audio Module";
 
-    // Register custom exceptions
-    py::register_exception<audio::AudioException>(m, "AudioException");
-    py::register_exception<audio::InvalidHandleException>(m, "InvalidHandleException");
-    py::register_exception<audio::FileLoadException>(m, "FileLoadException");
-    py::register_exception<audio::NotInitializedException>(m, "NotInitializedException");
+    // Register custom exceptions with proper inheritance hierarchy
+    // Register base exception first
+    py::register_exception<audio::AudioException>(m, "AudioException", PyExc_RuntimeError);
+    
+    // Register derived exceptions - get the AudioException Python type to use as base
+    py::object audio_exception = m.attr("AudioException");
+    py::register_exception<audio::InvalidHandleException>(m, "InvalidHandleException", audio_exception.ptr());
+    py::register_exception<audio::FileLoadException>(m, "FileLoadException", audio_exception.ptr());
+    py::register_exception<audio::NotInitializedException>(m, "NotInitializedException", audio_exception.ptr());
 
     // Bind all submodules
     bind_audio_manager(m);

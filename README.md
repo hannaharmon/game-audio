@@ -154,25 +154,42 @@ audio.Shutdown();
 **Test Organization:**
 ```
 tests/
-  cpp/                      # C++ tests
-    test_audio_manager_basic.cpp
-    test_audio_manager_error_handling.cpp
-  python/                   # Python tests
-    test_audio_manager_basic.py
-    test_audio_manager_error_handling.py
-    test_audio_manager_comprehensive.py
+  cpp/                      # C++ tests organized by functionality
+    test_audio_initialization.cpp
+    test_audio_volume.cpp
+    test_audio_groups.cpp
+    test_audio_sounds.cpp
+    test_audio_tracks.cpp
+    test_audio_validation.cpp
+    test_audio_threading.cpp
+    test_audio_resources.cpp
+    test_common.h/cpp        # Shared test utilities
+  python/                   # Python tests organized by functionality
+    test_audio_initialization.py
+    test_audio_volume.py
+    test_audio_groups.py
+    test_audio_sounds.py
+    test_audio_tracks.py
+    test_audio_validation.py
+    test_audio_threading.py
+    test_audio_resources.py
+    test_common.py          # Shared test utilities
   scripts/                  # Test runners
     run_all_tests.ps1
     run_cpp_tests.ps1
     run_python_tests.ps1
 ```
 
-**79 automated tests covering:**
-- C++ functionality (42 tests)
-- C++ error handling (37 tests)
-- Python bindings (52 tests: 10 basic + 12 error + 30 comprehensive)
-- Cross-platform compatibility
+**Comprehensive automated tests covering:**
+- System initialization and lifecycle
+- Volume control and clamping
+- Group operations
+- Sound loading and playback
+- Track and layer management
+- Input validation and error handling
+- Thread safety and concurrent operations
 - Resource management and cleanup
+- Cross-platform compatibility
 
 ## Documentation
 

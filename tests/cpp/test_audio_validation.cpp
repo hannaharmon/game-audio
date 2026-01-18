@@ -1,66 +1,16 @@
 /**
- * Audio System Error Handling Tests
+ * Audio System Validation Tests
  * 
- * Tests that verify all exception throwing paths in the audio system.
- * Ensures that C++ exceptions are properly thrown with correct types and messages.
+ * Tests input validation, error handling, and exception types.
  */
 
-#include "../src/audio_manager.h"
-#include "../src/audio_session.h"
-#include <iostream>
-#include <cassert>
+#include "test_common.h"
+#include "audio_manager.h"
+#include "audio_session.h"
 #include <string>
-#include <stdexcept>
 
 using namespace audio;
-
-// Test result tracking
-int tests_passed = 0;
-int tests_failed = 0;
-
-#define TEST(name) \
-    std::cout << "\nTEST: " << name << std::endl; \
-    try {
-
-#define ASSERT_THROWS(exception_type, code, message) \
-    do { \
-        bool threw_correct_exception = false; \
-        try { \
-            code; \
-        } catch (const exception_type& e) { \
-            threw_correct_exception = true; \
-            std::cout << "  PASS: " << message << " (caught: " << e.what() << ")" << std::endl; \
-            tests_passed++; \
-        } catch (const std::exception& e) { \
-            std::cerr << "  FAIL: " << message << " - Wrong exception type: " << e.what() << std::endl; \
-            tests_failed++; \
-        } \
-        if (!threw_correct_exception) { \
-            std::cerr << "  FAIL: " << message << " - No exception thrown" << std::endl; \
-            tests_failed++; \
-        } \
-    } while(0)
-
-#define ASSERT_NO_THROW(code, message) \
-    do { \
-        try { \
-            code; \
-            std::cout << "  PASS: " << message << std::endl; \
-            tests_passed++; \
-        } catch (const std::exception& e) { \
-            std::cerr << "  FAIL: " << message << " - Unexpected exception: " << e.what() << std::endl; \
-            tests_failed++; \
-        } \
-    } while(0)
-
-#define END_TEST \
-    } catch (const std::exception& e) { \
-        std::cerr << "  Uncaught exception in test: " << e.what() << std::endl; \
-        tests_failed++; \
-    }
-
-// Path configuration
-std::string sound_dir;
+using namespace std::chrono_literals;
 
 void test_not_initialized() {
     TEST("Not Initialized Errors")
@@ -131,7 +81,7 @@ void test_invalid_track_handle() {
         "StopTrack with handle 0 throws InvalidHandleException");
     
     ASSERT_THROWS(InvalidHandleException,
-        manager.AddLayer(TrackHandle{0}, "layer1", sound_dir + "background_music.mp3"),
+        manager.AddLayer(TrackHandle{0}, "layer1", sound_dir + "/digital_base.wav"),
         "AddLayer with handle 0 throws InvalidHandleException");
     
     ASSERT_THROWS(InvalidHandleException,
@@ -228,56 +178,69 @@ void test_file_not_found() {
         manager.AddLayer(track, "layer1", "nonexistent_layer.mp3"),
         "AddLayer with non-existent file throws FileLoadException");
     
+    manager.DestroyTrack(track);
+    
     END_TEST
 }
 
-void test_valid_operations_no_exceptions() {
-    TEST("Valid Operations Should Not Throw")
+void test_fade_duration_validation() {
+    TEST("Fade Duration Validation")
     
     AudioManager& manager = AudioManager::GetInstance();
     
-    // Load a valid sound
-    SoundHandle sound_handle = SoundHandle::Invalid();
-    ASSERT_NO_THROW(
-        sound_handle = manager.LoadSound(sound_dir + "clap.wav"),
-        "LoadSound with valid file does not throw");
+    GroupHandle group = manager.CreateGroup("test");
+    TrackHandle track = manager.CreateTrack();
+    manager.AddLayer(track, "layer1", sound_dir + "/digital_base.wav");
     
-    // Start and stop the sound
-    ASSERT_NO_THROW(
-        manager.PlaySound(sound_handle),
-        "PlaySound with valid handle does not throw");
+    // Test negative duration
+    ASSERT_THROWS(AudioException,
+        manager.FadeGroup(group, 0.5f, std::chrono::milliseconds(-100)),
+        "FadeGroup with negative duration throws AudioException");
     
-    ASSERT_NO_THROW(
-        manager.StopSound(sound_handle),
-        "StopSound with valid handle does not throw");
+    ASSERT_THROWS(AudioException,
+        manager.FadeLayer(track, "layer1", 0.5f, std::chrono::milliseconds(-50)),
+        "FadeLayer with negative duration throws AudioException");
     
-    // Create and manipulate track
-    TrackHandle track = TrackHandle::Invalid();
-    ASSERT_NO_THROW(
-        track = manager.CreateTrack(),
-        "CreateTrack does not throw");
+    // Test zero duration
+    ASSERT_THROWS(AudioException,
+        manager.FadeGroup(group, 0.5f, std::chrono::milliseconds(0)),
+        "FadeGroup with zero duration throws AudioException");
     
-    ASSERT_NO_THROW(
-        manager.AddLayer(track, "layer1", sound_dir + "clap.wav"),
-        "AddLayer with valid file does not throw");
+    ASSERT_THROWS(AudioException,
+        manager.FadeLayer(track, "layer1", 0.5f, std::chrono::milliseconds(0)),
+        "FadeLayer with zero duration throws AudioException");
     
-    ASSERT_NO_THROW(
-        manager.PlayTrack(track),
-        "PlayTrack with valid handle does not throw");
+    // Cleanup
+    manager.DestroyTrack(track);
+    manager.DestroyGroup(group);
     
-    ASSERT_NO_THROW(
-        manager.StopTrack(track),
-        "StopTrack with valid handle does not throw");
+    END_TEST
+}
+
+void test_input_validation() {
+    TEST("Input Validation for Layer Names and Paths")
     
-    // Create and manipulate group
-    GroupHandle group = GroupHandle::Invalid();
-    ASSERT_NO_THROW(
-        group = manager.CreateGroup("test_group"),
-        "CreateGroup does not throw");
+    AudioManager& manager = AudioManager::GetInstance();
     
-    ASSERT_NO_THROW(
-        manager.SetGroupVolume(group, 0.5f),
-        "SetGroupVolume with valid handle does not throw");
+    TrackHandle track = manager.CreateTrack();
+    
+    // Test empty layer name
+    ASSERT_THROWS(AudioException,
+        manager.AddLayer(track, "", sound_dir + "/digital_base.wav"),
+        "AddLayer with empty layer name throws AudioException");
+    
+    // Test empty filepath
+    ASSERT_THROWS(AudioException,
+        manager.AddLayer(track, "layer1", ""),
+        "AddLayer with empty filepath throws AudioException");
+    
+    // Test empty folder path
+    ASSERT_THROWS(AudioException,
+        manager.PlayRandomSoundFromFolder("", GroupHandle::Invalid()),
+        "PlayRandomSoundFromFolder with empty path throws AudioException");
+    
+    // Cleanup
+    manager.DestroyTrack(track);
     
     END_TEST
 }
@@ -324,28 +287,6 @@ void test_exception_messages() {
     END_TEST
 }
 
-void test_multiple_invalid_operations() {
-    TEST("Multiple Invalid Operations In Sequence")
-    
-    AudioManager& manager = AudioManager::GetInstance();
-    
-    // Multiple invalid track operations should all throw
-    for (int i = 0; i < 3; i++) {
-        ASSERT_THROWS(InvalidHandleException,
-            manager.PlayTrack(TrackHandle{0}),
-            "Multiple PlayTrack calls with invalid handle all throw");
-    }
-    
-    // Multiple invalid file loads should all throw
-    for (int i = 0; i < 3; i++) {
-        ASSERT_THROWS(FileLoadException,
-            manager.LoadSound("nonexistent.mp3"),
-            "Multiple LoadSound calls with invalid file all throw");
-    }
-    
-    END_TEST
-}
-
 void test_exception_types_hierarchy() {
     TEST("Exception Type Hierarchy")
     
@@ -373,18 +314,90 @@ void test_exception_types_hierarchy() {
     END_TEST
 }
 
+void test_valid_operations_no_exceptions() {
+    TEST("Valid Operations Should Not Throw")
+    
+    AudioManager& manager = AudioManager::GetInstance();
+    
+    // Load a valid sound
+    SoundHandle sound_handle = SoundHandle::Invalid();
+    ASSERT_NO_THROW(
+        sound_handle = manager.LoadSound(sound_dir + "/digital_base.wav"),
+        "LoadSound with valid file does not throw");
+    
+    // Start and stop the sound
+    ASSERT_NO_THROW(
+        manager.PlaySound(sound_handle),
+        "PlaySound with valid handle does not throw");
+    
+    ASSERT_NO_THROW(
+        manager.StopSound(sound_handle),
+        "StopSound with valid handle does not throw");
+    
+    // Create and manipulate track
+    TrackHandle track = TrackHandle::Invalid();
+    ASSERT_NO_THROW(
+        track = manager.CreateTrack(),
+        "CreateTrack does not throw");
+    
+    ASSERT_NO_THROW(
+        manager.AddLayer(track, "layer1", sound_dir + "/digital_base.wav"),
+        "AddLayer with valid file does not throw");
+    
+    ASSERT_NO_THROW(
+        manager.PlayTrack(track),
+        "PlayTrack with valid handle does not throw");
+    
+    ASSERT_NO_THROW(
+        manager.StopTrack(track),
+        "StopTrack with valid handle does not throw");
+    
+    // Create and manipulate group
+    GroupHandle group = GroupHandle::Invalid();
+    ASSERT_NO_THROW(
+        group = manager.CreateGroup("test_group"),
+        "CreateGroup does not throw");
+    
+    ASSERT_NO_THROW(
+        manager.SetGroupVolume(group, 0.5f),
+        "SetGroupVolume with valid handle does not throw");
+    
+    // Cleanup
+    manager.DestroySound(sound_handle);
+    manager.DestroyTrack(track);
+    manager.DestroyGroup(group);
+    
+    END_TEST
+}
+
+void test_multiple_invalid_operations() {
+    TEST("Multiple Invalid Operations In Sequence")
+    
+    AudioManager& manager = AudioManager::GetInstance();
+    
+    // Multiple invalid track operations should all throw
+    for (int i = 0; i < 3; i++) {
+        ASSERT_THROWS(InvalidHandleException,
+            manager.PlayTrack(TrackHandle{0}),
+            "Multiple PlayTrack calls with invalid handle all throw");
+    }
+    
+    // Multiple invalid file loads should all throw
+    for (int i = 0; i < 3; i++) {
+        ASSERT_THROWS(FileLoadException,
+            manager.LoadSound("nonexistent.mp3"),
+            "Multiple LoadSound calls with invalid file all throw");
+    }
+    
+    END_TEST
+}
+
 int main(int argc, char* argv[]) {
     std::cout << "========================================" << std::endl;
-    std::cout << "Audio System Error Handling Tests" << std::endl;
+    std::cout << "Audio System Validation Tests" << std::endl;
     std::cout << "========================================" << std::endl;
     
-    // Determine sound file directory
-    #ifdef SOUND_FILES_DIR
-        sound_dir = SOUND_FILES_DIR;
-    #else
-        sound_dir = "../sound_files/";
-    #endif
-    
+    sound_dir = get_sound_dir(argc, argv);
     std::cout << "Using sound files from: " << sound_dir << std::endl;
     
     // Initialize audio system
@@ -404,10 +417,12 @@ int main(int argc, char* argv[]) {
     test_invalid_sound_handle();
     test_invalid_group_handle();
     test_file_not_found();
-    test_valid_operations_no_exceptions();
+    test_fade_duration_validation();
+    test_input_validation();
     test_exception_messages();
-    test_multiple_invalid_operations();
     test_exception_types_hierarchy();
+    test_valid_operations_no_exceptions();
+    test_multiple_invalid_operations();
     
     // Shutdown
     AudioManager& manager = AudioManager::GetInstance();
@@ -421,7 +436,7 @@ int main(int argc, char* argv[]) {
     std::cout << "Failed: " << tests_failed << std::endl;
     
     if (tests_failed == 0) {
-        std::cout << "\nAll error handling tests passed!" << std::endl;
+        std::cout << "\nAll validation tests passed!" << std::endl;
         return 0;
     } else {
         std::cout << "\nSome tests failed!" << std::endl;

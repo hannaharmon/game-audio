@@ -40,17 +40,29 @@ Pop-Location
 # ============================================================================
 Write-TestHeader "BUILD VERIFICATION"
 
+$testExecutables = @(
+    "test_audio_initialization",
+    "test_audio_volume",
+    "test_audio_groups",
+    "test_audio_sounds",
+    "test_audio_tracks",
+    "test_audio_validation",
+    "test_audio_threading",
+    "test_audio_resources"
+)
+
 if ($IsWindows -or $env:OS -match "Windows") {
     $buildBinDir = Join-Path $repoRoot "build\Debug"
-    Write-Test "Basic tests executable exists" (Test-Path (Join-Path $buildBinDir "test_audio_manager_basic.exe"))
-    Write-Test "Error handling tests executable exists" (Test-Path (Join-Path $buildBinDir "test_audio_manager_error_handling.exe"))
-    Write-Test "Interactive test executable exists" (Test-Path (Join-Path $buildBinDir "test_audio.exe"))
+    $exe = ".exe"
 } else {
     $buildBinDir = Join-Path $repoRoot "build"
-    Write-Test "Basic tests executable exists" (Test-Path (Join-Path $buildBinDir "test_audio_manager_basic"))
-    Write-Test "Error handling tests executable exists" (Test-Path (Join-Path $buildBinDir "test_audio_manager_error_handling"))
-    Write-Test "Interactive test executable exists" (Test-Path (Join-Path $buildBinDir "test_audio"))
+    $exe = ""
 }
+
+foreach ($testName in $testExecutables) {
+    Write-Test "$testName executable exists" (Test-Path (Join-Path $buildBinDir "$testName$exe"))
+}
+Write-Test "Interactive test executable exists" (Test-Path (Join-Path $buildBinDir "test_audio$exe"))
 Write-Test "CMakeLists.txt exists" (Test-Path (Join-Path $repoRoot "CMakeLists.txt"))
 Write-Test "Sound files directory exists" (Test-Path (Join-Path $repoRoot "sound_files"))
 

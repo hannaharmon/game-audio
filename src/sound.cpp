@@ -87,7 +87,8 @@ void Sound::Play() {
       
   if (result != MA_SUCCESS) {
     AUDIO_LOG(LogLevel::Error, "[Sound::Play] FAILED to load sound file: " << filepath_ << " (error code: " << result << ")");
-    return;  // Instance will be cleaned up by smart pointer
+    // Instance will be cleaned up automatically by unique_ptr<SoundInstance> destructor
+    return;
   }
   AUDIO_LOG(LogLevel::Info, "[Sound::Play] Successfully loaded: " << filepath_);
   
@@ -133,7 +134,10 @@ void Sound::SetVolume(float volume) {
 }
 
 void Sound::SetPitch(float pitch) {
-  pitch_ = (std::max)(0.1f, pitch);  // Clamp minimum to avoid issues
+  // Clamp pitch to valid range [0.1, 10.0] to avoid audio issues
+  constexpr float MIN_PITCH = 0.1f;
+  constexpr float MAX_PITCH = 10.0f;
+  pitch_ = (std::min)(MAX_PITCH, (std::max)(MIN_PITCH, pitch));
 }
 
 bool Sound::IsPlaying() const {

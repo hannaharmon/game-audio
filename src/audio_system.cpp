@@ -1,13 +1,13 @@
 #include "audio_system.h"
 #include "audio_group.h"
 #include "sound.h"
-#include <stdexcept>
+#include "audio_manager.h"
 
 namespace audio {
 
 AudioSystem::AudioSystem() : master_volume_(1.0f) {
   if (ma_engine_init(nullptr, &engine_) != MA_SUCCESS) {
-    throw std::runtime_error("Failed to initialize audio engine");
+    throw AudioException("Failed to initialize audio engine");
   }
 }
 

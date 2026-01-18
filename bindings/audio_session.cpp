@@ -1,6 +1,6 @@
 #include <pybind11/pybind11.h>
 
-#include "../src/audio_session.h"
+#include "audio_session.h"
 
 namespace py = pybind11;
 using namespace audio;

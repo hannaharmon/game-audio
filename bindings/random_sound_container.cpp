@@ -1,7 +1,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include "../src/random_sound_container.h"
+#include "random_sound_container.h"
 
 namespace py = pybind11;
 using namespace audio;

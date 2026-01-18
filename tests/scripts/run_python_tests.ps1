@@ -53,46 +53,54 @@ if ((Test-Path $fallbackBuildPath) -and ($fallbackBuildPath -ne $buildPath)) {
 Write-Host "Working directory: $buildPath"
 Write-Host ""
 
-Write-Host "Running basic tests..." -ForegroundColor Cyan
-python (Join-Path $repoRoot "tests\python\test_audio_manager_basic.py")
-$basicResult = $LASTEXITCODE
+# Test files organized by functionality
+$testFiles = @(
+    "test_audio_initialization",
+    "test_audio_volume",
+    "test_audio_groups",
+    "test_audio_sounds",
+    "test_audio_tracks",
+    "test_audio_validation",
+    "test_audio_threading",
+    "test_audio_resources"
+)
 
-Write-Host ""
-Write-Host "Running error handling tests..." -ForegroundColor Cyan
-python (Join-Path $repoRoot "tests\python\test_audio_manager_error_handling.py")
-$errorResult = $LASTEXITCODE
+$testResults = @{}
+$allPassed = $true
 
-Write-Host ""
-Write-Host "Running comprehensive tests..." -ForegroundColor Cyan
-python (Join-Path $repoRoot "tests\python\test_audio_manager_comprehensive.py")
-$comprehensiveResult = $LASTEXITCODE
+foreach ($testName in $testFiles) {
+    Write-Host "Running $testName..." -ForegroundColor Cyan
+    $testPath = Join-Path $repoRoot "tests\python\$testName.py"
+    if (Test-Path $testPath) {
+        python $testPath
+        $result = $LASTEXITCODE
+        $testResults[$testName] = $result
+        if ($result -ne 0) {
+            $allPassed = $false
+        }
+    } else {
+        Write-Host "ERROR: $testName.py not found at $testPath" -ForegroundColor Red
+        $testResults[$testName] = 1
+        $allPassed = $false
+    }
+    Write-Host ""
+}
 
-Write-Host ""
 Write-Host "==================================="
 Write-Host "Test Summary"
 Write-Host "==================================="
 
-if ($basicResult -eq 0) {
-    Write-Host "Basic Tests: PASSED" -ForegroundColor Green
-} else {
-    Write-Host "Basic Tests: FAILED" -ForegroundColor Red
-}
-
-if ($errorResult -eq 0) {
-    Write-Host "Error Handling Tests: PASSED" -ForegroundColor Green
-} else {
-    Write-Host "Error Handling Tests: FAILED" -ForegroundColor Red
-}
-
-if ($comprehensiveResult -eq 0) {
-    Write-Host "Comprehensive Tests: PASSED" -ForegroundColor Green
-} else {
-    Write-Host "Comprehensive Tests: FAILED" -ForegroundColor Red
+foreach ($testName in $testFiles) {
+    if ($testResults[$testName] -eq 0) {
+        Write-Host "$testName : PASSED" -ForegroundColor Green
+    } else {
+        Write-Host "$testName : FAILED" -ForegroundColor Red
+    }
 }
 
 Write-Host ""
 
-if ($basicResult -eq 0 -and $errorResult -eq 0 -and $comprehensiveResult -eq 0) {
+if ($allPassed) {
     Write-Host "All tests passed on $platform!" -ForegroundColor Green
     exit 0
 } else {

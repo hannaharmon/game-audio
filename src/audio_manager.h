@@ -170,6 +170,10 @@ namespace audio {
  * This class handles resource management, playback control, volume adjustments,
  * and other audio operations. It is the only class that should be directly
  * accessed by game code.
+ * 
+ * @thread_safety All public methods are thread-safe and can be called from any thread.
+ * The internal update thread runs at ~60Hz and updates fading/volume transitions.
+ * All resource access is protected by internal mutexes.
  */
 class AudioManager {
 public:

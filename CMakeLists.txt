@@ -65,25 +65,31 @@ if(BUILD_AUDIO_EXAMPLES)
 endif()
 
 if(BUILD_AUDIO_TESTS)
-    # Automated test executable - basic functionality
-    add_executable(test_audio_manager_basic
-        tests/cpp/test_audio_manager_basic.cpp
-    )
-    target_link_libraries(test_audio_manager_basic PRIVATE audio_lib)
+    # Common test utilities
+    add_library(test_common STATIC tests/cpp/test_common.cpp)
+    target_include_directories(test_common PUBLIC tests/cpp)
     
-    target_compile_definitions(test_audio_manager_basic PRIVATE
-        SOUND_FILES_DIR="${CMAKE_SOURCE_DIR}/sound_files/"
+    # Test executables - organized by functionality
+    set(TEST_EXECUTABLES
+        test_audio_initialization
+        test_audio_volume
+        test_audio_groups
+        test_audio_sounds
+        test_audio_tracks
+        test_audio_validation
+        test_audio_threading
+        test_audio_resources
     )
     
-    # Automated test executable - error handling
-    add_executable(test_audio_manager_error_handling
-        tests/cpp/test_audio_manager_error_handling.cpp
-    )
-    target_link_libraries(test_audio_manager_error_handling PRIVATE audio_lib)
-    
-    target_compile_definitions(test_audio_manager_error_handling PRIVATE
-        SOUND_FILES_DIR="${CMAKE_SOURCE_DIR}/sound_files/"
-    )
+    foreach(TEST_NAME ${TEST_EXECUTABLES})
+        add_executable(${TEST_NAME}
+            tests/cpp/${TEST_NAME}.cpp
+        )
+        target_link_libraries(${TEST_NAME} PRIVATE audio_lib test_common)
+        target_compile_definitions(${TEST_NAME} PRIVATE
+            SOUND_FILES_DIR="${CMAKE_SOURCE_DIR}/sound_files/"
+        )
+    endforeach()
 endif()
 
 # ======================================================

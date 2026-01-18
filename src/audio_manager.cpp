@@ -73,8 +73,10 @@ bool AudioManager::Initialize() {
     AUDIO_LOG(LogLevel::Info, "AudioManager initialized");
 
     update_thread_ = thread([this]() {
+        // Update at ~60Hz for smooth fading transitions
+        constexpr std::chrono::milliseconds AUDIO_UPDATE_INTERVAL_MS{16};
         while (running_) {
-            std::this_thread::sleep_for(16ms); // ~60Hz update rate
+            std::this_thread::sleep_for(AUDIO_UPDATE_INTERVAL_MS);
 
             lock_guard<mutex> lock(resource_mutex_);
 
@@ -120,7 +122,10 @@ bool AudioManager::Initialize() {
 void AudioManager::Shutdown() {
     if (!running_) return;
 
+    // Signal the update thread to stop
     running_ = false;
+    
+    // Wait for update thread to finish (it will exit when it sees running_ = false)
     if (update_thread_.joinable()) {
         update_thread_.join();
     }
@@ -128,14 +133,22 @@ void AudioManager::Shutdown() {
     // Clean up resources in proper order
     lock_guard<mutex> lock(resource_mutex_);
     
-    // First stop all tracks to ensure sounds stop before being destroyed
+    // First stop all tracks to ensure their sounds stop before being destroyed
     for (auto& [handle, track] : tracks_) {
         if (track) {
             track->Stop();
         }
     }
     
-    // Then clear all resources
+    // Stop all standalone sounds before destroying them
+    // This is critical - ma_engine_uninit() can hang if sounds are still playing
+    for (auto& [handle, sound] : sounds_) {
+        if (sound) {
+            sound->Stop();
+        }
+    }
+    
+    // Clear all resources (destructors will clean up, but we've already stopped everything)
     tracks_.clear();
     sounds_.clear();  // Clear sounds before groups
     groups_.clear();  // Clear groups before audio system
@@ -143,6 +156,7 @@ void AudioManager::Shutdown() {
     folder_sounds_.clear();
 
     // Explicitly destroy the audio system to ensure miniaudio threads are stopped
+    // All sounds must be stopped before this point, or ma_engine_uninit() may hang
     audio_system_.reset();
     AUDIO_LOG(LogLevel::Info, "AudioManager shut down");
 }
@@ -150,6 +164,8 @@ void AudioManager::Shutdown() {
 // System control
 void AudioManager::SetMasterVolume(float volume) {
     EnsureInitialized();
+    // Clamp volume to valid range [0.0, 1.0]
+    volume = std::min(1.0f, std::max(0.0f, volume));
     lock_guard<mutex> lock(resource_mutex_);
     if (audio_system_) {
         audio_system_->SetMasterVolume(volume);
@@ -166,6 +182,7 @@ LogLevel AudioManager::GetLogLevel() {
 
 float AudioManager::GetMasterVolume() const {
     EnsureInitialized();
+    lock_guard<mutex> lock(resource_mutex_);
     if (!audio_system_) return 0.0f;
     return audio_system_->GetMasterVolume();
 }
@@ -217,6 +234,12 @@ void AudioManager::StopTrack(TrackHandle track) {
 void AudioManager::AddLayer(TrackHandle track, const string& layerName, 
                            const string& filepath, const string& group) {
     EnsureInitialized();
+    if (layerName.empty()) {
+        throw AudioException("Layer name cannot be empty");
+    }
+    if (filepath.empty()) {
+        throw AudioException("Filepath cannot be empty");
+    }
     lock_guard<mutex> lock(resource_mutex_);
     auto track_it = tracks_.find(track);
     if (track_it == tracks_.end() || !track_it->second) {
@@ -251,6 +274,8 @@ void AudioManager::RemoveLayer(TrackHandle track, const string& layerName) {
 
 void AudioManager::SetLayerVolume(TrackHandle track, const string& layerName, float volume) {
     EnsureInitialized();
+    // Clamp volume to valid range [0.0, 1.0]
+    volume = std::min(1.0f, std::max(0.0f, volume));
     lock_guard<mutex> lock(resource_mutex_);
     auto track_it = tracks_.find(track);
     if (track_it == tracks_.end() || !track_it->second) {
@@ -263,6 +288,9 @@ void AudioManager::SetLayerVolume(TrackHandle track, const string& layerName, fl
 void AudioManager::FadeLayer(TrackHandle track, const string& layerName, 
                             float targetVolume, std::chrono::milliseconds duration) {
     EnsureInitialized();
+    if (duration.count() <= 0) {
+        throw AudioException("Fade duration must be positive");
+    }
     lock_guard<mutex> lock(resource_mutex_);
     auto track_it = tracks_.find(track);
     if (track_it == tracks_.end() || !track_it->second) return;
@@ -314,6 +342,8 @@ void AudioManager::DestroyGroup(GroupHandle group) {
 
 void AudioManager::SetGroupVolume(GroupHandle group, float volume) {
     EnsureInitialized();
+    // Clamp volume to valid range [0.0, 1.0]
+    volume = std::min(1.0f, std::max(0.0f, volume));
     lock_guard<mutex> lock(resource_mutex_);
     auto it = groups_.find(group);
     if (it == groups_.end() || !it->second) {
@@ -335,6 +365,9 @@ float AudioManager::GetGroupVolume(GroupHandle group) const {
 void AudioManager::FadeGroup(GroupHandle group, float targetVolume, 
                             std::chrono::milliseconds duration) {
     EnsureInitialized();
+    if (duration.count() <= 0) {
+        throw AudioException("Fade duration must be positive");
+    }
     lock_guard<mutex> lock(resource_mutex_);
     auto it = groups_.find(group);
     if (it != groups_.end() && it->second) {
@@ -430,6 +463,8 @@ void AudioManager::StopSound(SoundHandle sound) {
 
 void AudioManager::SetSoundVolume(SoundHandle sound, float volume) {
     EnsureInitialized();
+    // Clamp volume to valid range [0.0, 1.0]
+    volume = std::min(1.0f, std::max(0.0f, volume));
     lock_guard<mutex> lock(resource_mutex_);
     auto it = sounds_.find(sound);
     if (it == sounds_.end() || !it->second) {
@@ -459,6 +494,9 @@ bool AudioManager::IsSoundPlaying(SoundHandle sound) const {
 
 void AudioManager::PlayRandomSoundFromFolder(const string& folderPath, GroupHandle group) {
     EnsureInitialized();
+    if (folderPath.empty()) {
+        throw AudioException("Folder path cannot be empty");
+    }
     lock_guard<mutex> lock(resource_mutex_);
     
     // Get the AudioGroup pointer for this handle

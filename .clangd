@@ -1,0 +1,37 @@
+# Clangd configuration for Game Audio Module
+# This file helps clangd understand include paths and compilation settings
+#
+# Note: clangd may run from different directories when processing files.
+# Paths here are relative to where .clangd is located (workspace root).
+# For files in src/, we need paths that work from src/ directory.
+
+CompileFlags:
+  Add:
+    # Include directories - paths relative to workspace root
+    # For files in src/ that include "miniaudio/miniaudio.h", we need ../include
+    # For files in tests/cpp/ that include "audio_manager.h", we need ../src
+    # For files in bindings/ that include headers, we need ../src
+    - -I../include
+    - -I../src
+    - -Iinclude
+    - -Isrc
+    - -I../tests/cpp
+    - -Itests/cpp
+    - -I../bindings
+    - -Ibindings
+    # C++ standard
+    - -std=c++20
+    # Windows-specific defines
+    - -D_WIN32
+    - -DNOMINMAX
+  # Try to use compile_commands.json if available (best option)
+  # Note: Visual Studio generator doesn't create compile_commands.json by default
+  # For now, we rely on the explicit include paths above
+  CompilationDatabase: build
+
+Diagnostics:
+  UnusedIncludes: None
+  MissingIncludes: None
+
+Index:
+  Background: Build

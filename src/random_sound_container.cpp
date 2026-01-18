@@ -1,5 +1,6 @@
 #include "random_sound_container.h"
 #include "audio_manager.h"
+#include "logging.h"
 #include <iostream>
 #include <random>
 #include <filesystem>
@@ -26,8 +27,13 @@ RandomSoundContainer::~RandomSoundContainer() {
     for (SoundHandle sound : sounds_) {
         try {
             audio.DestroySound(sound);
+        } catch (const std::exception& e) {
+            // Destructors should not throw. Log but ignore cleanup errors on shutdown.
+            AUDIO_LOG(LogLevel::Warn, "Error destroying sound in RandomSoundContainer '" 
+                << name_ << "': " << e.what());
         } catch (...) {
-            // Destructors should not throw. Ignore cleanup errors on shutdown.
+            // Destructors should not throw. Ignore unknown cleanup errors on shutdown.
+            AUDIO_LOG(LogLevel::Warn, "Unknown error destroying sound in RandomSoundContainer '" << name_ << "'");
         }
     }
 }
@@ -53,10 +59,11 @@ void RandomSoundContainer::LoadFromFolder(const std::string& folderPath) {
 
     fs::path dir(folderPath);
     if (!fs::exists(dir) || !fs::is_directory(dir)) {
+        AUDIO_LOG(LogLevel::Warn, "Folder does not exist or is not a directory: " << folderPath);
         return;
     }
 
-    int count = 0;
+    size_t count = 0;
     for (const auto& entry : fs::directory_iterator(dir)) {
         if (!entry.is_regular_file())
             continue;
@@ -83,6 +90,12 @@ void RandomSoundContainer::LoadFromFolder(const std::string& folderPath) {
             AddSound(path.string());
             count++;
         }
+    }
+    
+    if (count > 0) {
+        AUDIO_LOG(LogLevel::Info, "Loaded " << count << " sound(s) from folder: " << folderPath);
+    } else {
+        AUDIO_LOG(LogLevel::Warn, "No .wav files found in folder: " << folderPath);
     }
 }
 
