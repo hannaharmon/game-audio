@@ -26,11 +26,14 @@ function Write-Test {
 # ============================================================================
 Write-TestHeader "BUILD VERIFICATION"
 
-Write-Test "Basic tests executable exists" (Test-Path "..\..\build\Debug\test_audio_manager_basic.exe")
-Write-Test "Error handling tests executable exists" (Test-Path "..\..\build\Debug\test_audio_manager_error_handling.exe")
-Write-Test "Interactive test executable exists" (Test-Path "..\..\build\Debug\test_audio.exe")
-Write-Test "CMakeLists.txt exists" (Test-Path "..\..\CMakeLists.txt")
-Write-Test "Sound files directory exists" (Test-Path "..\..\sound_files")
+$repoRoot = Join-Path (Join-Path $PSScriptRoot "..") ".."
+$buildDebug = Join-Path $repoRoot "build\Debug"
+
+Write-Test "Basic tests executable exists" (Test-Path (Join-Path $buildDebug "test_audio_manager_basic.exe"))
+Write-Test "Error handling tests executable exists" (Test-Path (Join-Path $buildDebug "test_audio_manager_error_handling.exe"))
+Write-Test "Interactive test executable exists" (Test-Path (Join-Path $buildDebug "test_audio.exe"))
+Write-Test "CMakeLists.txt exists" (Test-Path (Join-Path $repoRoot "CMakeLists.txt"))
+Write-Test "Sound files directory exists" (Test-Path (Join-Path $repoRoot "sound_files"))
 
 # ============================================================================
 Write-TestHeader "C++ TESTS"

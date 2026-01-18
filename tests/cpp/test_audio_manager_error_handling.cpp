@@ -109,6 +109,10 @@ void test_audio_session_lifecycle() {
         manager.SetMasterVolume(0.5f),
         "AudioSession.Close shuts down when it owns initialization");
 
+    ASSERT_NO_THROW(
+        manager.Initialize(),
+        "Reinitialize after AudioSession.Close does not throw");
+
     END_TEST
 }
 

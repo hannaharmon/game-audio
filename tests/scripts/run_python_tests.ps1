@@ -29,7 +29,8 @@ Write-Host ""
 # Check if build exists
 $repoRoot = Join-Path (Join-Path $PSScriptRoot "..") ".."
 $buildPath = Join-Path $repoRoot $buildDir
-if (-not (Test-Path $buildPath)) {
+$fallbackBuildPath = Join-Path $repoRoot "build"
+if (-not (Test-Path $buildPath) -and -not (Test-Path $fallbackBuildPath)) {
     Write-Host "ERROR: Build directory not found at $buildPath" -ForegroundColor Red
     Write-Host "Please build the project first with:" -ForegroundColor Yellow
     if ($IsWindows -or $env:OS -match "Windows") {
@@ -40,8 +41,11 @@ if (-not (Test-Path $buildPath)) {
     exit 1
 }
 
-# Change to build directory so Python can find audio_py module
+# Add build outputs to PYTHONPATH so Python can find audio_py module
 $env:PYTHONPATH = $buildPath
+if (Test-Path $fallbackBuildPath -and $fallbackBuildPath -ne $buildPath) {
+    $env:PYTHONPATH = "$env:PYTHONPATH;$fallbackBuildPath"
+}
 Write-Host "Working directory: $buildPath"
 Write-Host ""
 
