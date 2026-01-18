@@ -9,21 +9,37 @@ permissions:
   contents: write
 
 jobs:
-  deploy-docs:
-    runs-on: ubuntu-latest
-    
+  test:
+    name: Run Tests (Windows)
+    runs-on: windows-latest
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-      
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+    - name: Configure (CMake)
+      run: cmake -S . -B build
+    - name: Build (Debug)
+      run: cmake --build build --config Debug
+    - name: Run tests
+      shell: pwsh
+      run: |
+        ./tests/scripts/run_all_tests.ps1
+
+  deploy-docs:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
     - name: Install Doxygen and Graphviz
       run: |
         sudo apt-get update
         sudo apt-get install -y doxygen graphviz
-        
     - name: Generate documentation
       run: doxygen Doxyfile
-      
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       with:
