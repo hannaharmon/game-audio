@@ -178,4 +178,4 @@ tests/
 
 ## License
 
-This project uses miniaudio (public domain / MIT-0).
+This project is released under the Unlicense. See `LICENSE` for full terms and third-party notices (including miniaudio).

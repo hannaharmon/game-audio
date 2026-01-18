@@ -8,9 +8,9 @@ version = "1.0.0"
 description = "Python bindings for Game Audio Module - a C++ audio system built on miniaudio"
 readme = "README.md"
 requires-python = ">=3.7"
-license = {text = "MIT"}
+license = {text = "Unlicense"}
 authors = [
-    {name = "Your Name", email = "your.email@example.com"}
+    {name = "Hanna Harmon", email = "hanna.marie.harmon@gmail.com"}
 ]
 keywords = ["audio", "game", "sound", "music", "miniaudio", "pybind11"]
 classifiers = [
@@ -18,7 +18,7 @@ classifiers = [
     "Intended Audience :: Developers",
     "Topic :: Multimedia :: Sound/Audio",
     "Topic :: Software Development :: Libraries :: Python Modules",
-    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: The Unlicense (Unlicense)",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
@@ -30,10 +30,10 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/game-audio-module"
-Documentation = "https://yourusername.github.io/game-audio-module"
-Repository = "https://github.com/yourusername/game-audio-module"
-Issues = "https://github.com/yourusername/game-audio-module/issues"
+Homepage = "https://github.com/hannaharmon/game-audio"
+Documentation = "https://hannaharmon.github.io/game-audio"
+Repository = "https://github.com/hannaharmon/game-audio"
+Issues = "https://github.com/hannaharmon/game-audio/issues"
 
 [tool.setuptools]
 packages = ["audio_py"]
