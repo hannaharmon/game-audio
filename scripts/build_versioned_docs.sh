@@ -128,13 +128,6 @@ else
     </div>
     
     <script>
-        // Get list of available versions
-        const versions = [];
-        const latestOption = { value: 'latest', text: 'Latest (main branch)' };
-        versions.push(latestOption);
-        
-        // This will be populated by the build script with actual versions
-        
         function switchVersion() {
             const select = document.getElementById('version-select');
             const version = select.value;
@@ -144,28 +137,42 @@ else
                 window.location.href = `./${version}/index.html`;
             }
         }
-        
-        // Populate dropdown with available versions
-        // Versions will be injected by build script
     </script>
 </body>
 </html>
 EOF
     
-    # Generate list of available versions
-    VERSIONS=$(find "${VERSIONED_DIR}" -maxdepth 1 -type d -name "v*" | sed 's|.*/||' | sort -V -r)
+    # Generate list of available versions and populate dropdown
+    VERSIONS=$(find "${VERSIONED_DIR}" -maxdepth 1 -type d -name "v*" 2>/dev/null | sed 's|.*/||' | sort -V -r)
     
-    # Update index.html with version list
+    # Build version options HTML directly (always include Latest)
+    VERSION_OPTIONS="<option value=\"latest\">Latest (main branch)</option>"
     if [ -n "$VERSIONS" ]; then
-        # Create JavaScript array of versions
-        VERSION_JS=""
         for v in $VERSIONS; do
-            VERSION_JS="${VERSION_JS}                versions.push({ value: '${v}', text: '${v}' });\n"
+            VERSION_OPTIONS="${VERSION_OPTIONS}
+                <option value=\"${v}\">${v}</option>"
         done
-        
-        # Insert versions into script
-        sed -i "/\/\/ This will be populated/i${VERSION_JS}" "${VERSIONED_DIR}/index.html"
     fi
+    
+    # Update index.html with version options using perl for reliable replacement
+    perl -i -pe '
+        BEGIN { 
+            $opts = qq{'"$VERSION_OPTIONS"'};
+            $opts =~ s/\n/\\n/g;
+        }
+        if (/<select id="version-select"/) {
+            $in_select = 1;
+            s/<option value="latest">Latest \(main branch\)<\/option>.*?<!-- Versions will be populated by script -->/$opts/gs;
+        }
+        if ($in_select && /<\/select>/) {
+            $in_select = 0;
+        }
+    ' "${VERSIONED_DIR}/index.html" || {
+        # Fallback: simple sed replacement
+        sed -i "s|<option value=\"latest\">Latest (main branch)</option>.*<!-- Versions will be populated by script -->|${VERSION_OPTIONS}|" "${VERSIONED_DIR}/index.html"
+    }
+    
+    echo "Index page created with dropdown at ${VERSIONED_DIR}/index.html"
     
     echo "Latest documentation saved to ${LATEST_DIR}"
     echo "Index page created at ${VERSIONED_DIR}/index.html"

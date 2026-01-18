@@ -76,31 +76,34 @@ jobs:
           git checkout ${CURRENT_BRANCH} --quiet
         done
     
-    - name: Update version switcher with available versions
+    - name: Update index.html dropdown with available versions
       run: |
         # Get list of available versions from directories
         VERSIONS=$(find docs/versioned -maxdepth 1 -type d -name "v*" | sed 's|.*/||' | sort -V -r)
         
         if [ -n "$VERSIONS" ]; then
-          # Build version options HTML
-          VERSION_HTML="<option value=\"latest\">Latest (main branch)</option>"
+          # Build version options HTML in a temp file to avoid YAML issues
+          TEMP_OPTS=$(mktemp)
+          echo '<option value="latest">Latest (main branch)</option>' > "$TEMP_OPTS"
           for v in $VERSIONS; do
-            VERSION_HTML="${VERSION_HTML}\n                <option value=\"${v}\">${v}</option>"
+            echo "                <option value=\"${v}\">${v}</option>" >> "$TEMP_OPTS"
           done
           
-          # Update index.html - replace the select options
-          # Use a more robust sed command
-          sed -i "/<select id=\"version-select\"/,/<\/select>/ {
-            /<option value=\"latest\">Latest (main branch)<\/option>/ {
-              a\\
-                ${VERSION_HTML}
-              d
+          # Update index.html using perl for reliable multi-line replacement
+          perl -i -pe '
+            BEGIN { 
+              undef $/;
+              open(F, "'"$TEMP_OPTS"'");
+              $opts = <F>;
+              close(F);
             }
-            /<!-- Versions will be populated by script -->/d
-          }" docs/versioned/index.html || {
-            # Fallback: replace the entire select block
-            sed -i "s|<option value=\"latest\">Latest (main branch)</option>|${VERSION_HTML}|" docs/versioned/index.html
+            s|<select id="version-select"[^>]*>.*?</select>|<select id="version-select" onchange="switchVersion()">'"$opts"'    </select>|s;
+          ' docs/versioned/index.html || {
+            # Fallback: simple sed replacement
+            VERSION_OPTIONS=$(cat "$TEMP_OPTS")
+            sed -i "s|<option value=\"latest\">Latest (main branch)</option>.*<!-- Versions will be populated by script -->|${VERSION_OPTIONS}|" docs/versioned/index.html
           }
+          rm -f "$TEMP_OPTS"
         fi
     
     - name: Upload Pages artifact
