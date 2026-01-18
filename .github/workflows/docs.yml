@@ -10,8 +10,12 @@ permissions:
 
 jobs:
   test:
-    name: Run Tests (Windows)
-    runs-on: windows-latest
+    name: Run Tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -20,13 +24,34 @@ jobs:
       with:
         python-version: "3.11"
     - name: Configure (CMake)
-      run: cmake -S . -B build
+      run: |
+        if ($IsWindows) {
+          cmake -S . -B build
+        } else {
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+        }
+      shell: pwsh
     - name: Build (Debug)
-      run: cmake --build build --config Debug
-    - name: Run tests
+      run: |
+        if ($IsWindows) {
+          cmake --build build --config Debug
+        } else {
+          cmake --build build
+        }
+      shell: pwsh
+    - name: Run tests (Windows full suite)
+      if: matrix.os == 'windows-latest'
       shell: pwsh
       run: |
         ./tests/scripts/run_all_tests.ps1
+    - name: Run tests (Linux/macOS)
+      if: matrix.os != 'windows-latest'
+      shell: pwsh
+      run: |
+        ./tests/scripts/run_cpp_tests.ps1
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        ./tests/scripts/run_python_tests.ps1
+        exit $LASTEXITCODE
 
   deploy-docs:
     runs-on: ubuntu-latest

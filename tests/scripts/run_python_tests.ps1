@@ -43,7 +43,7 @@ if (-not (Test-Path $buildPath) -and -not (Test-Path $fallbackBuildPath)) {
 
 # Add build outputs to PYTHONPATH so Python can find audio_py module
 $env:PYTHONPATH = $buildPath
-if (Test-Path $fallbackBuildPath -and $fallbackBuildPath -ne $buildPath) {
+if ((Test-Path $fallbackBuildPath) -and ($fallbackBuildPath -ne $buildPath)) {
     $env:PYTHONPATH = "$env:PYTHONPATH;$fallbackBuildPath"
 }
 Write-Host "Working directory: $buildPath"
