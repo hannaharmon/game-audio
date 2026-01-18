@@ -6,6 +6,7 @@
  */
 
 #include "../src/audio_manager.h"
+#include "../src/audio_session.h"
 #include <iostream>
 #include <cassert>
 #include <string>
@@ -87,6 +88,27 @@ void test_not_initialized() {
         manager.Initialize(),
         "Reinitialize after not initialized does not throw");
     
+    END_TEST
+}
+
+void test_audio_session_lifecycle() {
+    TEST("AudioSession Lifecycle")
+
+    AudioManager& manager = AudioManager::GetInstance();
+    manager.Shutdown();  // Ensure clean state
+
+    AudioSession session;
+
+    ASSERT_NO_THROW(
+        manager.SetMasterVolume(0.5f),
+        "AudioSession initializes audio system");
+
+    session.Close();
+
+    ASSERT_THROWS(NotInitializedException,
+        manager.SetMasterVolume(0.5f),
+        "AudioSession.Close shuts down when it owns initialization");
+
     END_TEST
 }
 
@@ -373,6 +395,7 @@ int main(int argc, char* argv[]) {
     
     // Run all error handling tests
     test_not_initialized();
+    test_audio_session_lifecycle();
     test_invalid_track_handle();
     test_invalid_sound_handle();
     test_invalid_group_handle();

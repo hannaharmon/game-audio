@@ -37,6 +37,33 @@ def test_not_initialized():
         print(f"FAIL - Wrong exception type: {type(e).__name__}: {e}")
         return False
 
+def test_audio_session_lifecycle():
+    """Test 0b: AudioSession initializes and shuts down properly"""
+    print("Test 0b: AudioSession lifecycle... ", end="")
+    audio = audio_py.AudioManager.get_instance()
+    audio.shutdown()
+
+    session = audio_py.AudioSession()
+    try:
+        audio.set_master_volume(0.5)
+    except Exception as e:
+        print(f"FAIL - Unexpected exception after session init: {type(e).__name__}: {e}")
+        session.close()
+        return False
+
+    session.close()
+
+    try:
+        audio.set_master_volume(0.5)
+        print("FAIL - No exception after session close")
+        return False
+    except audio_py.NotInitializedException:
+        print("PASS")
+        return True
+    except Exception as e:
+        print(f"FAIL - Wrong exception type: {type(e).__name__}: {e}")
+        return False
+
 def test_invalid_track_handle():
     """Test 1: Using invalid track handle should raise InvalidHandleException"""
     print("Test 1: Invalid track handle... ", end="")
@@ -298,6 +325,7 @@ def main():
     
     tests = [
         test_not_initialized,
+        test_audio_session_lifecycle,
         test_invalid_track_handle,
         test_invalid_sound_handle,
         test_invalid_group_handle,

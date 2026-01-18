@@ -37,6 +37,7 @@ except ImportError:
 __all__ = [
     # Core classes
     'AudioManager',
+    'AudioSession',
     'RandomSoundContainer',
     'RandomSoundContainerConfig',
     

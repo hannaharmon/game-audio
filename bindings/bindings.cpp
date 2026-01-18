@@ -9,6 +9,7 @@ namespace py = pybind11;
 // Forward declarations of binding functions
 void bind_audio_manager(py::module_&);
 void bind_random_sound_container(py::module_&);
+void bind_audio_session(py::module_&);
 
 PYBIND11_MODULE(audio_py, m) {
     m.doc() = "Python bindings for the Game Audio Module";
@@ -22,4 +23,5 @@ PYBIND11_MODULE(audio_py, m) {
     // Bind all submodules
     bind_audio_manager(m);
     bind_random_sound_container(m);
+    bind_audio_session(m);
 }

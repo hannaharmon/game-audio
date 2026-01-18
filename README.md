@@ -28,19 +28,32 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(audio_module)
 ```
 
-**2. Use in Python:**
+**2. Use in Python (recommended):**
 ```python
 import audio_py
 
-# Initialize
+# Initialize (keep the session alive for the app lifetime)
+session = audio_py.AudioSession()
 audio = audio_py.AudioManager.get_instance()
-audio.initialize()
 
 # Create groups and play
 music_group = audio.create_group("music")
 sfx_group = audio.create_group("sfx")
 
-# Cleanup
+# Cleanup (optional; session destructor will also handle this)
+session.close()
+```
+
+**Direct Usage (advanced/engine-controlled):**
+```python
+import audio_py
+
+audio = audio_py.AudioManager.get_instance()
+audio.initialize()
+
+music_group = audio.create_group("music")
+sfx_group = audio.create_group("sfx")
+
 audio.shutdown()
 ```
 
@@ -60,21 +73,32 @@ FetchContent_MakeAvailable(audio_module)
 target_link_libraries(your_game PRIVATE audio_module)
 ```
 
-**2. Use in C++:**
+**2. Use in C++ (recommended):**
 ```cpp
 #include "audio_manager.h"
-#include "music_player.h"
-#include "sfx_player.h"
+#include "audio_session.h"
 
-// Initialize
+// Initialize (keep the session alive for the app lifetime)
+audio::AudioSession session;
 auto& audio = audio::AudioManager::GetInstance();
-audio.Initialize();
 
 // Create groups
 auto music = audio.CreateGroup("music");
 auto sfx = audio.CreateGroup("sfx");
 
-// Cleanup
+// Cleanup handled automatically by AudioSession destructor (or call session.Close())
+```
+
+**Direct Usage (advanced/engine-controlled):**
+```cpp
+#include "audio_manager.h"
+
+auto& audio = audio::AudioManager::GetInstance();
+audio.Initialize();
+
+auto music = audio.CreateGroup("music");
+auto sfx = audio.CreateGroup("sfx");
+
 audio.Shutdown();
 ```
 
@@ -112,6 +136,7 @@ cmake --build . --config Release
 
 **Core Components:**
 - `AudioManager` - Main API (singleton)
+- `AudioSession` - RAII helper for scoped initialization/shutdown
 - `AudioTrack` - Multi-layer synchronized audio
 - `AudioGroup` - Volume group management
 - `Sound` - Individual sound instances

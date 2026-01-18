@@ -39,14 +39,14 @@ python -m build
 pip install dist/game_audio_py-*.whl
 ```
 
-### 3. Use in Python
+### 3. Use in Python (recommended)
 
 ```python
 import audio_py
 
-# Initialize
+# Initialize (keep the session alive for the app lifetime)
+session = audio_py.AudioSession()
 audio = audio_py.AudioManager.get_instance()
-audio.initialize()
 
 # Create groups
 music = audio.create_group("music")
@@ -54,6 +54,23 @@ sfx = audio.create_group("sfx")
 
 # Use the audio system
 audio.set_master_volume(0.8)
+
+# Cleanup (optional; session destructor will also handle this)
+session.close()
+```
+
+### Direct Usage (advanced/engine-controlled)
+```python
+import audio_py
+
+audio = audio_py.AudioManager.get_instance()
+audio.initialize()
+
+music = audio.create_group("music")
+sfx = audio.create_group("sfx")
+
+audio.set_master_volume(0.8)
+audio.shutdown()
 ```
 
 ## Using with Basilisk Engine
@@ -99,6 +116,16 @@ audio = audio_py.AudioManager.get_instance()
 audio.initialize()
 audio.shutdown()
 audio.set_master_volume(0.8)
+```
+
+### AudioSession (Scoped Lifecycle)
+RAII-style helper for initialization and shutdown (recommended for scripts/tests).
+
+```python
+session = audio_py.AudioSession()
+audio = audio_py.AudioManager.get_instance()
+audio.set_master_volume(0.8)
+session.close()
 ```
 
 ### RandomSoundContainer
