@@ -102,7 +102,7 @@ add_subdirectory(path/to/audio_module)
 # The audio_py module will be built automatically alongside your project
 ```
 
-### Method 2: Via FetchContent
+### Method 2: Via FetchContent (Recommended)
 
 ```cmake
 include(FetchContent)
@@ -110,10 +110,12 @@ include(FetchContent)
 FetchContent_Declare(
     audio_module
     GIT_REPOSITORY https://github.com/hannaharmon/game-audio
-    GIT_TAG main
+    GIT_TAG v1.0.0  # Pin to specific version for stability
 )
 FetchContent_MakeAvailable(audio_module)
 ```
+
+**Note**: Always use version tags (e.g., `v1.0.0`) rather than `main` branch. This ensures your project won't break when new versions are released. See [RELEASE_MANAGEMENT.md](RELEASE_MANAGEMENT.md) for version information.
 
 ### Method 3: Install and Import
 

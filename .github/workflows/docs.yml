@@ -1,10 +1,14 @@
 name: Deploy Documentation
 
 on:
-  workflow_run:
-    workflows: ["Run Tests"]
-    types: [completed]
+  push:
+    branches: [ main, master ]
   workflow_dispatch:
+
+# Documentation updates on:
+# - Every push to main/master branch (latest docs always reflect main)
+# - Manual dispatch (workflow_dispatch)
+# Docs do NOT update on PRs or feature branch pushes
 
 permissions:
   contents: read
@@ -14,7 +18,8 @@ permissions:
 jobs:
   deploy-docs:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    # Only deploy docs on main branch pushes (not on PRs or feature branches)
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.event_name == 'workflow_dispatch'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -25,12 +30,79 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y doxygen graphviz
-    - name: Generate documentation
+    - name: Generate latest documentation
       run: doxygen Doxyfile
+    
+    - name: Get all version tags
+      id: get_versions
+      run: |
+        # Get all version tags, sorted by version (newest first)
+        VERSIONS=$(git tag -l "v*.*.*" | sort -V -r)
+        echo "versions<<EOF" >> $GITHUB_OUTPUT
+        echo "$VERSIONS" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+    
+    - name: Build versioned documentation structure
+      run: |
+        mkdir -p docs/versioned
+        chmod +x scripts/build_versioned_docs.sh
+        
+        # Generate latest docs structure
+        ./scripts/build_versioned_docs.sh
+        
+        # Generate docs for each tagged version
+        VERSIONS="${{ steps.get_versions.outputs.versions }}"
+        CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+        
+        for tag in $VERSIONS; do
+          echo "Generating docs for ${tag}..."
+          
+          # Checkout the tag (need full history)
+          git fetch --tags --force
+          git checkout ${tag} --quiet || { echo "Skipping ${tag}"; continue; }
+          
+          # Generate docs for this version
+          doxygen Doxyfile || { echo "Failed to generate docs for ${tag}"; git checkout ${CURRENT_BRANCH} --quiet; continue; }
+          
+          # Copy to versioned directory
+          mkdir -p "docs/versioned/${tag}"
+          cp -r docs/html/* "docs/versioned/${tag}/" || true
+          
+          # Return to original branch
+          git checkout ${CURRENT_BRANCH} --quiet
+        done
+    
+    - name: Update version switcher with available versions
+      run: |
+        # Get list of available versions from directories
+        VERSIONS=$(find docs/versioned -maxdepth 1 -type d -name "v*" | sed 's|.*/||' | sort -V -r)
+        
+        if [ -n "$VERSIONS" ]; then
+          # Build version options HTML
+          VERSION_HTML="<option value=\"latest\">Latest (main branch)</option>"
+          for v in $VERSIONS; do
+            VERSION_HTML="${VERSION_HTML}\n                <option value=\"${v}\">${v}</option>"
+          done
+          
+          # Update index.html - replace the select options
+          # Use a more robust sed command
+          sed -i "/<select id=\"version-select\"/,/<\/select>/ {
+            /<option value=\"latest\">Latest (main branch)<\/option>/ {
+              a\\
+                ${VERSION_HTML}
+              d
+            }
+            /<!-- Versions will be populated by script -->/d
+          }" docs/versioned/index.html || {
+            # Fallback: replace the entire select block
+            sed -i "s|<option value=\"latest\">Latest (main branch)</option>|${VERSION_HTML}|" docs/versioned/index.html
+          }
+        fi
+    
     - name: Upload Pages artifact
       uses: actions/upload-pages-artifact@v3
       with:
-        path: ./docs/html
+        path: ./docs/versioned
     - name: Deploy to GitHub Pages
       id: deployment
       uses: actions/deploy-pages@v4

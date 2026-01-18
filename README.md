@@ -23,10 +23,12 @@ include(FetchContent)
 FetchContent_Declare(
     audio_module
     GIT_REPOSITORY https://github.com/hannaharmon/game-audio
-    GIT_TAG main
+    GIT_TAG v1.0.0  # Use a specific version tag for stability
 )
 FetchContent_MakeAvailable(audio_module)
 ```
+
+**Important**: Always use version tags (e.g., `v1.0.0`) rather than `main` branch. Using `main` means your project may break when breaking changes are merged. Version tags provide stability, predictability, and control over when you upgrade. See [RELEASE_MANAGEMENT.md](RELEASE_MANAGEMENT.md) for details.
 
 **2. Use in Python (recommended):**
 ```python
@@ -67,11 +69,13 @@ include(FetchContent)
 FetchContent_Declare(
     audio_module
     GIT_REPOSITORY https://github.com/hannaharmon/game-audio
-    GIT_TAG main
+    GIT_TAG v1.0.0  # Pin to specific version for stability
 )
 FetchContent_MakeAvailable(audio_module)
 target_link_libraries(your_game PRIVATE audio_module)
 ```
+
+**Important**: Always use version tags (e.g., `v1.0.0`) rather than `main` branch. Using `main` means your project may break when breaking changes are merged. Version tags provide stability, predictability, and control over when you upgrade. See [RELEASE_MANAGEMENT.md](RELEASE_MANAGEMENT.md) for details.
 
 **2. Use in C++ (recommended):**
 ```cpp

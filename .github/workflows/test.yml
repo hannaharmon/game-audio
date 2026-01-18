@@ -4,7 +4,14 @@ on:
   push:
     branches: [ main, master ]
   pull_request:
+    branches: [ main, master ]
   workflow_dispatch:
+
+# Tests run on:
+# - Pull requests targeting main/master
+# - Pushes to main/master branch
+# - Manual dispatch (workflow_dispatch)
+# Tests do NOT run on pushes to feature branches (to save CI resources)
 
 jobs:
   test:
