@@ -21,6 +21,10 @@ if [ -n "$VERSION" ]; then
     rm -rf "${VERSION_DIR}"
     cp -r "${DOCS_DIR}" "${VERSION_DIR}"
     
+    # Inject version switcher into all docs pages
+    chmod +x scripts/inject_version_switcher.sh
+    ./scripts/inject_version_switcher.sh "${VERSION_DIR}" "${VERSIONED_DIR}"
+    
     echo "Documentation for v${VERSION} saved to ${VERSION_DIR}"
 else
     # For latest (from main branch)
@@ -29,6 +33,10 @@ else
     # Copy to latest directory
     rm -rf "${LATEST_DIR}"
     cp -r "${DOCS_DIR}" "${LATEST_DIR}"
+    
+    # Inject version switcher into all docs pages
+    chmod +x scripts/inject_version_switcher.sh
+    ./scripts/inject_version_switcher.sh "${LATEST_DIR}" "${VERSIONED_DIR}"
     
     # Create index page with version switcher
     cat > "${VERSIONED_DIR}/index.html" << 'EOF'
@@ -114,12 +122,8 @@ else
         
         <div class="info">
             <strong>Note:</strong>
+            Select a version from the dropdown above to view its documentation. The page will not auto-redirect.
             Older versions are provided for reference only. We recommend upgrading to the latest version for new projects.
-            Breaking changes are documented in release notes.
-        </div>
-        
-        <div class="redirect-notice">
-            Redirecting to selected version...
         </div>
     </div>
     
@@ -130,8 +134,6 @@ else
         versions.push(latestOption);
         
         // This will be populated by the build script with actual versions
-        // For now, we'll detect versions from directory structure
-        // In GitHub Pages, we'll need to generate this list
         
         function switchVersion() {
             const select = document.getElementById('version-select');
@@ -143,10 +145,8 @@ else
             }
         }
         
-        // Auto-redirect to latest after 2 seconds
-        setTimeout(() => {
-            window.location.href = './latest/index.html';
-        }, 2000);
+        // Populate dropdown with available versions
+        // Versions will be injected by build script
     </script>
 </body>
 </html>

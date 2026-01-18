@@ -68,6 +68,10 @@ jobs:
           mkdir -p "docs/versioned/${tag}"
           cp -r docs/html/* "docs/versioned/${tag}/" || true
           
+          # Inject version switcher into all docs pages
+          chmod +x scripts/inject_version_switcher.sh
+          ./scripts/inject_version_switcher.sh "docs/versioned/${tag}" "docs/versioned" || true
+          
           # Return to original branch
           git checkout ${CURRENT_BRANCH} --quiet
         done
