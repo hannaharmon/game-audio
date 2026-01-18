@@ -34,6 +34,7 @@ set(AUDIO_SOURCES
 
 # Create audio library (used by both C++ tests and Python bindings)
 add_library(audio_lib STATIC ${AUDIO_SOURCES})
+set_target_properties(audio_lib PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_include_directories(audio_lib PUBLIC
     ${CMAKE_SOURCE_DIR}/src
     ${CMAKE_SOURCE_DIR}/include

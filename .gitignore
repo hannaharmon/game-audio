@@ -30,6 +30,7 @@ dist/
 .vscode/
 .vs/
 .idea/
+.cursor/
 *.vcxproj.user
 *.vcxproj.filters
 *.sln.docstates
