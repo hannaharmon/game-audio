@@ -16,8 +16,11 @@ if ($pythonCmd) {
 
 $pythonArgs = @()
 if ($pythonExe) {
+    $pythonRoot = Split-Path $pythonExe -Parent
+    $pythonArgs += "-DPYTHON_EXECUTABLE=$pythonExe"
     $pythonArgs += "-DPython_EXECUTABLE=$pythonExe"
     $pythonArgs += "-DPython3_EXECUTABLE=$pythonExe"
+    $pythonArgs += "-DPython3_ROOT_DIR=$pythonRoot"
 }
 
 if (-not $Configurations -or $Configurations.Count -eq 0) {

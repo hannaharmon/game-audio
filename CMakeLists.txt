@@ -86,6 +86,14 @@ endif()
 option(BUILD_PYTHON_BINDINGS "Build Python bindings" ON)
 
 if(BUILD_PYTHON_BINDINGS)
+    # Allow callers to specify PYTHON_EXECUTABLE/Python_EXECUTABLE and map to Python3
+    if(DEFINED PYTHON_EXECUTABLE AND NOT Python3_EXECUTABLE)
+        set(Python3_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE FILEPATH "Python3 executable" FORCE)
+    endif()
+    if(DEFINED Python_EXECUTABLE AND NOT Python3_EXECUTABLE)
+        set(Python3_EXECUTABLE ${Python_EXECUTABLE} CACHE FILEPATH "Python3 executable" FORCE)
+    endif()
+
     # Find Python before pybind11 to ensure correct Python is used
     find_package(Python3 COMPONENTS Interpreter Development QUIET)
     
@@ -188,7 +196,7 @@ except Exception as e:
         message(STATUS "Python bindings enabled")
     else()
         message(WARNING "Python3 not found - Python bindings will not be built")
-        message(WARNING "  Set PYTHON_EXECUTABLE to specify Python location")
+        message(WARNING "  Set PYTHON_EXECUTABLE or Python3_EXECUTABLE to specify Python location")
     endif()
 endif()
 
