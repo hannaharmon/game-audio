@@ -258,7 +258,7 @@ void ProcessInput(const std::string& input,
                     // Generate random number between 1 and 8
                     int random_num = (rand() % 8) + 1;
                     std::string filename = "touch_" + std::to_string(random_num) + ".wav";
-                    audio.StartSound(audio.LoadSound(sound_dir + filename));
+                    audio.PlaySound(audio.LoadSound(sound_dir + filename));
                 }
                 break;
 

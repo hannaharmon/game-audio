@@ -99,7 +99,7 @@ def test_track_creation():
     audio.initialize()
     
     track = audio.create_track()
-    assert track != 0, "Failed to create track"
+    assert track.value != 0, "Failed to create track"
     
     audio.destroy_track(track)
     audio.shutdown()
@@ -116,9 +116,9 @@ def test_sound_loading():
     
     if os.path.exists(sound_path):
         sound = audio.load_sound(sound_path, sfx_group)
-        assert sound != 0, "Failed to load sound"
+        assert sound.value != 0, "Failed to load sound"
         
-        audio.start_sound(sound)
+        audio.play_sound(sound)
         is_playing = audio.is_sound_playing(sound)
         # Note: Sound might finish quickly, so we don't assert it's playing
         
@@ -228,11 +228,11 @@ def test_handle_types():
     group = audio.create_group("test")
     track = audio.create_track()
     
-    # Handles are just integers (uint32_t)
-    assert isinstance(group, int), "Group handle should be an integer"
-    assert isinstance(track, int), "Track handle should be an integer"
-    assert group > 0, "Group handle should be positive"
-    assert track > 0, "Track handle should be positive"
+    # Handles are opaque wrapper objects
+    assert isinstance(group, audio_py.GroupHandle), "Group handle should be a GroupHandle"
+    assert isinstance(track, audio_py.TrackHandle), "Track handle should be a TrackHandle"
+    assert group.value > 0, "Group handle should be positive"
+    assert track.value > 0, "Track handle should be positive"
     
     audio.destroy_track(track)
     audio.destroy_group(group)

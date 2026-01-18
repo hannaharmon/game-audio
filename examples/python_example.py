@@ -46,7 +46,7 @@ print("Fading in melody...")
 
 # Load and play a sound effect
 sfx = audio.load_sound("sound_files/explosion.wav", sfx_group)
-audio.start_sound(sfx)
+audio.play_sound(sfx)
 print("Played sound effect")
 
 # Random sound container example

@@ -15,7 +15,7 @@ struct RandomSoundContainerConfig {
     bool avoidRepeat = true;           ///< Avoid playing the same sound twice in a row
     float pitchMin = 1.0f;             ///< Minimum pitch shift (1.0 = normal pitch)
     float pitchMax = 1.0f;             ///< Maximum pitch shift (1.0 = normal pitch)
-    GroupHandle group = 0;             ///< Audio group to assign sounds to
+    GroupHandle group = GroupHandle::Invalid(); ///< Audio group to assign sounds to
     float maxDuration = 0.0f;          ///< Maximum duration in seconds (0 = no limit)
 };
 

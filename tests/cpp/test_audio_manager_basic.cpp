@@ -71,7 +71,7 @@ void test_audio_session_usage() {
     {
         AudioSession session;
         GroupHandle group = audio.CreateGroup("session_group");
-        ASSERT(group != 0, "AudioSession should allow group creation")
+        ASSERT(group.IsValid(), "AudioSession should allow group creation")
         audio.SetGroupVolume(group, 0.5f);
         audio.DestroyGroup(group);
     }
@@ -124,10 +124,10 @@ void test_group_operations() {
     
     // Create groups
     GroupHandle music = audio.CreateGroup("music");
-    ASSERT(music != 0, "Music group handle should be non-zero")
+    ASSERT(music.IsValid(), "Music group handle should be non-zero")
     
     GroupHandle sfx = audio.CreateGroup("sfx");
-    ASSERT(sfx != 0, "SFX group handle should be non-zero")
+    ASSERT(sfx.IsValid(), "SFX group handle should be non-zero")
     ASSERT(sfx != music, "Group handles should be unique")
     
     // Test volume control
@@ -159,11 +159,11 @@ void test_sound_loading() {
     // Test basic loading
     std::string sound_path = sound_dir + "/digital_base.wav";
     SoundHandle sound = audio.LoadSound(sound_path);
-    ASSERT(sound != 0, "Sound should load successfully")
+    ASSERT(sound.IsValid(), "Sound should load successfully")
     
     // Test loading with group
     SoundHandle sound2 = audio.LoadSound(sound_path, group);
-    ASSERT(sound2 != 0, "Sound with group should load successfully")
+    ASSERT(sound2.IsValid(), "Sound with group should load successfully")
     ASSERT(sound2 != sound, "Different load calls should return different handles")
     
     // Test unloading
@@ -183,12 +183,12 @@ void test_sound_playback() {
     
     std::string sound_path = sound_dir + "/digital_base.wav";
     SoundHandle sound = audio.LoadSound(sound_path);
-    ASSERT(sound != 0, "Sound should load")
+    ASSERT(sound.IsValid(), "Sound should load")
     
     // Test playback
     ASSERT(!audio.IsSoundPlaying(sound), "Sound should not be playing initially")
     
-    audio.StartSound(sound);
+    audio.PlaySound(sound);
     wait_ms(100);
     ASSERT(audio.IsSoundPlaying(sound), "Sound should be playing after start")
     
@@ -202,7 +202,7 @@ void test_sound_playback() {
     
     // Test pitch control
     audio.SetSoundPitch(sound, 1.5f);
-    audio.StartSound(sound);
+    audio.PlaySound(sound);
     wait_ms(100);
     ASSERT(true, "Pitch modification should work")
     audio.StopSound(sound);
@@ -219,7 +219,7 @@ void test_track_operations() {
     
     // Create track
     TrackHandle track = audio.CreateTrack();
-    ASSERT(track != 0, "Track should be created")
+    ASSERT(track.IsValid(), "Track should be created")
     
     // Add layers
     audio.AddLayer(track, "layer1", sound_dir + "/digital_base.wav");
@@ -264,11 +264,11 @@ void test_multiple_instances() {
     SoundHandle sound = audio.LoadSound(sound_path);
     
     // Play same sound multiple times
-    audio.StartSound(sound);
+    audio.PlaySound(sound);
     wait_ms(50);
-    audio.StartSound(sound);
+    audio.PlaySound(sound);
     wait_ms(50);
-    audio.StartSound(sound);
+    audio.PlaySound(sound);
     
     ASSERT(true, "Multiple instances should play concurrently")
     
@@ -319,32 +319,40 @@ void test_error_handling() {
     // This is current behavior, not necessarily wrong
     SoundHandle invalidSound = audio.LoadSound("nonexistent_file.wav");
     ASSERT(true, "Loading invalid file should not crash")
-    if (invalidSound != 0) {
+    if (invalidSound.IsValid()) {
         audio.DestroySound(invalidSound);
     }
     
     // Test operations on invalid handles
-    audio.StartSound(9999);
+    audio.PlaySound(SoundHandle{9999});
     ASSERT(true, "Starting invalid sound should not crash")
     
-    audio.SetSoundVolume(9999, 0.5f);
+    audio.SetSoundVolume(SoundHandle{9999}, 0.5f);
     ASSERT(true, "Setting volume on invalid sound should not crash")
     
-    audio.DestroySound(9999);
+    audio.DestroySound(SoundHandle{9999});
     ASSERT(true, "Unloading invalid sound should not crash")
     
     // Test operations on invalid track
-    audio.PlayTrack(9999);
-    ASSERT(true, "Playing invalid track should not crash")
+    try {
+        audio.PlayTrack(TrackHandle{9999});
+        ASSERT(false, "Playing invalid track should throw")
+    } catch (const InvalidHandleException&) {
+        ASSERT(true, "Playing invalid track should throw")
+    }
     
-    audio.DestroyTrack(9999);
+    audio.DestroyTrack(TrackHandle{9999});
     ASSERT(true, "Destroying invalid track should not crash")
     
     // Test operations on invalid group
-    audio.SetGroupVolume(9999, 0.5f);
-    ASSERT(true, "Setting volume on invalid group should not crash")
+    try {
+        audio.SetGroupVolume(GroupHandle{9999}, 0.5f);
+        ASSERT(false, "Setting volume on invalid group should throw")
+    } catch (const InvalidHandleException&) {
+        ASSERT(true, "Setting volume on invalid group should throw")
+    }
     
-    audio.DestroyGroup(9999);
+    audio.DestroyGroup(GroupHandle{9999});
     ASSERT(true, "Destroying invalid group should not crash")
     
     END_TEST
@@ -392,8 +400,8 @@ void test_concurrent_operations() {
     SoundHandle sound2 = audio.LoadSound(sound_dir + "/digital_battle.wav", sfx);
     
     // Start multiple operations concurrently
-    audio.StartSound(sound1);
-    audio.StartSound(sound2);
+    audio.PlaySound(sound1);
+    audio.PlaySound(sound2);
     audio.SetGroupVolume(music, 0.8f);
     audio.SetGroupVolume(sfx, 0.6f);
     audio.FadeGroup(music, 0.3f, 500ms);
@@ -436,7 +444,7 @@ void test_edge_cases() {
     
     // Play and stop immediately
     SoundHandle s2 = audio.LoadSound(sound_dir + "/digital_base.wav");
-    audio.StartSound(s2);
+    audio.PlaySound(s2);
     audio.StopSound(s2);
     audio.DestroySound(s2);
     ASSERT(true, "Immediate play/stop should work")

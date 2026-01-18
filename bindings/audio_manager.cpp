@@ -1,6 +1,8 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/chrono.h>
+#include <pybind11/operators.h>
+#include <functional>
 
 #include "../src/audio_manager.h"
 
@@ -8,6 +10,36 @@ namespace py = pybind11;
 using namespace audio;
 
 void bind_audio_manager(py::module_& m) {
+    py::class_<TrackHandle>(m, "TrackHandle")
+        .def(py::init<uint32_t>(), py::arg("value") = 0)
+        .def_property_readonly("value", &TrackHandle::Value)
+        .def("__int__", [](const TrackHandle& h) { return h.Value(); })
+        .def("__bool__", [](const TrackHandle& h) { return h.IsValid(); })
+        .def("__repr__", [](const TrackHandle& h) { return "TrackHandle(" + std::to_string(h.Value()) + ")"; })
+        .def("__hash__", [](const TrackHandle& h) { return std::hash<uint32_t>{}(h.Value()); })
+        .def(py::self == py::self)
+        .def(py::self != py::self);
+
+    py::class_<GroupHandle>(m, "GroupHandle")
+        .def(py::init<uint32_t>(), py::arg("value") = 0)
+        .def_property_readonly("value", &GroupHandle::Value)
+        .def("__int__", [](const GroupHandle& h) { return h.Value(); })
+        .def("__bool__", [](const GroupHandle& h) { return h.IsValid(); })
+        .def("__repr__", [](const GroupHandle& h) { return "GroupHandle(" + std::to_string(h.Value()) + ")"; })
+        .def("__hash__", [](const GroupHandle& h) { return std::hash<uint32_t>{}(h.Value()); })
+        .def(py::self == py::self)
+        .def(py::self != py::self);
+
+    py::class_<SoundHandle>(m, "SoundHandle")
+        .def(py::init<uint32_t>(), py::arg("value") = 0)
+        .def_property_readonly("value", &SoundHandle::Value)
+        .def("__int__", [](const SoundHandle& h) { return h.Value(); })
+        .def("__bool__", [](const SoundHandle& h) { return h.IsValid(); })
+        .def("__repr__", [](const SoundHandle& h) { return "SoundHandle(" + std::to_string(h.Value()) + ")"; })
+        .def("__hash__", [](const SoundHandle& h) { return std::hash<uint32_t>{}(h.Value()); })
+        .def(py::self == py::self)
+        .def(py::self != py::self);
+
     py::enum_<LogLevel>(m, "LogLevel")
         .value("Off", LogLevel::Off)
         .value("Error", LogLevel::Error)
@@ -73,7 +105,7 @@ void bind_audio_manager(py::module_& m) {
              "Create a new audio track.\n\n"
              "Tracks can contain multiple synchronized audio layers.\n\n"
              "Returns:\n"
-             "    int: Handle to the newly created track\n\n"
+             "    TrackHandle: Handle to the newly created track\n\n"
              "Raises:\n"
              "    AudioException: If track creation fails")
         
@@ -81,14 +113,14 @@ void bind_audio_manager(py::module_& m) {
              py::arg("track"),
              "Destroy an audio track.\n\n"
              "Args:\n"
-             "    track (int): Handle to the track to destroy")
+             "    track (TrackHandle): Handle to the track to destroy")
         
         .def("play_track", &AudioManager::PlayTrack,
              py::arg("track"),
              "Start playing an audio track.\n\n"
              "All layers in the track will begin playing.\n\n"
              "Args:\n"
-             "    track (int): Handle to the track to play\n\n"
+             "    track (TrackHandle): Handle to the track to play\n\n"
              "Raises:\n"
              "    InvalidHandleException: If track handle is invalid")
         
@@ -97,7 +129,7 @@ void bind_audio_manager(py::module_& m) {
              "Stop playing an audio track.\n\n"
              "All layers in the track will stop playing.\n\n"
              "Args:\n"
-             "    track (int): Handle to the track to stop\n\n"
+             "    track (TrackHandle): Handle to the track to stop\n\n"
              "Raises:\n"
              "    InvalidHandleException: If track handle is invalid")
         
@@ -110,7 +142,7 @@ void bind_audio_manager(py::module_& m) {
              "Add an audio layer to a track.\n\n"
              "Layers are individual sounds that play simultaneously within a track.\n\n"
              "Args:\n"
-             "    track (int): Handle to the track\n"
+             "    track (TrackHandle): Handle to the track\n"
              "    layer_name (str): Name identifier for the layer\n"
              "    filepath (str): Path to the audio file\n"
              "    group (str, optional): Name of the group this layer belongs to\n\n"
@@ -123,7 +155,7 @@ void bind_audio_manager(py::module_& m) {
              py::arg("layer_name"),
              "Remove a layer from a track.\n\n"
              "Args:\n"
-             "    track (int): Handle to the track\n"
+             "    track (TrackHandle): Handle to the track\n"
              "    layer_name (str): Name of the layer to remove")
         
         .def("set_layer_volume", &AudioManager::SetLayerVolume,
@@ -132,7 +164,7 @@ void bind_audio_manager(py::module_& m) {
              py::arg("volume"),
              "Set the volume of a specific layer.\n\n"
              "Args:\n"
-             "    track (int): Handle to the track\n"
+             "    track (TrackHandle): Handle to the track\n"
              "    layer_name (str): Name of the layer\n"
              "    volume (float): Volume level (0.0 to 1.0)")
         
@@ -143,7 +175,7 @@ void bind_audio_manager(py::module_& m) {
              py::arg("duration"),
              "Fade a layer's volume to a target value over time.\n\n"
              "Args:\n"
-             "    track (int): Handle to the track\n"
+             "    track (TrackHandle): Handle to the track\n"
              "    layer_name (str): Name of the layer\n"
              "    target_volume (float): Target volume level (0.0 to 1.0)\n"
              "    duration (timedelta): Duration of the fade")
@@ -156,7 +188,7 @@ void bind_audio_manager(py::module_& m) {
              "Args:\n"
              "    name (str, optional): Optional name for the group\n\n"
              "Returns:\n"
-             "    int: Handle to the newly created group\n\n"
+             "    GroupHandle: Handle to the newly created group\n\n"
              "Raises:\n"
              "    AudioException: If group creation fails")
         
@@ -164,7 +196,7 @@ void bind_audio_manager(py::module_& m) {
              py::arg("group"),
              "Destroy an audio group.\n\n"
              "Args:\n"
-             "    group (int): Handle to the group to destroy")
+             "    group (GroupHandle): Handle to the group to destroy")
         
         .def("set_group_volume", &AudioManager::SetGroupVolume,
              py::arg("group"),
@@ -172,7 +204,7 @@ void bind_audio_manager(py::module_& m) {
              "Set the volume for an entire audio group.\n\n"
              "Affects all sounds assigned to this group.\n\n"
              "Args:\n"
-             "    group (int): Handle to the group\n"
+             "    group (GroupHandle): Handle to the group\n"
              "    volume (float): Volume level (0.0 to 1.0)\n\n"
              "Raises:\n"
              "    InvalidHandleException: If group handle is invalid")
@@ -181,7 +213,7 @@ void bind_audio_manager(py::module_& m) {
              py::arg("group"),
              "Get the current volume for an audio group.\n\n"
              "Args:\n"
-             "    group (int): Handle to the group\n\n"
+             "    group (GroupHandle): Handle to the group\n\n"
              "Returns:\n"
              "    float: Current volume level (0.0 to 1.0)")
         
@@ -191,7 +223,7 @@ void bind_audio_manager(py::module_& m) {
              py::arg("duration"),
              "Fade a group's volume to a target value over time.\n\n"
              "Args:\n"
-             "    group (int): Handle to the group\n"
+             "    group (GroupHandle): Handle to the group\n"
              "    target_volume (float): Target volume level (0.0 to 1.0)\n"
              "    duration (timedelta): Duration of the fade")
         
@@ -203,7 +235,7 @@ void bind_audio_manager(py::module_& m) {
              "Args:\n"
              "    filepath (str): Path to the audio file\n\n"
              "Returns:\n"
-             "    int: Handle to the loaded sound\n\n"
+             "    SoundHandle: Handle to the loaded sound\n\n"
              "Raises:\n"
              "    FileLoadException: If the file cannot be loaded")
         
@@ -214,9 +246,9 @@ void bind_audio_manager(py::module_& m) {
              "Load a sound from a file and assign it to a group.\n\n"
              "Args:\n"
              "    filepath (str): Path to the audio file\n"
-             "    group (int): Handle to the audio group\n\n"
+             "    group (GroupHandle): Handle to the audio group\n\n"
              "Returns:\n"
-             "    int: Handle to the loaded sound\n\n"
+             "    SoundHandle: Handle to the loaded sound\n\n"
              "Raises:\n"
              "    FileLoadException: If the file cannot be loaded")
         
@@ -224,13 +256,13 @@ void bind_audio_manager(py::module_& m) {
              py::arg("sound"),
              "Destroy a previously loaded sound.\n\n"
              "Args:\n"
-             "    sound (int): Handle to the sound to destroy")
+             "    sound (SoundHandle): Handle to the sound to destroy")
         
-        .def("start_sound", &AudioManager::StartSound,
+        .def("play_sound", &AudioManager::PlaySound,
              py::arg("sound"),
-             "Start playing a sound.\n\n"
+             "Play a sound.\n\n"
              "Args:\n"
-             "    sound (int): Handle to the sound to play\n\n"
+             "    sound (SoundHandle): Handle to the sound to play\n\n"
              "Raises:\n"
              "    InvalidHandleException: If sound handle is invalid")
         
@@ -238,7 +270,7 @@ void bind_audio_manager(py::module_& m) {
              py::arg("sound"),
              "Stop a currently playing sound.\n\n"
              "Args:\n"
-             "    sound (int): Handle to the sound to stop\n\n"
+             "    sound (SoundHandle): Handle to the sound to stop\n\n"
              "Raises:\n"
              "    InvalidHandleException: If sound handle is invalid")
         
@@ -247,7 +279,7 @@ void bind_audio_manager(py::module_& m) {
              py::arg("volume"),
              "Set the volume of a sound.\n\n"
              "Args:\n"
-             "    sound (int): Handle to the sound\n"
+             "    sound (SoundHandle): Handle to the sound\n"
              "    volume (float): Volume level (0.0 to 1.0)\n\n"
              "Raises:\n"
              "    InvalidHandleException: If sound handle is invalid")
@@ -257,24 +289,24 @@ void bind_audio_manager(py::module_& m) {
              py::arg("pitch"),
              "Set the pitch of a sound for its next playback.\n\n"
              "Args:\n"
-             "    sound (int): Handle to the sound\n"
+             "    sound (SoundHandle): Handle to the sound\n"
              "    pitch (float): Pitch multiplier (1.0 = normal, 0.5 = half speed, 2.0 = double speed)")
         
         .def("is_sound_playing", &AudioManager::IsSoundPlaying,
              py::arg("sound"),
              "Check if a sound is currently playing.\n\n"
              "Args:\n"
-             "    sound (int): Handle to the sound\n\n"
+             "    sound (SoundHandle): Handle to the sound\n\n"
              "Returns:\n"
              "    bool: True if the sound is playing, False otherwise")
         
         .def("play_random_sound_from_folder", &AudioManager::PlayRandomSoundFromFolder,
              py::arg("folder_path"),
-             py::arg("group") = 0,
+             py::arg("group") = GroupHandle::Invalid(),
              "Play a random sound from a folder.\n\n"
              "Loads all .wav files from the specified folder and plays one randomly.\n"
              "Sounds are cached after first load for efficiency.\n\n"
              "Args:\n"
              "    folder_path (str): Path to the folder containing sound files\n"
-             "    group (int, optional): Group handle to assign the sounds to");
+             "    group (GroupHandle, optional): Group handle to assign the sounds to");
 }

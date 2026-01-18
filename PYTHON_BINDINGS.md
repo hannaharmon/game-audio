@@ -124,6 +124,17 @@ find_package(AudioModule REQUIRED)
 
 ## Python API Reference
 
+### Handle Types
+
+Audio resources are returned as opaque handle objects:
+
+- `TrackHandle`
+- `GroupHandle`
+- `SoundHandle`
+
+Handles have a `.value` property if you need the underlying integer, but the
+recommended usage is to pass the handle objects directly back into API calls.
+
 ### AudioManager (Singleton)
 Main interface for the audio system.
 

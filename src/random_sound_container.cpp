@@ -37,13 +37,13 @@ void RandomSoundContainer::AddSound(const std::string& filepath) {
     SoundHandle handle;
     
     // Load sound with group if specified in config
-    if (config_.group != 0) {
+    if (config_.group.IsValid()) {
         handle = audio.LoadSound(filepath, config_.group);
     } else {
         handle = audio.LoadSound(filepath);
     }
     
-    if (handle != 0) {
+    if (handle) {
         sounds_.push_back(handle);
     }
 }
@@ -109,7 +109,7 @@ void RandomSoundContainer::PlayWithVolume(float volume) {
     // Apply volume
     audio.SetSoundVolume(selected, volume);
     
-    audio.StartSound(selected);
+    audio.PlaySound(selected);
     last_played_ = selected;
 }
 
@@ -134,7 +134,7 @@ SoundHandle RandomSoundContainer::SelectRandomSound() {
         return sounds_[0];
     }
     
-    if (config_.avoidRepeat && sounds_.size() > 1 && last_played_ != 0) {
+    if (config_.avoidRepeat && sounds_.size() > 1 && last_played_.IsValid()) {
         // Create a list excluding the last played sound
         std::vector<SoundHandle> available;
         for (SoundHandle sound : sounds_) {

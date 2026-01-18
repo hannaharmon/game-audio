@@ -141,7 +141,7 @@ def test_invalid_track_handles():
     audio = audio_py.AudioManager.get_instance()
     
     # Operations on invalid handle should not crash
-    invalid_handle = 99999
+    invalid_handle = audio_py.TrackHandle(99999)
     
     try:
         audio.play_track(invalid_handle)
@@ -159,7 +159,7 @@ def test_invalid_group_handles():
     """Test operations with invalid group handles."""
     audio = audio_py.AudioManager.get_instance()
     
-    invalid_handle = 99999
+    invalid_handle = audio_py.GroupHandle(99999)
     
     try:
         audio.set_group_volume(invalid_handle, 0.5)
@@ -175,11 +175,11 @@ def test_invalid_sound_handles():
     """Test operations with invalid sound handles."""
     audio = audio_py.AudioManager.get_instance()
     
-    invalid_handle = 99999
+    invalid_handle = audio_py.SoundHandle(99999)
     group = audio.create_group("test")
     
     try:
-        audio.play_sound(invalid_handle, group)
+        audio.play_sound(invalid_handle)
         audio.stop_sound(invalid_handle)
         audio.destroy_group(group)
         return True
@@ -277,7 +277,7 @@ def test_rapid_sound_operations():
     if os.path.exists(sound_file):
         for i in range(20):
             handle = audio.load_sound(sound_file, group)
-            if handle != 0:
+            if handle:
                 audio.destroy_sound(handle)
     
     audio.destroy_group(group)
@@ -300,12 +300,12 @@ def test_simultaneous_sounds():
         sound_path = os.path.join(sound_dir, sound_name)
         if os.path.exists(sound_path):
             handle = audio.load_sound(sound_path, group)
-            if handle != 0:
+            if handle:
                 sounds.append(handle)
     
     # Play them all at once
     for sound in sounds:
-        audio.start_sound(sound)
+        audio.play_sound(sound)
     
     time.sleep(0.5)  # Let them play briefly
     
@@ -546,7 +546,7 @@ def test_group_cleanup_with_sounds():
         if os.path.exists(sound_file):
             for i in range(10):
                 handle = audio.load_sound(sound_file, group)
-                if handle != 0:
+                if handle:
                     sounds.append(handle)
         
         # Destroy group (sounds should be cleaned up automatically)
@@ -579,7 +579,7 @@ def test_path_separators():
     
     if os.path.exists(sound_file):
         handle = audio.load_sound(sound_file, group)
-        assert handle != 0, "Should load with proper path"
+        assert handle.value != 0, "Should load with proper path"
         audio.destroy_sound(handle)
     
     audio.destroy_group(group)

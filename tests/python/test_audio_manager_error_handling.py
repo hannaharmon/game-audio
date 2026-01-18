@@ -76,7 +76,7 @@ def test_invalid_track_handle():
     
     try:
         # Try to play a track that doesn't exist
-        audio.play_track(99999)
+        audio.play_track(audio_py.TrackHandle(99999))
         print("FAIL - No exception raised")
         audio.shutdown()
         return False
@@ -97,7 +97,7 @@ def test_invalid_sound_handle():
     
     try:
         # Try to play a sound that doesn't exist
-        audio.start_sound(99999)
+        audio.play_sound(audio_py.SoundHandle(99999))
         print("FAIL - No exception raised")
         audio.shutdown()
         return False
@@ -118,7 +118,7 @@ def test_invalid_group_handle():
     
     try:
         # Try to set volume on a group that doesn't exist
-        audio.set_group_volume(99999, 0.5)
+        audio.set_group_volume(audio_py.GroupHandle(99999), 0.5)
         print("FAIL - No exception raised")
         audio.shutdown()
         return False
@@ -159,7 +159,7 @@ def test_stop_invalid_sound():
     audio.initialize()
     
     try:
-        audio.stop_sound(99999)
+        audio.stop_sound(audio_py.SoundHandle(99999))
         print("FAIL - No exception raised")
         audio.shutdown()
         return False
@@ -179,7 +179,7 @@ def test_set_volume_invalid_sound():
     audio.initialize()
     
     try:
-        audio.set_sound_volume(99999, 0.5)
+        audio.set_sound_volume(audio_py.SoundHandle(99999), 0.5)
         print("FAIL - No exception raised")
         audio.shutdown()
         return False
@@ -199,7 +199,7 @@ def test_add_layer_invalid_track():
     audio.initialize()
     
     try:
-        audio.add_layer(99999, "layer", os.path.join(SOUND_DIR, "hit.wav"))
+        audio.add_layer(audio_py.TrackHandle(99999), "layer", os.path.join(SOUND_DIR, "hit.wav"))
         print("FAIL - No exception raised")
         audio.shutdown()
         return False
@@ -219,7 +219,7 @@ def test_stop_track_invalid_handle():
     audio.initialize()
     
     try:
-        audio.stop_track(99999)
+        audio.stop_track(audio_py.TrackHandle(99999))
         print("FAIL - No exception raised")
         audio.shutdown()
         return False
@@ -242,7 +242,7 @@ def test_valid_operations_no_exception():
         group = audio.create_group("test")
         sound = audio.load_sound(os.path.join(SOUND_DIR, "hit.wav"), group)
         audio.set_sound_volume(sound, 0.5)
-        audio.start_sound(sound)
+        audio.play_sound(sound)
         audio.stop_sound(sound)
         audio.destroy_sound(sound)
         audio.destroy_group(group)
@@ -298,7 +298,7 @@ def test_multiple_errors_sequence():
     expected_errors = 3
     
     try:
-        audio.start_sound(99999)
+        audio.play_sound(audio_py.SoundHandle(99999))
     except audio_py.InvalidHandleException:
         errors_caught += 1
     
@@ -308,7 +308,7 @@ def test_multiple_errors_sequence():
         errors_caught += 1
     
     try:
-        audio.set_group_volume(99999, 0.5)
+        audio.set_group_volume(audio_py.GroupHandle(99999), 0.5)
     except audio_py.InvalidHandleException:
         errors_caught += 1
     

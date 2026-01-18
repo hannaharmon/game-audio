@@ -19,7 +19,7 @@ void bind_random_sound_container(py::module_& m) {
         .def_readwrite("pitch_max", &RandomSoundContainerConfig::pitchMax,
                       "float: Maximum pitch shift (1.0 = normal pitch)")
         .def_readwrite("group", &RandomSoundContainerConfig::group,
-                      "int: Audio group handle to assign sounds to")
+                      "GroupHandle: Audio group handle to assign sounds to")
         .def_readwrite("max_duration", &RandomSoundContainerConfig::maxDuration,
                       "float: Maximum duration in seconds (0 = no limit)");
     

@@ -17,6 +17,9 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#ifdef PlaySound
+#undef PlaySound
+#endif
 #else
 #include <dirent.h>
 #include <sys/stat.h>
@@ -195,7 +198,7 @@ void AudioManager::PlayTrack(TrackHandle track) {
     lock_guard<mutex> lock(resource_mutex_);
     auto it = tracks_.find(track);
     if (it == tracks_.end() || !it->second) {
-        throw InvalidHandleException("Invalid track handle: " + std::to_string(track));
+        throw InvalidHandleException("Invalid track handle: " + std::to_string(track.Value()));
     }
     it->second->Play();
 }
@@ -205,7 +208,7 @@ void AudioManager::StopTrack(TrackHandle track) {
     lock_guard<mutex> lock(resource_mutex_);
     auto it = tracks_.find(track);
     if (it == tracks_.end() || !it->second) {
-        throw InvalidHandleException("Invalid track handle: " + std::to_string(track));
+        throw InvalidHandleException("Invalid track handle: " + std::to_string(track.Value()));
     }
     it->second->Stop();
 }
@@ -217,7 +220,7 @@ void AudioManager::AddLayer(TrackHandle track, const string& layerName,
     lock_guard<mutex> lock(resource_mutex_);
     auto track_it = tracks_.find(track);
     if (track_it == tracks_.end() || !track_it->second) {
-        throw InvalidHandleException("Invalid track handle: " + std::to_string(track));
+        throw InvalidHandleException("Invalid track handle: " + std::to_string(track.Value()));
     }
     
     // Look up the group by name if provided
@@ -240,7 +243,7 @@ void AudioManager::RemoveLayer(TrackHandle track, const string& layerName) {
     lock_guard<mutex> lock(resource_mutex_);
     auto track_it = tracks_.find(track);
     if (track_it == tracks_.end() || !track_it->second) {
-        throw InvalidHandleException("Invalid track handle: " + std::to_string(track));
+        throw InvalidHandleException("Invalid track handle: " + std::to_string(track.Value()));
     }
     
     track_it->second->RemoveLayer(layerName);
@@ -251,7 +254,7 @@ void AudioManager::SetLayerVolume(TrackHandle track, const string& layerName, fl
     lock_guard<mutex> lock(resource_mutex_);
     auto track_it = tracks_.find(track);
     if (track_it == tracks_.end() || !track_it->second) {
-        throw InvalidHandleException("Invalid track handle: " + std::to_string(track));
+        throw InvalidHandleException("Invalid track handle: " + std::to_string(track.Value()));
     }
     
     track_it->second->SetLayerVolume(layerName, volume);
@@ -314,7 +317,7 @@ void AudioManager::SetGroupVolume(GroupHandle group, float volume) {
     lock_guard<mutex> lock(resource_mutex_);
     auto it = groups_.find(group);
     if (it == groups_.end() || !it->second) {
-        throw InvalidHandleException("Invalid group handle: " + std::to_string(group));
+        throw InvalidHandleException("Invalid group handle: " + std::to_string(group.Value()));
     }
     it->second->SetVolume(volume);
 }
@@ -368,7 +371,7 @@ SoundHandle AudioManager::LoadSound(const string& filepath, GroupHandle group) {
     
     // Get the AudioGroup pointer
     AudioGroup* group_ptr = nullptr;
-    if (group != 0) {
+    if (group.IsValid()) {
         auto group_it = groups_.find(group);
         if (group_it != groups_.end()) {
             group_ptr = group_it->second.get();
@@ -405,12 +408,12 @@ void AudioManager::DestroySound(SoundHandle sound) {
     }
 }
 
-void AudioManager::StartSound(SoundHandle sound) {
+void AudioManager::PlaySound(SoundHandle sound) {
     EnsureInitialized();
     lock_guard<mutex> lock(resource_mutex_);
     auto it = sounds_.find(sound);
     if (it == sounds_.end() || !it->second) {
-        throw InvalidHandleException("Invalid sound handle: " + std::to_string(sound));
+        throw InvalidHandleException("Invalid sound handle: " + std::to_string(sound.Value()));
     }
     it->second->Play();
 }
@@ -420,7 +423,7 @@ void AudioManager::StopSound(SoundHandle sound) {
     lock_guard<mutex> lock(resource_mutex_);
     auto it = sounds_.find(sound);
     if (it == sounds_.end() || !it->second) {
-        throw InvalidHandleException("Invalid sound handle: " + std::to_string(sound));
+        throw InvalidHandleException("Invalid sound handle: " + std::to_string(sound.Value()));
     }
     it->second->Stop();
 }
@@ -430,7 +433,7 @@ void AudioManager::SetSoundVolume(SoundHandle sound, float volume) {
     lock_guard<mutex> lock(resource_mutex_);
     auto it = sounds_.find(sound);
     if (it == sounds_.end() || !it->second) {
-        throw InvalidHandleException("Invalid sound handle: " + std::to_string(sound));
+        throw InvalidHandleException("Invalid sound handle: " + std::to_string(sound.Value()));
     }
     it->second->SetVolume(volume);
 }
@@ -460,7 +463,7 @@ void AudioManager::PlayRandomSoundFromFolder(const string& folderPath, GroupHand
     
     // Get the AudioGroup pointer for this handle
     AudioGroup* group_ptr = nullptr;
-    if (group != 0) {
+    if (group.IsValid()) {
         auto group_it = groups_.find(group);
         if (group_it != groups_.end()) {
             group_ptr = group_it->second.get();

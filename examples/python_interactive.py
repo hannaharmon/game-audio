@@ -130,10 +130,10 @@ def process_input(command, audio, music_track, music_group, sfx_group, touch_sou
     elif cmd == 'x':
         if touch_sounds:
             sfx = random.choice(touch_sounds)
-            audio.start_sound(sfx)
+            audio.play_sound(sfx)
             print("Playing random touch sound")
         else:
-            audio.start_sound(hit_sfx)
+            audio.play_sound(hit_sfx)
             print("Playing hit sound")
     
     # Toggle music on/off

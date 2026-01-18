@@ -11,7 +11,12 @@
 #include <vector>
 #include <stdexcept>
 #include <random>
+#include <functional>
 #include "logging.h"
+
+#ifdef PlaySound
+#undef PlaySound
+#endif
 
 /**
  * @file audio_manager.h
@@ -88,9 +93,71 @@ namespace audio {
  * These typedefs define opaque handles that are used to reference audio objects.
  * The actual implementation details are hidden from the user.
  */
-using TrackHandle = uint32_t;   ///< Handle for referencing audio tracks
-using GroupHandle = uint32_t;   ///< Handle for referencing audio groups
-using SoundHandle = uint32_t;   ///< Handle for referencing individual sounds
+/**
+ * @brief Strongly typed handle for audio tracks.
+ */
+struct TrackHandle {
+    uint32_t value{0};
+
+    static constexpr TrackHandle Invalid() { return TrackHandle{0}; }
+    constexpr bool IsValid() const { return value != 0; }
+    constexpr uint32_t Value() const { return value; }
+    explicit constexpr operator bool() const { return IsValid(); }
+    friend constexpr bool operator==(const TrackHandle&, const TrackHandle&) = default;
+};
+
+/**
+ * @brief Strongly typed handle for audio groups.
+ */
+struct GroupHandle {
+    uint32_t value{0};
+
+    static constexpr GroupHandle Invalid() { return GroupHandle{0}; }
+    constexpr bool IsValid() const { return value != 0; }
+    constexpr uint32_t Value() const { return value; }
+    explicit constexpr operator bool() const { return IsValid(); }
+    friend constexpr bool operator==(const GroupHandle&, const GroupHandle&) = default;
+};
+
+/**
+ * @brief Strongly typed handle for individual sounds.
+ */
+struct SoundHandle {
+    uint32_t value{0};
+
+    static constexpr SoundHandle Invalid() { return SoundHandle{0}; }
+    constexpr bool IsValid() const { return value != 0; }
+    constexpr uint32_t Value() const { return value; }
+    explicit constexpr operator bool() const { return IsValid(); }
+    friend constexpr bool operator==(const SoundHandle&, const SoundHandle&) = default;
+};
+
+} // namespace audio
+
+namespace std {
+template <>
+struct hash<audio::TrackHandle> {
+    size_t operator()(const audio::TrackHandle& handle) const noexcept {
+        return std::hash<uint32_t>{}(handle.Value());
+    }
+};
+
+template <>
+struct hash<audio::GroupHandle> {
+    size_t operator()(const audio::GroupHandle& handle) const noexcept {
+        return std::hash<uint32_t>{}(handle.Value());
+    }
+};
+
+template <>
+struct hash<audio::SoundHandle> {
+    size_t operator()(const audio::SoundHandle& handle) const noexcept {
+        return std::hash<uint32_t>{}(handle.Value());
+    }
+};
+} // namespace std
+
+namespace audio {
 
 /**
  * @class AudioManager
@@ -337,15 +404,12 @@ public:
     void DestroySound(SoundHandle sound);
     
     /**
-     * @brief Start playing a sound
-     * 
-     * This function was renamed from PlaySound to avoid conflicts
-     * with the Windows PlaySound macro.
+     * @brief Play a sound
      * 
      * @param sound Handle to the sound to play
      * @throws InvalidHandleException If the sound handle is invalid
      */
-    void StartSound(SoundHandle sound);
+    void PlaySound(SoundHandle sound);
     
     /**
      * @brief Stop a currently playing sound
@@ -389,7 +453,7 @@ public:
      * @param folderPath Path to the folder containing sound files
      * @param group Optional group handle to assign the sounds to
      */
-    void PlayRandomSoundFromFolder(const string& folderPath, GroupHandle group = 0);
+    void PlayRandomSoundFromFolder(const string& folderPath, GroupHandle group = GroupHandle::Invalid());
     ///@}
 
     /**
@@ -428,19 +492,19 @@ private:
      * @brief Generate a new track handle
      * @return TrackHandle New unique handle
      */
-    TrackHandle NextTrackHandle() { return next_track_handle_++; }
+    TrackHandle NextTrackHandle() { return TrackHandle{next_track_handle_++}; }
     
     /**
      * @brief Generate a new group handle
      * @return GroupHandle New unique handle
      */
-    GroupHandle NextGroupHandle() { return next_group_handle_++; }
+    GroupHandle NextGroupHandle() { return GroupHandle{next_group_handle_++}; }
     
     /**
      * @brief Generate a new sound handle
      * @return SoundHandle New unique handle
      */
-    SoundHandle NextSoundHandle() { return next_sound_handle_++; }
+    SoundHandle NextSoundHandle() { return SoundHandle{next_sound_handle_++}; }
     ///@}
 
     ///@name Resource Storage
@@ -463,9 +527,9 @@ private:
 
     ///@name Handle Counters
     ///@{
-    atomic<TrackHandle> next_track_handle_{1};    ///< Counter for generating unique track handles
-    atomic<GroupHandle> next_group_handle_{1};    ///< Counter for generating unique group handles
-    atomic<SoundHandle> next_sound_handle_{1};    ///< Counter for generating unique sound handles
+    atomic<uint32_t> next_track_handle_{1};    ///< Counter for generating unique track handles
+    atomic<uint32_t> next_group_handle_{1};    ///< Counter for generating unique group handles
+    atomic<uint32_t> next_sound_handle_{1};    ///< Counter for generating unique sound handles
     ///@}
 };
 

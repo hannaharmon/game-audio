@@ -143,6 +143,9 @@ audio.Shutdown();
 - `Sound` - Individual sound instances
 - `AudioSystem` - miniaudio wrapper
 
+**Handles:**
+- `TrackHandle`, `GroupHandle`, `SoundHandle` are opaque handle types returned by the API.
+
 **High-Level Utilities:**
 - `RandomSoundContainer` - Wwise-style random containers
 

@@ -224,7 +224,7 @@ void ProcessInput(const std::string& input,
             
             case 'x':
                 std::cout << "Playing sound effect..." << std::endl;
-                audio.StartSound(sfx);  // Using the renamed function
+                audio.PlaySound(sfx);
                 break;
 
             default:

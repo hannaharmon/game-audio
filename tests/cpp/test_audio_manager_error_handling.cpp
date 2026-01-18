@@ -123,32 +123,32 @@ void test_invalid_track_handle() {
     
     // Test with completely invalid handle (0)
     ASSERT_THROWS(InvalidHandleException,
-        manager.PlayTrack(0),
+        manager.PlayTrack(TrackHandle{0}),
         "PlayTrack with handle 0 throws InvalidHandleException");
     
     ASSERT_THROWS(InvalidHandleException,
-        manager.StopTrack(0),
+        manager.StopTrack(TrackHandle{0}),
         "StopTrack with handle 0 throws InvalidHandleException");
     
     ASSERT_THROWS(InvalidHandleException,
-        manager.AddLayer(0, "layer1", sound_dir + "background_music.mp3"),
+        manager.AddLayer(TrackHandle{0}, "layer1", sound_dir + "background_music.mp3"),
         "AddLayer with handle 0 throws InvalidHandleException");
     
     ASSERT_THROWS(InvalidHandleException,
-        manager.RemoveLayer(0, "layer1"),
+        manager.RemoveLayer(TrackHandle{0}, "layer1"),
         "RemoveLayer with handle 0 throws InvalidHandleException");
     
     ASSERT_THROWS(InvalidHandleException,
-        manager.SetLayerVolume(0, "layer1", 0.5f),
+        manager.SetLayerVolume(TrackHandle{0}, "layer1", 0.5f),
         "SetLayerVolume with handle 0 throws InvalidHandleException");
     
     // Test with non-existent handle (999999)
     ASSERT_THROWS(InvalidHandleException,
-        manager.PlayTrack(999999),
+        manager.PlayTrack(TrackHandle{999999}),
         "PlayTrack with handle 999999 throws InvalidHandleException");
     
     ASSERT_THROWS(InvalidHandleException,
-        manager.StopTrack(999999),
+        manager.StopTrack(TrackHandle{999999}),
         "StopTrack with handle 999999 throws InvalidHandleException");
     
     END_TEST
@@ -161,24 +161,24 @@ void test_invalid_sound_handle() {
     
     // Test with invalid handle (0)
     ASSERT_THROWS(InvalidHandleException,
-        manager.StartSound(0),
-        "StartSound with handle 0 throws InvalidHandleException");
+        manager.PlaySound(SoundHandle{0}),
+        "PlaySound with handle 0 throws InvalidHandleException");
     
     ASSERT_THROWS(InvalidHandleException,
-        manager.StopSound(0),
+        manager.StopSound(SoundHandle{0}),
         "StopSound with handle 0 throws InvalidHandleException");
     
     ASSERT_THROWS(InvalidHandleException,
-        manager.SetSoundVolume(0, 0.5f),
+        manager.SetSoundVolume(SoundHandle{0}, 0.5f),
         "SetSoundVolume with handle 0 throws InvalidHandleException");
     
     // Test with non-existent handle (999999)
     ASSERT_THROWS(InvalidHandleException,
-        manager.StartSound(999999),
-        "StartSound with handle 999999 throws InvalidHandleException");
+        manager.PlaySound(SoundHandle{999999}),
+        "PlaySound with handle 999999 throws InvalidHandleException");
     
     ASSERT_THROWS(InvalidHandleException,
-        manager.StopSound(999999),
+        manager.StopSound(SoundHandle{999999}),
         "StopSound with handle 999999 throws InvalidHandleException");
     
     END_TEST
@@ -191,12 +191,12 @@ void test_invalid_group_handle() {
     
     // Test with invalid handle (0)
     ASSERT_THROWS(InvalidHandleException,
-        manager.SetGroupVolume(0, 0.5f),
+        manager.SetGroupVolume(GroupHandle{0}, 0.5f),
         "SetGroupVolume with handle 0 throws InvalidHandleException");
     
     // Test with non-existent handle (999999)
     ASSERT_THROWS(InvalidHandleException,
-        manager.SetGroupVolume(999999, 0.5f),
+        manager.SetGroupVolume(GroupHandle{999999}, 0.5f),
         "SetGroupVolume with handle 999999 throws InvalidHandleException");
     
     END_TEST
@@ -222,7 +222,7 @@ void test_file_not_found() {
         "LoadSound with empty filename throws FileLoadException");
     
     // Create a track first, then try to add invalid layer
-    uint32_t track = manager.CreateTrack();
+    TrackHandle track = manager.CreateTrack();
     
     ASSERT_THROWS(FileLoadException,
         manager.AddLayer(track, "layer1", "nonexistent_layer.mp3"),
@@ -237,22 +237,22 @@ void test_valid_operations_no_exceptions() {
     AudioManager& manager = AudioManager::GetInstance();
     
     // Load a valid sound
-    uint32_t sound_handle = 0;
+    SoundHandle sound_handle = SoundHandle::Invalid();
     ASSERT_NO_THROW(
         sound_handle = manager.LoadSound(sound_dir + "clap.wav"),
         "LoadSound with valid file does not throw");
     
     // Start and stop the sound
     ASSERT_NO_THROW(
-        manager.StartSound(sound_handle),
-        "StartSound with valid handle does not throw");
+        manager.PlaySound(sound_handle),
+        "PlaySound with valid handle does not throw");
     
     ASSERT_NO_THROW(
         manager.StopSound(sound_handle),
         "StopSound with valid handle does not throw");
     
     // Create and manipulate track
-    uint32_t track = 0;
+    TrackHandle track = TrackHandle::Invalid();
     ASSERT_NO_THROW(
         track = manager.CreateTrack(),
         "CreateTrack does not throw");
@@ -270,7 +270,7 @@ void test_valid_operations_no_exceptions() {
         "StopTrack with valid handle does not throw");
     
     // Create and manipulate group
-    uint32_t group = 0;
+    GroupHandle group = GroupHandle::Invalid();
     ASSERT_NO_THROW(
         group = manager.CreateGroup("test_group"),
         "CreateGroup does not throw");
@@ -289,7 +289,7 @@ void test_exception_messages() {
     
     // Check that exception messages contain useful information
     try {
-        manager.PlayTrack(0);
+        manager.PlayTrack(TrackHandle{0});
         std::cerr << "  FAIL: Expected InvalidHandleException" << std::endl;
         tests_failed++;
     } catch (const InvalidHandleException& e) {
@@ -332,7 +332,7 @@ void test_multiple_invalid_operations() {
     // Multiple invalid track operations should all throw
     for (int i = 0; i < 3; i++) {
         ASSERT_THROWS(InvalidHandleException,
-            manager.PlayTrack(0),
+            manager.PlayTrack(TrackHandle{0}),
             "Multiple PlayTrack calls with invalid handle all throw");
     }
     
@@ -353,7 +353,7 @@ void test_exception_types_hierarchy() {
     
     // Test that specific exceptions can be caught as AudioException
     try {
-        manager.PlayTrack(0);
+        manager.PlayTrack(TrackHandle{0});
         std::cerr << "  FAIL: Expected exception to be thrown" << std::endl;
         tests_failed++;
     } catch (const AudioException& e) {
