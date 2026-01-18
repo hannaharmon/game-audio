@@ -48,6 +48,12 @@ AudioManager& AudioManager::GetInstance() {
     return instance;
 }
 
+void AudioManager::EnsureInitialized() const {
+    if (!running_) {
+        throw NotInitializedException("Audio system not initialized. Call Initialize() first.");
+    }
+}
+
 bool AudioManager::Initialize() {
     if (running_) {
         std::cerr << "AudioManager already running" << std::endl;
@@ -136,6 +142,7 @@ void AudioManager::Shutdown() {
 
 // System control
 void AudioManager::SetMasterVolume(float volume) {
+    EnsureInitialized();
     lock_guard<mutex> lock(resource_mutex_);
     if (audio_system_) {
         audio_system_->SetMasterVolume(volume);
@@ -143,12 +150,14 @@ void AudioManager::SetMasterVolume(float volume) {
 }
 
 float AudioManager::GetMasterVolume() const {
+    EnsureInitialized();
     if (!audio_system_) return 0.0f;
     return audio_system_->GetMasterVolume();
 }
 
 // Track management
 TrackHandle AudioManager::CreateTrack() {
+    EnsureInitialized();
     lock_guard<mutex> lock(resource_mutex_);
     
     // Create a new track handle
@@ -161,6 +170,7 @@ TrackHandle AudioManager::CreateTrack() {
 }
 
 void AudioManager::DestroyTrack(TrackHandle track) {
+    EnsureInitialized();
     lock_guard<mutex> lock(resource_mutex_);
     auto it = tracks_.find(track);
     if (it != tracks_.end()) {
@@ -169,6 +179,7 @@ void AudioManager::DestroyTrack(TrackHandle track) {
 }
 
 void AudioManager::PlayTrack(TrackHandle track) {
+    EnsureInitialized();
     lock_guard<mutex> lock(resource_mutex_);
     auto it = tracks_.find(track);
     if (it == tracks_.end() || !it->second) {
@@ -178,6 +189,7 @@ void AudioManager::PlayTrack(TrackHandle track) {
 }
 
 void AudioManager::StopTrack(TrackHandle track) {
+    EnsureInitialized();
     lock_guard<mutex> lock(resource_mutex_);
     auto it = tracks_.find(track);
     if (it == tracks_.end() || !it->second) {
@@ -189,6 +201,7 @@ void AudioManager::StopTrack(TrackHandle track) {
 // Layer operations
 void AudioManager::AddLayer(TrackHandle track, const string& layerName, 
                            const string& filepath, const string& group) {
+    EnsureInitialized();
     lock_guard<mutex> lock(resource_mutex_);
     auto track_it = tracks_.find(track);
     if (track_it == tracks_.end() || !track_it->second) {
@@ -211,6 +224,7 @@ void AudioManager::AddLayer(TrackHandle track, const string& layerName,
 }
 
 void AudioManager::RemoveLayer(TrackHandle track, const string& layerName) {
+    EnsureInitialized();
     lock_guard<mutex> lock(resource_mutex_);
     auto track_it = tracks_.find(track);
     if (track_it == tracks_.end() || !track_it->second) {
@@ -221,6 +235,7 @@ void AudioManager::RemoveLayer(TrackHandle track, const string& layerName) {
 }
 
 void AudioManager::SetLayerVolume(TrackHandle track, const string& layerName, float volume) {
+    EnsureInitialized();
     lock_guard<mutex> lock(resource_mutex_);
     auto track_it = tracks_.find(track);
     if (track_it == tracks_.end() || !track_it->second) {
@@ -232,6 +247,7 @@ void AudioManager::SetLayerVolume(TrackHandle track, const string& layerName, fl
 
 void AudioManager::FadeLayer(TrackHandle track, const string& layerName, 
                             float targetVolume, std::chrono::milliseconds duration) {
+    EnsureInitialized();
     lock_guard<mutex> lock(resource_mutex_);
     auto track_it = tracks_.find(track);
     if (track_it == tracks_.end() || !track_it->second) return;
@@ -241,6 +257,7 @@ void AudioManager::FadeLayer(TrackHandle track, const string& layerName,
 
 // Group operations
 GroupHandle AudioManager::CreateGroup(const string& name) {
+    EnsureInitialized();
     lock_guard<mutex> lock(resource_mutex_);
     
     // Create a new group handle
@@ -264,6 +281,7 @@ GroupHandle AudioManager::CreateGroup(const string& name) {
 }
 
 void AudioManager::DestroyGroup(GroupHandle group) {
+    EnsureInitialized();
     lock_guard<mutex> lock(resource_mutex_);
     auto it = groups_.find(group);
     if (it != groups_.end()) {
@@ -280,6 +298,7 @@ void AudioManager::DestroyGroup(GroupHandle group) {
 }
 
 void AudioManager::SetGroupVolume(GroupHandle group, float volume) {
+    EnsureInitialized();
     lock_guard<mutex> lock(resource_mutex_);
     auto it = groups_.find(group);
     if (it == groups_.end() || !it->second) {
@@ -289,6 +308,7 @@ void AudioManager::SetGroupVolume(GroupHandle group, float volume) {
 }
 
 float AudioManager::GetGroupVolume(GroupHandle group) const {
+    EnsureInitialized();
     lock_guard<mutex> lock(resource_mutex_);
     auto it = groups_.find(group);
     if (it != groups_.end() && it->second) {
@@ -299,6 +319,7 @@ float AudioManager::GetGroupVolume(GroupHandle group) const {
 
 void AudioManager::FadeGroup(GroupHandle group, float targetVolume, 
                             std::chrono::milliseconds duration) {
+    EnsureInitialized();
     lock_guard<mutex> lock(resource_mutex_);
     auto it = groups_.find(group);
     if (it != groups_.end() && it->second) {
@@ -308,6 +329,7 @@ void AudioManager::FadeGroup(GroupHandle group, float targetVolume,
 
 // Sound operations
 SoundHandle AudioManager::LoadSound(const string& filepath) {
+    EnsureInitialized();
     lock_guard<mutex> lock(resource_mutex_);
     
     // Create a new sound handle
@@ -326,6 +348,7 @@ SoundHandle AudioManager::LoadSound(const string& filepath) {
 }
 
 SoundHandle AudioManager::LoadSound(const string& filepath, GroupHandle group) {
+    EnsureInitialized();
     lock_guard<mutex> lock(resource_mutex_);
     
     // Create a new sound handle
@@ -353,6 +376,7 @@ SoundHandle AudioManager::LoadSound(const string& filepath, GroupHandle group) {
 }
 
 void AudioManager::DestroySound(SoundHandle sound) {
+    EnsureInitialized();
     lock_guard<mutex> lock(resource_mutex_);
     auto it = sounds_.find(sound);
     if (it != sounds_.end()) {
@@ -361,6 +385,7 @@ void AudioManager::DestroySound(SoundHandle sound) {
 }
 
 void AudioManager::StartSound(SoundHandle sound) {
+    EnsureInitialized();
     lock_guard<mutex> lock(resource_mutex_);
     auto it = sounds_.find(sound);
     if (it == sounds_.end() || !it->second) {
@@ -370,6 +395,7 @@ void AudioManager::StartSound(SoundHandle sound) {
 }
 
 void AudioManager::StopSound(SoundHandle sound) {
+    EnsureInitialized();
     lock_guard<mutex> lock(resource_mutex_);
     auto it = sounds_.find(sound);
     if (it == sounds_.end() || !it->second) {
@@ -379,6 +405,7 @@ void AudioManager::StopSound(SoundHandle sound) {
 }
 
 void AudioManager::SetSoundVolume(SoundHandle sound, float volume) {
+    EnsureInitialized();
     lock_guard<mutex> lock(resource_mutex_);
     auto it = sounds_.find(sound);
     if (it == sounds_.end() || !it->second) {
@@ -388,6 +415,7 @@ void AudioManager::SetSoundVolume(SoundHandle sound, float volume) {
 }
 
 void AudioManager::SetSoundPitch(SoundHandle sound, float pitch) {
+    EnsureInitialized();
     lock_guard<mutex> lock(resource_mutex_);
     auto it = sounds_.find(sound);
     if (it != sounds_.end() && it->second) {
@@ -396,6 +424,7 @@ void AudioManager::SetSoundPitch(SoundHandle sound, float pitch) {
 }
 
 bool AudioManager::IsSoundPlaying(SoundHandle sound) const {
+    EnsureInitialized();
     lock_guard<mutex> lock(resource_mutex_);
     auto it = sounds_.find(sound);
     if (it != sounds_.end() && it->second) {
@@ -405,6 +434,7 @@ bool AudioManager::IsSoundPlaying(SoundHandle sound) const {
 }
 
 void AudioManager::PlayRandomSoundFromFolder(const string& folderPath, GroupHandle group) {
+    EnsureInitialized();
     lock_guard<mutex> lock(resource_mutex_);
     
     // Get the AudioGroup pointer for this handle

@@ -61,6 +61,35 @@ int tests_failed = 0;
 // Path configuration
 std::string sound_dir;
 
+void test_not_initialized() {
+    TEST("Not Initialized Errors")
+    
+    AudioManager& manager = AudioManager::GetInstance();
+    manager.Shutdown();  // Ensure system is not running
+    
+    ASSERT_THROWS(NotInitializedException,
+        manager.SetMasterVolume(0.5f),
+        "SetMasterVolume without Initialize throws NotInitializedException");
+    
+    ASSERT_THROWS(NotInitializedException,
+        manager.CreateGroup("test_group"),
+        "CreateGroup without Initialize throws NotInitializedException");
+    
+    ASSERT_THROWS(NotInitializedException,
+        manager.CreateTrack(),
+        "CreateTrack without Initialize throws NotInitializedException");
+    
+    ASSERT_THROWS(NotInitializedException,
+        manager.LoadSound("some_file.wav"),
+        "LoadSound without Initialize throws NotInitializedException");
+    
+    ASSERT_NO_THROW(
+        manager.Initialize(),
+        "Reinitialize after not initialized does not throw");
+    
+    END_TEST
+}
+
 void test_invalid_track_handle() {
     TEST("Invalid Track Handle Operations")
     
@@ -343,6 +372,7 @@ int main(int argc, char* argv[]) {
     }
     
     // Run all error handling tests
+    test_not_initialized();
     test_invalid_track_handle();
     test_invalid_sound_handle();
     test_invalid_group_handle();

@@ -20,6 +20,23 @@ import audio_py
 
 SOUND_DIR = os.path.join(os.path.dirname(__file__), '..', '..', 'sound_files')
 
+def test_not_initialized():
+    """Test 0: Using API without initialize should raise NotInitializedException"""
+    print("Test 0: Not initialized... ", end="")
+    audio = audio_py.AudioManager.get_instance()
+    audio.shutdown()
+    
+    try:
+        audio.set_master_volume(0.5)
+        print("FAIL - No exception raised")
+        return False
+    except audio_py.NotInitializedException as e:
+        print(f"PASS - Caught expected exception: {e}")
+        return True
+    except Exception as e:
+        print(f"FAIL - Wrong exception type: {type(e).__name__}: {e}")
+        return False
+
 def test_invalid_track_handle():
     """Test 1: Using invalid track handle should raise InvalidHandleException"""
     print("Test 1: Invalid track handle... ", end="")
@@ -280,6 +297,7 @@ def main():
     print("=" * 60)
     
     tests = [
+        test_not_initialized,
         test_invalid_track_handle,
         test_invalid_sound_handle,
         test_invalid_group_handle,

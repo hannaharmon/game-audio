@@ -392,6 +392,13 @@ private:
     AudioManager(const AudioManager&) = delete;
     AudioManager& operator=(const AudioManager&) = delete;
 
+    /**
+     * @brief Ensures the audio system is initialized before use
+     * 
+     * @throws NotInitializedException If Initialize() has not been called
+     */
+    void EnsureInitialized() const;
+
     ///@name Internal Handle Management
     ///@{
     
