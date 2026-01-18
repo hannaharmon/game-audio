@@ -10,7 +10,7 @@ Write-Host ""
 # Detect platform
 if ($IsWindows -or $env:OS -match "Windows") {
     $platform = "Windows"
-    $buildDir = "build\Debug"
+    $buildDir = "build\Release"
 } elseif ($IsLinux) {
     $platform = "Linux"
     $buildDir = "build"
@@ -30,11 +30,12 @@ Write-Host ""
 $repoRoot = Join-Path (Join-Path $PSScriptRoot "..") ".."
 $buildPath = Join-Path $repoRoot $buildDir
 $fallbackBuildPath = Join-Path $repoRoot "build"
-if (-not (Test-Path $buildPath) -and -not (Test-Path $fallbackBuildPath)) {
+$debugBuildPath = Join-Path $repoRoot "build\Debug"
+if (-not (Test-Path $buildPath) -and -not (Test-Path $debugBuildPath) -and -not (Test-Path $fallbackBuildPath)) {
     Write-Host "ERROR: Build directory not found at $buildPath" -ForegroundColor Red
     Write-Host "Please build the project first with:" -ForegroundColor Yellow
     if ($IsWindows -or $env:OS -match "Windows") {
-        Write-Host "  cd build && cmake --build . --config Debug" -ForegroundColor Yellow
+        Write-Host "  cd build && cmake --build . --config Release" -ForegroundColor Yellow
     } else {
         Write-Host "  cmake -B build && cmake --build build" -ForegroundColor Yellow
     }
@@ -43,6 +44,9 @@ if (-not (Test-Path $buildPath) -and -not (Test-Path $fallbackBuildPath)) {
 
 # Add build outputs to PYTHONPATH so Python can find audio_py module
 $env:PYTHONPATH = $buildPath
+if (Test-Path $debugBuildPath) {
+    $env:PYTHONPATH = "$env:PYTHONPATH;$debugBuildPath"
+}
 if ((Test-Path $fallbackBuildPath) -and ($fallbackBuildPath -ne $buildPath)) {
     $env:PYTHONPATH = "$env:PYTHONPATH;$fallbackBuildPath"
 }

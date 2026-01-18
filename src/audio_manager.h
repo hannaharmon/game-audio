@@ -377,6 +377,13 @@ public:
     void PlayRandomSoundFromFolder(const string& folderPath, GroupHandle group = 0);
     ///@}
 
+    /**
+     * @brief Check if the audio system is initialized and running
+     * 
+     * @return bool True if the system is initialized, false otherwise
+     */
+    bool IsInitialized() const { return running_.load(); }
+
 private:
     /**
      * @brief Constructor - private due to singleton pattern

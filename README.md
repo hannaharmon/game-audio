@@ -8,7 +8,7 @@ A C++20 audio system built on miniaudio with full Python bindings for game devel
 - **Sound Groups**: Categorize and control collections of sounds
 - **Volume Control**: Master, group, and individual sound volume
 - **Smooth Transitions**: Fade sounds in/out with customizable durations
-- **Random Sound Containers**: Randomized playback with pitch variation (Wwise-style)
+- **Random Sound Containers**: Randomized playback with pitch variation
 - **High-Level API**: Core primitives designed for user-defined wrappers
 - **Python Bindings**: Full pybind11 bindings for Python projects (including [Basilisk engine](https://github.com/BasiliskGroup/BasiliskEngine))
 - **Cross-Platform**: Windows, macOS, Linux via miniaudio
@@ -113,9 +113,9 @@ audio.Shutdown();
 ## Building Locally
 
 ```bash
-mkdir build && cd build
-cmake ..
-cmake --build . --config Release
+# Build (cross-platform via PowerShell)
+./scripts/build.ps1 -Configurations Debug,Release  # Windows (C++ + Python)
+./scripts/build.ps1 -Configurations Release        # Linux/macOS
 
 # Run all tests (C++ + Python)
 ./tests/scripts/run_all_tests.ps1

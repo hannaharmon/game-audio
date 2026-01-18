@@ -11,14 +11,18 @@ Tests that the audio system properly raises exceptions for error conditions:
 import sys
 import os
 
-# Add build directory to path
-build_dir = os.path.join(os.path.dirname(__file__), '..', 'build', 'Debug')
-if os.path.exists(build_dir):
-    sys.path.insert(0, build_dir)
+repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+build_release = os.path.join(repo_root, 'build', 'Release')
+build_debug = os.path.join(repo_root, 'build', 'Debug')
+build_root = os.path.join(repo_root, 'build')
+
+for path in (build_release, build_debug, build_root):
+    if os.path.exists(path) and path not in sys.path:
+        sys.path.insert(0, path)
 
 import audio_py
 
-SOUND_DIR = os.path.join(os.path.dirname(__file__), '..', '..', 'sound_files')
+SOUND_DIR = os.path.join(repo_root, 'sound_files')
 
 def test_not_initialized():
     """Test 0: Using API without initialize should raise NotInitializedException"""

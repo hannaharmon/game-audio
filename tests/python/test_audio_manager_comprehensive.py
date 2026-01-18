@@ -8,11 +8,15 @@ import os
 import time
 import platform
 
-# Add build directory to Python path
-if platform.system() == "Windows":
-    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'build', 'Debug'))
-else:
-    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'build'))
+repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+build_release = os.path.join(repo_root, 'build', 'Release')
+build_debug = os.path.join(repo_root, 'build', 'Debug')
+build_root = os.path.join(repo_root, 'build')
+SOUND_DIR = os.path.join(repo_root, 'sound_files')
+
+for path in (build_release, build_debug, build_root):
+    if os.path.exists(path) and path not in sys.path:
+        sys.path.insert(0, path)
 
 import audio_py
 
@@ -268,7 +272,7 @@ def test_rapid_sound_operations():
     """Rapidly load and unload sounds."""
     audio = audio_py.AudioManager.get_instance()
     group = audio.create_group("test")
-    sound_file = os.path.join(os.path.dirname(__file__), '..', 'sound_files', 'hit.wav')
+    sound_file = os.path.join(SOUND_DIR, 'hit.wav')
     
     if os.path.exists(sound_file):
         for i in range(20):
@@ -288,7 +292,7 @@ def test_simultaneous_sounds():
     group = audio.create_group("test")
     
     # Load various sounds
-    sound_dir = os.path.join(os.path.dirname(__file__), '..', 'sound_files')
+    sound_dir = SOUND_DIR
     sounds = []
     
     for sound_name in ['touch_1.wav', 'touch_2.wav', 'touch_3.wav', 'touch_4.wav', 
@@ -324,7 +328,7 @@ def test_many_layers():
     track = audio.create_track()
     music_group = audio.create_group("music")
     
-    sound_file = os.path.join(os.path.dirname(__file__), '..', 'sound_files', 'digital_base.wav')
+    sound_file = os.path.join(SOUND_DIR, 'digital_base.wav')
     
     if os.path.exists(sound_file):
         # Add same file as multiple layers with different names
@@ -359,7 +363,7 @@ def test_duplicate_layer_names():
     track = audio.create_track()
     music_group = audio.create_group("music")
     
-    sound_file = os.path.join(os.path.dirname(__file__), '..', 'sound_files', 'digital_base.wav')
+    sound_file = os.path.join(SOUND_DIR, 'digital_base.wav')
     
     if os.path.exists(sound_file):
         audio.add_layer(track, "same_name", sound_file, "music")
@@ -468,7 +472,7 @@ def test_container_extreme_pitch():
     
     container = audio_py.RandomSoundContainer("extreme", config)
     
-    sound_file = os.path.join(os.path.dirname(__file__), '..', 'sound_files', 'touch_1.wav')
+    sound_file = os.path.join(SOUND_DIR, 'touch_1.wav')
     if os.path.exists(sound_file):
         container.add_sound(sound_file)
     
@@ -489,7 +493,7 @@ def test_container_many_sounds():
     
     container = audio_py.RandomSoundContainer("many_sounds", config)
     
-    sound_dir = os.path.join(os.path.dirname(__file__), '..', 'sound_files')
+    sound_dir = SOUND_DIR
     
     # Add all touch sounds
     for i in range(1, 9):
@@ -518,7 +522,7 @@ def test_track_cleanup_with_layers():
     for cycle in range(5):
         track = audio.create_track()
         
-        sound_file = os.path.join(os.path.dirname(__file__), '..', 'sound_files', 'digital_base.wav')
+        sound_file = os.path.join(SOUND_DIR, 'digital_base.wav')
         if os.path.exists(sound_file):
             for i in range(5):
                 audio.add_layer(track, f"layer_{i}", sound_file, "music")
@@ -538,7 +542,7 @@ def test_group_cleanup_with_sounds():
         group = audio.create_group(f"group_{cycle}")
         
         sounds = []
-        sound_file = os.path.join(os.path.dirname(__file__), '..', 'sound_files', 'hit.wav')
+        sound_file = os.path.join(SOUND_DIR, 'hit.wav')
         if os.path.exists(sound_file):
             for i in range(10):
                 handle = audio.load_sound(sound_file, group)
@@ -571,7 +575,7 @@ def test_path_separators():
     group = audio.create_group("test")
     
     # Use os.path.join for platform-appropriate separators
-    sound_file = os.path.join(os.path.dirname(__file__), '..', 'sound_files', 'hit.wav')
+    sound_file = os.path.join(SOUND_DIR, 'hit.wav')
     
     if os.path.exists(sound_file):
         handle = audio.load_sound(sound_file, group)
@@ -590,7 +594,7 @@ def test_long_running():
     music_group = audio.create_group("music")
     
     track = audio.create_track()
-    sound_file = os.path.join(os.path.dirname(__file__), '..', 'sound_files', 'digital_base.wav')
+    sound_file = os.path.join(SOUND_DIR, 'digital_base.wav')
     
     if os.path.exists(sound_file):
         audio.add_layer(track, "loop", sound_file, "music")

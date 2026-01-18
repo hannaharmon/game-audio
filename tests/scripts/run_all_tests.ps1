@@ -24,9 +24,22 @@ function Write-Test {
 }
 
 # ============================================================================
-Write-TestHeader "BUILD VERIFICATION"
+Write-TestHeader "BUILD"
 
 $repoRoot = Join-Path (Join-Path $PSScriptRoot "..") ".."
+Push-Location $repoRoot
+
+if ($IsWindows -or $env:OS -match "Windows") {
+    & (Join-Path $repoRoot "scripts\build.ps1") -Configurations Debug,Release
+} else {
+    & (Join-Path $repoRoot "scripts\build.ps1") -Configurations Debug
+}
+
+Pop-Location
+
+# ============================================================================
+Write-TestHeader "BUILD VERIFICATION"
+
 $buildDebug = Join-Path $repoRoot "build\Debug"
 
 Write-Test "Basic tests executable exists" (Test-Path (Join-Path $buildDebug "test_audio_manager_basic.exe"))

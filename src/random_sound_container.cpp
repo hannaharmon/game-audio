@@ -18,10 +18,17 @@ RandomSoundContainer::RandomSoundContainer(const std::string& name, const Random
 }
 
 RandomSoundContainer::~RandomSoundContainer() {
-    // Unload all sounds
+    // Unload all sounds only if the audio system is still running.
     AudioManager& audio = AudioManager::GetInstance();
+    if (!audio.IsInitialized()) {
+        return;
+    }
     for (SoundHandle sound : sounds_) {
-        audio.DestroySound(sound);
+        try {
+            audio.DestroySound(sound);
+        } catch (...) {
+            // Destructors should not throw. Ignore cleanup errors on shutdown.
+        }
     }
 }
 
