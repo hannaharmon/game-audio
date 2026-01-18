@@ -6,6 +6,7 @@
  */
 
 #include "../src/audio_manager.h"
+#include "../src/audio_session.h"
 #include <iostream>
 #include <cassert>
 #include <thread>
@@ -56,6 +57,25 @@ void test_initialization() {
     // Shutdown and reinitialize
     audio.Shutdown();
     ASSERT(audio.Initialize(), "Should be able to reinitialize after shutdown")
+    
+    END_TEST
+}
+
+void test_audio_session_usage() {
+    TEST("AudioSession Usage")
+    
+    auto& audio = AudioManager::GetInstance();
+    audio.Shutdown();
+    
+    {
+        AudioSession session;
+        GroupHandle group = audio.CreateGroup("session_group");
+        ASSERT(group != 0, "AudioSession should allow group creation")
+        audio.SetGroupVolume(group, 0.5f);
+        audio.DestroyGroup(group);
+    }
+    
+    ASSERT(audio.Initialize(), "AudioManager should reinitialize after AudioSession scope")
     
     END_TEST
 }
@@ -431,6 +451,7 @@ int main(int argc, char* argv[]) {
     
     // Run all tests
     test_initialization();
+    test_audio_session_usage();
     test_master_volume();
     test_group_operations();
     test_sound_loading();

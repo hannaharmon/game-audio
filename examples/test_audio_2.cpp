@@ -19,6 +19,7 @@
 #include <ctime>
 
 #include "../src/audio_manager.h"
+#include "../src/audio_session.h"
 using namespace std::chrono_literals;
 
 bool digital_mode = true;
@@ -73,13 +74,10 @@ int main(int argc, char* argv[]) {
         std::cout << "Sound directory: " << sound_dir << "\n";
         std::cout << "Starting audio test program...\n";
         
-        // Get the audio manager instance and initialize it
-        auto& audio = audio::AudioManager::GetInstance();
+        // Initialize the audio system (recommended RAII session)
         std::cout << "Initializing audio system...\n";
-        if (!audio.Initialize()) {
-            std::cerr << "Failed to initialize audio system\n";
-            return 1;
-        }
+        audio::AudioSession session;
+        auto& audio = audio::AudioManager::GetInstance();
         std::cout << "Audio system initialized successfully\n";
 
         std::cout << "Creating audio groups...\n";
@@ -159,7 +157,7 @@ int main(int argc, char* argv[]) {
         if (input_thread.joinable()) {
             input_thread.join();
         }
-        audio.Shutdown();
+        session.Close();
         return 0;
     } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;

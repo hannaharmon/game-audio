@@ -2,11 +2,9 @@
 import audio_py
 from datetime import timedelta
 
-# Initialize the audio system
+# Initialize the audio system (recommended: keep session alive for app lifetime)
+session = audio_py.AudioSession()
 audio = audio_py.AudioManager.get_instance()
-if not audio.initialize():
-    print("Failed to initialize audio system")
-    exit(1)
 
 print("Audio system initialized successfully!")
 
@@ -67,5 +65,5 @@ print("Played random footstep")
 print("\nPress Enter to shutdown...")
 input()
 
-audio.shutdown()
+session.close()
 print("Audio system shut down")

@@ -36,6 +36,17 @@ def test_basic_initialization():
     audio.shutdown()
     print("PASS")
 
+def test_audio_session_usage():
+    """Test 1b: AudioSession usage for initialization/shutdown"""
+    print("Test 1b: AudioSession usage... ", end="")
+    session = audio_py.AudioSession()
+    audio = audio_py.AudioManager.get_instance()
+    group = audio.create_group("session_test")
+    audio.set_group_volume(group, 0.5)
+    audio.destroy_group(group)
+    session.close()
+    print("PASS")
+
 def test_master_volume():
     """Test 2: Master volume control"""
     print("Test 2: Master volume control... ", end="")
@@ -225,6 +236,7 @@ def run_all_tests():
     
     tests = [
         test_basic_initialization,
+        test_audio_session_usage,
         test_master_volume,
         test_group_creation,
         test_track_creation,

@@ -37,11 +37,8 @@ music_on = True
 def setup_audio():
     """Initialize the audio system and create the layered music track"""
     print("Initializing audio system...")
+    session = audio_py.AudioSession()
     audio = audio_py.AudioManager.get_instance()
-    
-    if not audio.initialize():
-        print("Failed to initialize audio system")
-        sys.exit(1)
     
     print("Audio system initialized successfully")
     
@@ -90,7 +87,7 @@ def setup_audio():
     
     hit_sfx = audio.load_sound(os.path.join(SOUND_DIR, "hit.wav"), sfx_group)
     
-    return audio, music_track, music_group, sfx_group, touch_sounds, hit_sfx
+    return session, audio, music_track, music_group, sfx_group, touch_sounds, hit_sfx
 
 def process_input(command, audio, music_track, music_group, sfx_group, touch_sounds, hit_sfx):
     """Process user input commands"""
@@ -201,7 +198,7 @@ def main():
     print(f"Sound directory: {SOUND_DIR}\n")
     
     # Setup audio system
-    audio, music_track, music_group, sfx_group, touch_sounds, hit_sfx = setup_audio()
+    session, audio, music_track, music_group, sfx_group, touch_sounds, hit_sfx = setup_audio()
     
     # Print commands
     print("\n=== Interactive Audio Test ===")
@@ -229,7 +226,7 @@ def main():
     
     # Cleanup
     print("Shutting down audio system...")
-    audio.shutdown()
+    session.close()
     print("Done!")
 
 if __name__ == "__main__":
