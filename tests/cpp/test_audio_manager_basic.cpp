@@ -280,6 +280,15 @@ void test_random_sound_folder() {
     ASSERT(true, "Cached random sound playback should work")
     
     audio.DestroyGroup(group);
+
+    // Simulate a typical shutdown/reinitialize cycle to ensure folder cache resets cleanly
+    audio.Shutdown();
+    ASSERT(audio.Initialize(), "Reinitialize after shutdown should work")
+    GroupHandle group2 = audio.CreateGroup("random_test_2");
+    audio.PlayRandomSoundFromFolder(sound_dir, group2);
+    wait_ms(200);
+    ASSERT(true, "Random sound playback should work after reinitialize")
+    audio.DestroyGroup(group2);
     
     END_TEST
 }

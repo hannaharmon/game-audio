@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 #include <stdexcept>
+#include <random>
 
 /**
  * @file audio_manager.h
@@ -443,6 +444,7 @@ private:
     atomic<bool> running_{false};     ///< Flag indicating if audio system is running
     thread update_thread_;            ///< Thread for audio updates
     mutable mutex resource_mutex_;    ///< Mutex for thread-safe resource access (mutable for const methods)
+    std::mt19937 rng_{std::random_device{}()}; ///< RNG for random playback
     ///@}
 
     ///@name Handle Counters

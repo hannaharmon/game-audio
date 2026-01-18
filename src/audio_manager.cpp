@@ -11,8 +11,8 @@
 #include <stdexcept>
 #include <iostream>
 #include <algorithm>
-#include <cstdlib>
 #include <cstring>
+#include <random>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -135,6 +135,7 @@ void AudioManager::Shutdown() {
     sounds_.clear();  // Clear sounds before groups
     groups_.clear();  // Clear groups before audio system
     group_names_.clear();
+    folder_sounds_.clear();
 
     // Explicitly destroy the audio system to ensure miniaudio threads are stopped
     audio_system_.reset();
@@ -382,6 +383,15 @@ void AudioManager::DestroySound(SoundHandle sound) {
     if (it != sounds_.end()) {
         sounds_.erase(it);
     }
+    for (auto folder_it = folder_sounds_.begin(); folder_it != folder_sounds_.end();) {
+        auto& handles = folder_it->second;
+        handles.erase(std::remove(handles.begin(), handles.end(), sound), handles.end());
+        if (handles.empty()) {
+            folder_it = folder_sounds_.erase(folder_it);
+        } else {
+            ++folder_it;
+        }
+    }
 }
 
 void AudioManager::StartSound(SoundHandle sound) {
@@ -446,11 +456,7 @@ void AudioManager::PlayRandomSoundFromFolder(const string& folderPath, GroupHand
         }
     }
     
-    // Check if we've already loaded sounds from this folder
-    auto folder_it = folder_sounds_.find(folderPath);
-    if (folder_it == folder_sounds_.end()) {
-        // First time accessing this folder - load all .wav files
-        std::vector<SoundHandle> loaded_sounds;
+    auto load_folder_sounds = [&](std::vector<SoundHandle>& loaded_sounds) {
         
         // Get all .wav files in the folder
         #ifdef _WIN32
@@ -516,6 +522,14 @@ void AudioManager::PlayRandomSoundFromFolder(const string& folderPath, GroupHand
             closedir(dir);
         }
         #endif
+    };
+
+    // Check if we've already loaded sounds from this folder
+    auto folder_it = folder_sounds_.find(folderPath);
+    if (folder_it == folder_sounds_.end()) {
+        // First time accessing this folder - load all .wav files
+        std::vector<SoundHandle> loaded_sounds;
+        load_folder_sounds(loaded_sounds);
         
         if (loaded_sounds.empty()) {
             std::cerr << "No .wav files found in folder: " << folderPath << std::endl;
@@ -524,11 +538,31 @@ void AudioManager::PlayRandomSoundFromFolder(const string& folderPath, GroupHand
         
         folder_sounds_[folderPath] = loaded_sounds;
         folder_it = folder_sounds_.find(folderPath);
+    } else {
+        // Prune invalid handles if sounds were destroyed
+        auto& handles = folder_it->second;
+        handles.erase(std::remove_if(handles.begin(), handles.end(),
+            [&](SoundHandle handle) {
+                return sounds_.find(handle) == sounds_.end();
+            }),
+            handles.end());
+        if (handles.empty()) {
+            folder_sounds_.erase(folder_it);
+            std::vector<SoundHandle> loaded_sounds;
+            load_folder_sounds(loaded_sounds);
+            if (loaded_sounds.empty()) {
+                std::cerr << "No .wav files found in folder: " << folderPath << std::endl;
+                return;
+            }
+            folder_sounds_[folderPath] = loaded_sounds;
+            folder_it = folder_sounds_.find(folderPath);
+        }
     }
     
     // Play a random sound from the folder
     if (!folder_it->second.empty()) {
-        size_t randomIndex = rand() % folder_it->second.size();
+        std::uniform_int_distribution<size_t> dist(0, folder_it->second.size() - 1);
+        size_t randomIndex = dist(rng_);
         SoundHandle randomSound = folder_it->second[randomIndex];
         
         auto sound_it = sounds_.find(randomSound);
