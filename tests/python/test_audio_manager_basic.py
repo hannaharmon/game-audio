@@ -47,6 +47,15 @@ def test_audio_session_usage():
     session.close()
     print("PASS")
 
+def test_logging_controls():
+    """Test 1c: Logging controls are accessible"""
+    print("Test 1c: Logging controls... ", end="")
+    audio_py.AudioManager.set_log_level(audio_py.LogLevel.Info)
+    assert audio_py.AudioManager.get_log_level() == audio_py.LogLevel.Info, "Log level should be Info"
+    audio_py.AudioManager.set_log_level(audio_py.LogLevel.Off)
+    assert audio_py.AudioManager.get_log_level() == audio_py.LogLevel.Off, "Log level should be Off"
+    print("PASS")
+
 def test_master_volume():
     """Test 2: Master volume control"""
     print("Test 2: Master volume control... ", end="")
@@ -237,6 +246,7 @@ def run_all_tests():
     tests = [
         test_basic_initialization,
         test_audio_session_usage,
+        test_logging_controls,
         test_master_volume,
         test_group_creation,
         test_track_creation,

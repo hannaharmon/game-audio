@@ -11,6 +11,7 @@
 #include <vector>
 #include <stdexcept>
 #include <random>
+#include "logging.h"
 
 /**
  * @file audio_manager.h
@@ -151,6 +152,19 @@ public:
      * @return float Current master volume (0.0 to 1.0)
      */
     float GetMasterVolume() const;
+    
+    /**
+     * @brief Set the global audio log level (runtime).
+     *
+     * Logging output is compiled out unless AUDIO_ENABLE_LOGGING is enabled
+     * at build time.
+     */
+    static void SetLogLevel(LogLevel level);
+
+    /**
+     * @brief Get the current audio log level.
+     */
+    static LogLevel GetLogLevel();
     ///@}
 
     ///@name Track Management

@@ -4,6 +4,7 @@
 #include "audio_track.h"
 #include "audio_group.h"
 #include "sound.h"
+#include "logging.h"
 
 #include <chrono>
 #include <thread>
@@ -56,7 +57,7 @@ void AudioManager::EnsureInitialized() const {
 
 bool AudioManager::Initialize() {
     if (running_) {
-        std::cerr << "AudioManager already running" << std::endl;
+        AUDIO_LOG(LogLevel::Warn, "AudioManager already running");
         return false;
     }
 
@@ -66,6 +67,7 @@ bool AudioManager::Initialize() {
     }
 
     running_ = true;
+    AUDIO_LOG(LogLevel::Info, "AudioManager initialized");
 
     update_thread_ = thread([this]() {
         while (running_) {
@@ -139,6 +141,7 @@ void AudioManager::Shutdown() {
 
     // Explicitly destroy the audio system to ensure miniaudio threads are stopped
     audio_system_.reset();
+    AUDIO_LOG(LogLevel::Info, "AudioManager shut down");
 }
 
 // System control
@@ -148,6 +151,14 @@ void AudioManager::SetMasterVolume(float volume) {
     if (audio_system_) {
         audio_system_->SetMasterVolume(volume);
     }
+}
+
+void AudioManager::SetLogLevel(LogLevel level) {
+    Logger::SetLevel(level);
+}
+
+LogLevel AudioManager::GetLogLevel() {
+    return Logger::GetLevel();
 }
 
 float AudioManager::GetMasterVolume() const {
@@ -465,7 +476,7 @@ void AudioManager::PlayRandomSoundFromFolder(const string& folderPath, GroupHand
         HANDLE hFind = FindFirstFileA(searchPath.c_str(), &findData);
         
         if (hFind != INVALID_HANDLE_VALUE) {
-            std::cout << "Found sounds in folder: " << folderPath << std::endl;
+            AUDIO_LOG(LogLevel::Info, "Found sounds in folder: " << folderPath);
             do {
                 if (!(findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
                     string filepath = folderPath + "/" + findData.cFileName;
@@ -485,7 +496,7 @@ void AudioManager::PlayRandomSoundFromFolder(const string& folderPath, GroupHand
         // Unix/Linux/macOS implementation using opendir/readdir
         DIR* dir = opendir(folderPath.c_str());
         if (dir != nullptr) {
-            std::cout << "Found sounds in folder: " << folderPath << std::endl;
+            AUDIO_LOG(LogLevel::Info, "Found sounds in folder: " << folderPath);
             struct dirent* entry;
             while ((entry = readdir(dir)) != nullptr) {
                 string filename = entry->d_name;
@@ -532,7 +543,7 @@ void AudioManager::PlayRandomSoundFromFolder(const string& folderPath, GroupHand
         load_folder_sounds(loaded_sounds);
         
         if (loaded_sounds.empty()) {
-            std::cerr << "No .wav files found in folder: " << folderPath << std::endl;
+            AUDIO_LOG(LogLevel::Warn, "No .wav files found in folder: " << folderPath);
             return;
         }
         
@@ -551,7 +562,7 @@ void AudioManager::PlayRandomSoundFromFolder(const string& folderPath, GroupHand
             std::vector<SoundHandle> loaded_sounds;
             load_folder_sounds(loaded_sounds);
             if (loaded_sounds.empty()) {
-                std::cerr << "No .wav files found in folder: " << folderPath << std::endl;
+                AUDIO_LOG(LogLevel::Warn, "No .wav files found in folder: " << folderPath);
                 return;
             }
             folder_sounds_[folderPath] = loaded_sounds;

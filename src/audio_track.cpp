@@ -4,6 +4,7 @@
 #include <cmath>
 #include <chrono>
 #include <iostream>
+#include "logging.h"
 
 #include "audio_track.h"
 #include "audio_system.h"
@@ -24,7 +25,7 @@ AudioTrack::~AudioTrack() {
 
 void AudioTrack::AddLayer(const std::string& name, const std::string& filepath, 
                          AudioGroup* group, bool looping) {
-  std::cout << "[AudioTrack::AddLayer] Adding layer: " << name << " from file: " << filepath << " (looping: " << (looping ? "yes" : "no") << ")" << std::endl;
+  AUDIO_LOG(LogLevel::Debug, "[AudioTrack::AddLayer] Adding layer: " << name << " from file: " << filepath << " (looping: " << (looping ? "yes" : "no") << ")");
   Layer layer;
   layer.sound = system_->CreateSound(filepath, group);
   layer.sound->SetLooping(looping);

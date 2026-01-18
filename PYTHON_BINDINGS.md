@@ -73,6 +73,22 @@ audio.set_master_volume(0.8)
 audio.shutdown()
 ```
 
+## Logging and Diagnostics
+
+Logging is disabled by default. To enable it, build the module with:
+
+```bash
+cmake -DAUDIO_ENABLE_LOGGING=ON ..
+```
+
+Then set the log level at runtime:
+
+```python
+import audio_py
+
+audio_py.AudioManager.set_log_level(audio_py.LogLevel.Info)
+```
+
 ## Using with Basilisk Engine
 
 If you're using this audio module with the [Basilisk game engine](https://github.com/BasiliskGroup/BasiliskEngine), you can integrate it in your project's CMakeLists.txt:

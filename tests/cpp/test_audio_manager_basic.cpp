@@ -7,6 +7,7 @@
 
 #include "../src/audio_manager.h"
 #include "../src/audio_session.h"
+#include "../src/logging.h"
 #include <iostream>
 #include <cassert>
 #include <thread>
@@ -77,6 +78,22 @@ void test_audio_session_usage() {
     
     ASSERT(audio.Initialize(), "AudioManager should reinitialize after AudioSession scope")
     
+    END_TEST
+}
+
+void test_logging_controls() {
+    TEST("Logging Controls")
+    
+    auto original = AudioManager::GetLogLevel();
+    AudioManager::SetLogLevel(LogLevel::Debug);
+    ASSERT(AudioManager::GetLogLevel() == LogLevel::Debug, "SetLogLevel should update global level")
+    ASSERT(Logger::IsEnabled(LogLevel::Info), "Info should be enabled at Debug level")
+    
+    AudioManager::SetLogLevel(LogLevel::Warn);
+    ASSERT(!Logger::IsEnabled(LogLevel::Info), "Info should be disabled at Warn level")
+    ASSERT(Logger::IsEnabled(LogLevel::Error), "Error should be enabled at Warn level")
+    
+    AudioManager::SetLogLevel(original);
     END_TEST
 }
 
@@ -461,6 +478,7 @@ int main(int argc, char* argv[]) {
     // Run all tests
     test_initialization();
     test_audio_session_usage();
+    test_logging_controls();
     test_master_volume();
     test_group_operations();
     test_sound_loading();

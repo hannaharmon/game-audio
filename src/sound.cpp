@@ -2,6 +2,7 @@
 #include "sound.h"
 #include "audio_group.h"
 #include "audio_manager.h"
+#include "logging.h"
 #include <iostream>
 #include <algorithm>
 #include <fstream>
@@ -75,7 +76,7 @@ void Sound::Play() {
   // Stream large music files, don't stream small SFX for better sync
   // Use streaming for files in music group or looping files (likely music)
   uint32_t flags = (group_ != nullptr || looping_) ? MA_SOUND_FLAG_STREAM : 0;
-  std::cout << "[Sound::Play] Loading sound file: " << filepath_ << " (streaming: " << (flags ? "yes" : "no") << ")" << std::endl;
+  AUDIO_LOG(LogLevel::Info, "[Sound::Play] Loading sound file: " << filepath_ << " (streaming: " << (flags ? "yes" : "no") << ")");
   ma_result result = ma_sound_init_from_file(
       engine_,
       filepath_.c_str(),
@@ -85,10 +86,10 @@ void Sound::Play() {
       instance->sound);
       
   if (result != MA_SUCCESS) {
-    std::cerr << "[Sound::Play] FAILED to load sound file: " << filepath_ << " (error code: " << result << ")" << std::endl;
+    AUDIO_LOG(LogLevel::Error, "[Sound::Play] FAILED to load sound file: " << filepath_ << " (error code: " << result << ")");
     return;  // Instance will be cleaned up by smart pointer
   }
-  std::cout << "[Sound::Play] Successfully loaded: " << filepath_ << std::endl;
+  AUDIO_LOG(LogLevel::Info, "[Sound::Play] Successfully loaded: " << filepath_);
   
   // Configure and play
   ma_sound_set_looping(instance->sound, looping_);
@@ -122,7 +123,7 @@ void Sound::SetVolume(float volume) {
   // Clamp volume between 0 and 1
   volume_ = (std::min)(1.0f, (std::max)(0.0f, volume));
   
-  std::cout << "[Sound::SetVolume] " << filepath_ << " -> " << volume_ << " (instances: " << sound_instances_.size() << ")" << std::endl;
+  AUDIO_LOG(LogLevel::Debug, "[Sound::SetVolume] " << filepath_ << " -> " << volume_ << " (instances: " << sound_instances_.size() << ")");
             
   for (auto& instance : sound_instances_) {
     if (instance->sound) {

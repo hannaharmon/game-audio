@@ -131,6 +131,7 @@ audio.Shutdown();
 - `-DBUILD_PYTHON_BINDINGS=OFF` - Disable Python bindings
 - `-DBUILD_AUDIO_TESTS=OFF` - Disable test builds
 - `-DBUILD_AUDIO_EXAMPLES=OFF` - Disable example builds
+- `-DAUDIO_ENABLE_LOGGING=ON` - Enable runtime logging output (default off)
 
 ## Architecture
 
@@ -175,6 +176,26 @@ tests/
 - **Python**: [PYTHON_BINDINGS.md](PYTHON_BINDINGS.md)
 - **C++ API**: [Online Doxygen Docs](https://hannaharmon.github.io/game-audio)
 - **Examples**: See `examples/` directory
+
+## Logging
+
+Logging is disabled by default. To enable runtime diagnostics, build with:
+
+```
+cmake -DAUDIO_ENABLE_LOGGING=ON ...
+```
+
+Then set the log level at runtime:
+
+```
+// C++
+audio::AudioManager::SetLogLevel(audio::LogLevel::Info);
+```
+
+```
+# Python
+audio_py.AudioManager.set_log_level(audio_py.LogLevel.Info)
+```
 
 ## License
 

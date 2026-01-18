@@ -19,6 +19,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(BUILD_AUDIO_TESTS "Build audio system tests" ON)
 option(BUILD_AUDIO_EXAMPLES "Build audio system examples" ON)
 option(BUILD_PYTHON_BINDINGS "Build Python bindings" ON)
+option(AUDIO_ENABLE_LOGGING "Enable runtime logging output" OFF)
 
 # Source files for audio library (shared between test executables)
 set(AUDIO_SOURCES
@@ -29,6 +30,7 @@ set(AUDIO_SOURCES
     src/audio_manager.cpp
     src/audio_session.cpp
     src/random_sound_container.cpp
+    src/logging.cpp
     include/miniaudio/miniaudio.cpp
 )
 
@@ -39,6 +41,9 @@ target_include_directories(audio_lib PUBLIC
     ${CMAKE_SOURCE_DIR}/src
     ${CMAKE_SOURCE_DIR}/include
 )
+if(AUDIO_ENABLE_LOGGING)
+    target_compile_definitions(audio_lib PUBLIC AUDIO_ENABLE_LOGGING=1)
+endif()
 
 # On Windows, link with winmm
 if(WIN32)

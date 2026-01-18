@@ -2,6 +2,7 @@
 #include "audio_group.h"
 #include <algorithm>
 #include <iostream>
+#include "logging.h"
 
 namespace audio {
 
@@ -9,7 +10,7 @@ AudioGroup::AudioGroup(ma_engine* engine)
     : engine_(engine), volume_(1.0f), is_fading_(false) {
   sound_group_ = new ma_sound_group;
   if (ma_sound_group_init(engine_, 0, nullptr, sound_group_) != MA_SUCCESS) {
-    std::cerr << "Failed to initialize sound group" << std::endl;
+    AUDIO_LOG(LogLevel::Error, "Failed to initialize sound group");
     delete sound_group_;
     sound_group_ = nullptr;
   }
@@ -44,9 +45,8 @@ void AudioGroup::FadeVolume(float targetVolume, std::chrono::milliseconds durati
   is_fading_ = true;
   fade_end_time_ = std::chrono::steady_clock::now() + duration;
   
-  std::cout << "Starting group volume fade from " << start_volume_ 
-            << " to " << target_volume_ 
-            << " over " << duration.count() << "ms" << std::endl;
+  AUDIO_LOG(LogLevel::Info, "Starting group volume fade from " << start_volume_
+      << " to " << target_volume_ << " over " << duration.count() << "ms");
 }
 
 }  // namespace audio

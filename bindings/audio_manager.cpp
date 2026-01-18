@@ -8,6 +8,13 @@ namespace py = pybind11;
 using namespace audio;
 
 void bind_audio_manager(py::module_& m) {
+    py::enum_<LogLevel>(m, "LogLevel")
+        .value("Off", LogLevel::Off)
+        .value("Error", LogLevel::Error)
+        .value("Warn", LogLevel::Warn)
+        .value("Info", LogLevel::Info)
+        .value("Debug", LogLevel::Debug);
+
     // Bind AudioManager singleton (use nodelete since it has private destructor)
     py::class_<AudioManager, std::unique_ptr<AudioManager, py::nodelete>>(m, "AudioManager",
         "Central manager for all audio functionality.\n\n"
@@ -50,6 +57,16 @@ void bind_audio_manager(py::module_& m) {
              "Get the current master volume level.\n\n"
              "Returns:\n"
              "    float: Current master volume (0.0 to 1.0)")
+        
+        .def_static("set_log_level", &AudioManager::SetLogLevel,
+             py::arg("level"),
+             "Set the global audio log level.\n\n"
+             "Args:\n"
+             "    level (LogLevel): Desired logging level")
+        .def_static("get_log_level", &AudioManager::GetLogLevel,
+             "Get the current audio log level.\n\n"
+             "Returns:\n"
+             "    LogLevel: Current logging level")
         
         // Track Management
         .def("create_track", &AudioManager::CreateTrack,
