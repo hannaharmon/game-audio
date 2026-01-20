@@ -27,14 +27,23 @@ jobs:
         echo "Version: $VERSION"
         echo "Tag: $TAG_NAME"
     
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+    
+    - name: Install build dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake ninja-build doxygen graphviz
+    
     - name: Build and test
+      shell: pwsh
       run: |
         ./tests/scripts/run_all_tests.ps1
     
     - name: Generate documentation
       run: |
-        sudo apt-get update
-        sudo apt-get install -y doxygen graphviz
         doxygen Doxyfile
     
     - name: Build versioned documentation structure
