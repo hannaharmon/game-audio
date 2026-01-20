@@ -42,9 +42,6 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y doxygen graphviz
-    - name: Generate latest documentation
-      run: doxygen Doxyfile
-    
     - name: Get all version tags
       id: get_versions
       run: |
@@ -58,9 +55,13 @@ jobs:
       run: |
         mkdir -p docs/versioned
         chmod +x scripts/build_versioned_docs.sh
+        chmod +x scripts/inject_version_switcher.sh
         
-        # Generate latest docs structure
-        ./scripts/build_versioned_docs.sh
+        # Generate latest docs structure (without injecting switcher yet - we'll do it after all versions are ready)
+        echo "Building latest documentation"
+        doxygen Doxyfile
+        rm -rf docs/versioned/latest
+        cp -r docs/html docs/versioned/latest
         
         # Generate docs for each tagged version
         VERSIONS="${{ steps.get_versions.outputs.versions }}"
@@ -80,13 +81,36 @@ jobs:
           mkdir -p "docs/versioned/${tag}"
           cp -r docs/html/* "docs/versioned/${tag}/" || true
           
-          # Inject version switcher into all docs pages
-          chmod +x scripts/inject_version_switcher.sh
-          ./scripts/inject_version_switcher.sh "docs/versioned/${tag}" "docs/versioned" || true
-          
           # Return to original branch
           git checkout ${CURRENT_BRANCH} --quiet
         done
+        
+        # Now inject version switcher into ALL directories (latest + all versions)
+        # This ensures the dropdown has all available versions
+        echo "Injecting version switcher into all documentation..."
+        ./scripts/inject_version_switcher.sh "docs/versioned/latest" "docs/versioned"
+        for tag in $VERSIONS; do
+          if [ -d "docs/versioned/${tag}" ]; then
+            ./scripts/inject_version_switcher.sh "docs/versioned/${tag}" "docs/versioned" || true
+          fi
+        done
+        
+        # Create redirect index page
+        printf '%s\n' \
+          '<!DOCTYPE html>' \
+          '<html lang="en">' \
+          '<head>' \
+          '    <meta charset="UTF-8">' \
+          '    <meta http-equiv="refresh" content="0; url=./latest/index.html">' \
+          '    <title>Game Audio Module - Documentation</title>' \
+          '    <script>' \
+          '        window.location.href = '\''./latest/index.html'\'';' \
+          '    </script>' \
+          '</head>' \
+          '<body>' \
+          '    <p>Redirecting to <a href="./latest/index.html">latest documentation</a>...</p>' \
+          '</body>' \
+          '</html>' > docs/versioned/index.html
     
     
     - name: Upload Pages artifact
