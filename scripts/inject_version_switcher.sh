@@ -9,8 +9,9 @@ if [ -z "$DOCS_DIR" ] || [ -z "$VERSIONED_DIR" ]; then
     exit 1
 fi
 
-# Get list of available versions
-VERSIONS=$(find "${VERSIONED_DIR}" -maxdepth 1 -type d -name "v*" | sed 's|.*/||' | sort -V -r)
+# Get list of available versions (only v*.*.* patterns like v1.0.0, exclude "versioned" and "latest" directories)
+# Use find with pattern matching and grep to filter for semantic version pattern
+VERSIONS=$(find "${VERSIONED_DIR}" -maxdepth 1 -type d -name "v*" | sed 's|.*/||' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+' | sort -V -r)
 
 # Build version options HTML
 VERSION_OPTIONS_HTML="<option value=\"latest\">Latest (main branch)</option>"
@@ -23,9 +24,9 @@ done
 TEMP_FILE=$(mktemp)
 cat > "$TEMP_FILE" << 'EOFHERE'
 <!-- Version Switcher -->
-<div id="version-switcher-container" style="position: fixed; top: 10px; right: 10px; z-index: 10000; background: white; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-    <label for="version-switcher" style="display: block; font-size: 12px; margin-bottom: 5px; font-weight: 600;">Version:</label>
-    <select id="version-switcher" onchange="switchDocVersion()" style="padding: 5px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer;">
+<div id="version-switcher-container" style="position: fixed; top: 10px; right: 10px; z-index: 10000; background: #2d2d2d; padding: 8px 12px; border: 1px solid #555; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;">
+    <label for="version-switcher" style="display: block; font-size: 11px; margin-bottom: 4px; font-weight: 600; color: #bbb; text-transform: uppercase; letter-spacing: 0.5px;">Version:</label>
+    <select id="version-switcher" onchange="switchDocVersion()" style="padding: 6px 8px; font-size: 13px; border: 1px solid #555; border-radius: 3px; cursor: pointer; background: #1e1e1e; color: #ddd; min-width: 160px; outline: none; transition: border-color 0.2s;">
 EOFHERE
 
 # Insert version options
@@ -35,50 +36,69 @@ echo "$VERSION_OPTIONS_HTML" >> "$TEMP_FILE"
 cat >> "$TEMP_FILE" << 'EOFHERE'
     </select>
 </div>
+<style>
+    #version-switcher:hover {
+        border-color: #777 !important;
+    }
+    #version-switcher:focus {
+        border-color: #4a9eff !important;
+    }
+    #version-switcher option {
+        background: #1e1e1e;
+        color: #ddd;
+    }
+</style>
 <script>
     function switchDocVersion() {
         const select = document.getElementById('version-switcher');
         const version = select.value;
         
-        // Determine current path structure
+        // Get current path and extract the page path
         const currentPath = window.location.pathname;
-        let basePath = '';
         
-        // If we're in a versioned directory (v1.0.0/ or latest/), go up two levels
-        if (currentPath.match(/\/(v[0-9.]+|latest)\//)) {
-            basePath = '../../';
-        } else {
-            // If we're at root, use relative paths
-            basePath = './';
+        // Extract the page path (everything after /game-audio/latest/ or /game-audio/v*.*.*/)
+        // For GitHub Pages: /game-audio/latest/index.html -> index.html
+        //                  /game-audio/latest/classes.html -> classes.html
+        let pagePath = currentPath;
+        
+        // Remove GitHub Pages base path and version prefix
+        pagePath = pagePath.replace(/^.*\/game-audio\/(v[0-9.]+|latest)\//, '');
+        
+        // If we couldn't extract a path (shouldn't happen), default to index.html
+        if (!pagePath || pagePath === '' || pagePath === '/') {
+            pagePath = 'index.html';
         }
         
-        // Get current page path relative to version root
-        let currentPage = currentPath;
-        // Remove version prefix if present
-        currentPage = currentPage.replace(/.*\/(v[0-9.]+|latest)\//, '');
-        // Remove GitHub Pages base path if present
-        currentPage = currentPage.replace(/.*\/game-audio\//, '');
-        // Ensure we have a page name
-        if (!currentPage || currentPage === '/') {
-            currentPage = 'index.html';
-        }
+        // Construct the new URL
+        // For "latest", go to /game-audio/latest/<page>
+        // For versions, go to /game-audio/<version>/<page>
+        const baseUrl = window.location.origin;
+        let newUrl;
         
         if (version === 'latest') {
-            window.location.href = basePath + 'latest/' + currentPage;
+            newUrl = baseUrl + '/game-audio/latest/' + pagePath;
         } else {
-            window.location.href = basePath + version + '/' + currentPage;
+            newUrl = baseUrl + '/game-audio/' + version + '/' + pagePath;
         }
+        
+        window.location.href = newUrl;
     }
     
     // Set current version in dropdown based on URL
     (function() {
         const path = window.location.pathname;
-        const versionMatch = path.match(/\/(v[0-9.]+|latest)\//);
+        const versionMatch = path.match(/\/game-audio\/(v[0-9.]+|latest)\//);
         if (versionMatch) {
             const currentVersion = versionMatch[1];
             const select = document.getElementById('version-switcher');
             if (select) {
                 select.value = currentVersion;
+            }
+        } else {
+            // If we're on a page without a version in the path, default to "latest"
+            const select = document.getElementById('version-switcher');
+            if (select) {
+                select.value = 'latest';
             }
         }
     })();
