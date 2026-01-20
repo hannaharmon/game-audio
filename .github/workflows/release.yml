@@ -45,7 +45,7 @@ jobs:
         ./scripts/build_versioned_docs.sh "${VERSION}"
     
     - name: Upload versioned docs to artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: docs-v${{ steps.tag_version.outputs.version }}
         path: docs/versioned/v${{ steps.tag_version.outputs.version }}
@@ -92,5 +92,6 @@ jobs:
         files: ./docs-v${{ steps.tag_version.outputs.version }}.zip
         draft: false
         prerelease: false
+        update: true  # Update release if it already exists (e.g., if created via GitHub UI)
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

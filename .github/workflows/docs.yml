@@ -3,10 +3,13 @@ name: Deploy Documentation
 on:
   push:
     branches: [ main, master ]
+    tags:
+      - 'v*.*.*'  # Also run when version tags are pushed
   workflow_dispatch:
 
 # Documentation updates on:
 # - Every push to main/master branch (latest docs always reflect main)
+# - When version tags are pushed (generates versioned docs immediately)
 # - Manual dispatch (workflow_dispatch)
 # Docs do NOT update on PRs or feature branch pushes
 
@@ -78,7 +81,7 @@ jobs:
     
     
     - name: Upload Pages artifact
-      uses: actions/upload-pages-artifact@v3
+      uses: actions/upload-pages-artifact@v4
       with:
         path: ./docs/versioned
     - name: Deploy to GitHub Pages
