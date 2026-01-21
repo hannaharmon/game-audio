@@ -208,5 +208,5 @@ cmake .. -DBUILD_PYTHON_BINDINGS=OFF
 ## Example Projects
 
 See the `examples/` directory for complete working examples:
-- `python_example.py` - Basic Python usage
+- `python_interactive.py` - Interactive Python example with layered music
 - `test_audio.cpp` - C++ usage for comparison

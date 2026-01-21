@@ -110,7 +110,7 @@ audio.Shutdown();
 
 ## Examples
 
-- **Python**: [examples/python_example.py](examples/python_example.py)
+- **Python**: [examples/python_interactive.py](examples/python_interactive.py)
 - **C++ Basic**: [examples/test_audio.cpp](examples/test_audio.cpp)
 - **C++ Advanced**: [examples/test_audio_2.cpp](examples/test_audio_2.cpp)
 
