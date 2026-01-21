@@ -267,6 +267,7 @@ public:
      * 
      * @param track Handle to the track to play
      * @throws InvalidHandleException If the track handle is invalid
+     * @throws FileLoadException If any layer's sound file cannot be loaded or initialized for playback
      */
     void PlayTrack(TrackHandle track);
     
@@ -412,6 +413,7 @@ public:
      * 
      * @param sound Handle to the sound to play
      * @throws InvalidHandleException If the sound handle is invalid
+     * @throws FileLoadException If the sound file cannot be loaded or initialized for playback
      */
     void PlaySound(SoundHandle sound);
     
@@ -456,6 +458,8 @@ public:
      * 
      * @param folderPath Path to the folder containing sound files
      * @param group Optional group handle to assign the sounds to
+     * @throws AudioException If the folder path is empty
+     * @throws FileLoadException If the selected sound file cannot be loaded or initialized for playback
      */
     void PlayRandomSoundFromFolder(const string& folderPath, GroupHandle group = GroupHandle::Invalid());
     ///@}

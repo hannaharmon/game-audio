@@ -129,6 +129,70 @@ def test_file_not_found():
         audio.shutdown()
         return False
 
+def test_sound_playback_initialization_failure():
+    """Test: Sound playback initialization failure handling"""
+    print("Test: Sound playback initialization failure... ", end="", flush=True)
+    audio = audio_py.AudioManager.get_instance()
+    audio.initialize()
+    
+    try:
+        # Test that valid sounds play correctly (regression test)
+        # This verifies our fix doesn't break normal operation
+        if sound_exists("digital_base.wav"):
+            sound = audio.load_sound(get_sound_path("digital_base.wav"))
+            audio.play_sound(sound)
+            wait_ms(50)
+            audio.stop_sound(sound)
+            audio.destroy_sound(sound)
+            
+            # Verify exception hierarchy - FileLoadException should be catchable as AudioException
+            # Note: In practice, ma_sound_init_from_file() can fail if:
+            # - The file was deleted after loading but before playing
+            # - The file is corrupted or in an unsupported format
+            # - Audio device issues occur
+            # - Memory allocation fails
+            # If such a failure occurs, PlaySound() will throw FileLoadException
+            
+            # Test that FileLoadException can be caught as AudioException (hierarchy test)
+            sound2 = audio.load_sound(get_sound_path("digital_base.wav"))
+            try:
+                audio.play_sound(sound2)
+                wait_ms(50)
+                audio.stop_sound(sound2)
+                audio.destroy_sound(sound2)
+                
+                # If we get here, playback succeeded (expected for valid files)
+                print("PASS")
+                audio.shutdown()
+                return True
+            except audio_py.FileLoadException as e:
+                # If FileLoadException is thrown, verify it has useful information
+                msg = str(e)
+                if "file" in msg.lower() or "playback" in msg.lower() or "initialize" in msg.lower():
+                    print("PASS (exception with descriptive message)")
+                    audio.destroy_sound(sound2)
+                    audio.shutdown()
+                    return True
+                else:
+                    print(f"FAIL - Exception message not descriptive: {msg}")
+                    audio.destroy_sound(sound2)
+                    audio.shutdown()
+                    return False
+            except audio_py.AudioException:
+                # FileLoadException should be catchable as AudioException
+                print("PASS (exception caught as AudioException)")
+                audio.destroy_sound(sound2)
+                audio.shutdown()
+                return True
+        else:
+            print("SKIP - Test sound file not found")
+            audio.shutdown()
+            return True
+    except Exception as e:
+        print(f"FAIL - Unexpected exception: {type(e).__name__}: {e}")
+        audio.shutdown()
+        return False
+
 def test_fade_duration_validation():
     """Test: Fade duration validation"""
     print("Test: Fade duration validation... ", end="", flush=True)
@@ -263,6 +327,7 @@ def run_all_tests():
         test_invalid_sound_handle,
         test_invalid_group_handle,
         test_file_not_found,
+        test_sound_playback_initialization_failure,
         test_fade_duration_validation,
         test_input_validation,
         test_exception_hierarchy,

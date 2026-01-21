@@ -105,6 +105,8 @@ class Sound {
    * 
    * Creates and plays a new instance of this sound, allowing
    * multiple overlapping playbacks of the same sound.
+   * 
+   * @throws FileLoadException If the sound file cannot be loaded or initialized for playback
    */
   void Play();
   

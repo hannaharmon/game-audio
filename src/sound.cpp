@@ -87,8 +87,12 @@ void Sound::Play() {
       
   if (result != MA_SUCCESS) {
     AUDIO_LOG(LogLevel::Error, "[Sound::Play] FAILED to load sound file: " << filepath_ << " (error code: " << result << ")");
+    // Clean up the uninitialized sound before throwing
+    // Set to nullptr so destructor doesn't try to uninit an uninitialized sound
+    delete instance->sound;
+    instance->sound = nullptr;
     // Instance will be cleaned up automatically by unique_ptr<SoundInstance> destructor
-    return;
+    throw FileLoadException("Failed to initialize sound playback for file: " + filepath_ + " (error code: " + std::to_string(result) + ")");
   }
   AUDIO_LOG(LogLevel::Info, "[Sound::Play] Successfully loaded: " << filepath_);
   
