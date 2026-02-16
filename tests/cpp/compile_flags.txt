@@ -1,0 +1,6 @@
+-I../../src
+-I../../include
+-I.
+-I../cpp
+-std=c++20
+-D_WIN32

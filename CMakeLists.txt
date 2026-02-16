@@ -85,6 +85,13 @@ if(BUILD_AUDIO_TESTS)
         add_executable(${TEST_NAME}
             tests/cpp/${TEST_NAME}.cpp
         )
+        # Explicitly set include directories for test targets
+        # (audio_lib has PUBLIC includes, but being explicit helps IDEs)
+        target_include_directories(${TEST_NAME} PRIVATE
+            ${CMAKE_SOURCE_DIR}/src
+            ${CMAKE_SOURCE_DIR}/include
+            ${CMAKE_SOURCE_DIR}/tests/cpp
+        )
         target_link_libraries(${TEST_NAME} PRIVATE audio_lib test_common)
         target_compile_definitions(${TEST_NAME} PRIVATE
             SOUND_FILES_DIR="${CMAKE_SOURCE_DIR}/sound_files/"

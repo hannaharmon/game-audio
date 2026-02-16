@@ -1,33 +1,38 @@
 # Clangd configuration for Game Audio Module
 # This file helps clangd understand include paths and compilation settings
-#
-# Note: clangd may run from different directories when processing files.
-# Paths here are relative to where .clangd is located (workspace root).
-# For files in src/, we need paths that work from src/ directory.
 
 CompileFlags:
+  # Try to use compile_commands.json if it exists (best option)
+  # Note: Visual Studio generator doesn't create this by default
+  CompilationDatabase: build
+  
+  # Explicit include paths - these work from any file location
+  # clangd processes files from their directory, so we need paths relative to each file
   Add:
-    # Include directories - paths relative to workspace root
-    # For files in src/ that include "miniaudio/miniaudio.h", we need ../include
-    # For files in tests/cpp/ that include "audio_manager.h", we need ../src
-    # For files in bindings/ that include headers, we need ../src
-    - -I../include
-    - -I../src
-    - -Iinclude
+    # Source directory - where audio_manager.h, sound.h, etc. are located
     - -Isrc
-    - -I../tests/cpp
+    - -I../src
+    - -I../../src
+    - -I../../../src
+    # Include directory - where miniaudio headers are located  
+    - -Iinclude
+    - -I../include
+    - -I../../include
+    - -I../../../include
+    # Test common directory
     - -Itests/cpp
-    - -I../bindings
+    - -I../tests/cpp
+    - -I../../tests/cpp
+    - -I../../../tests/cpp
+    # Bindings directory
     - -Ibindings
+    - -I../bindings
+    - -I../../bindings
+    - -I../../../bindings
     # C++ standard
     - -std=c++20
     # Windows-specific defines
     - -D_WIN32
-    # Note: NOMINMAX is defined in source files, don't redefine here
-  # Try to use compile_commands.json if available (best option)
-  # Note: Visual Studio generator doesn't create compile_commands.json by default
-  # For now, we rely on the explicit include paths above
-  CompilationDatabase: build
 
 Diagnostics:
   UnusedIncludes: None
