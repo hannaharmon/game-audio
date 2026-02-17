@@ -25,15 +25,44 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        # Target the most commonly used Python versions (covers ~95% of users)
-        # 3.10, 3.11, 3.12 are the most popular as of 2024
-        # 3.13 is included for users on the latest version
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
-        exclude:
+        # Explicit matrix so we can also provide the matching cibuildwheel selector
+        include:
+          - os: ubuntu-latest
+            python-version: "3.10"
+            cibw-build: "cp310-*"
+          - os: ubuntu-latest
+            python-version: "3.11"
+            cibw-build: "cp311-*"
+          - os: ubuntu-latest
+            python-version: "3.12"
+            cibw-build: "cp312-*"
+          - os: ubuntu-latest
+            python-version: "3.13"
+            cibw-build: "cp313-*"
+
+          - os: windows-latest
+            python-version: "3.10"
+            cibw-build: "cp310-*"
+          - os: windows-latest
+            python-version: "3.11"
+            cibw-build: "cp311-*"
+          - os: windows-latest
+            python-version: "3.12"
+            cibw-build: "cp312-*"
+          - os: windows-latest
+            python-version: "3.13"
+            cibw-build: "cp313-*"
+
           # Reduce matrix size - test fewer Python versions on macOS
           - os: macos-latest
-            python-version: "3.10"
+            python-version: "3.11"
+            cibw-build: "cp311-*"
+          - os: macos-latest
+            python-version: "3.12"
+            cibw-build: "cp312-*"
+          - os: macos-latest
+            python-version: "3.13"
+            cibw-build: "cp313-*"
     
     steps:
     - name: Checkout repository
@@ -56,12 +85,15 @@ jobs:
     - name: Build wheel (cibuildwheel)
       env:
         # Build only the selected Python version in this matrix job
-        CIBW_BUILD: cp${{ matrix.python-version }}-*
+        CIBW_BUILD: ${{ matrix.cibw-build }}
         # Avoid PyPy/musllinux builds for now
         CIBW_SKIP: "pp* *-musllinux_*"
         # Ensure PyPI-accepted Linux wheel tags
         CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
+        # Keep architecture matrix small and aligned with our release targets
         CIBW_ARCHS_LINUX: x86_64
+        CIBW_ARCHS_WINDOWS: AMD64
+        CIBW_ARCHS_MACOS: arm64
       run: |
         python -m cibuildwheel --output-dir dist
     
