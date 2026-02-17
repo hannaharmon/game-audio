@@ -177,13 +177,41 @@ except ImportError:
     print('Warning: pybind11-stubgen not available - skipping stub generation', file=sys.stderr)
     sys.exit(0)
 
-pythonpath = os.environ.get('PYTHONPATH', '')
 build_dir = sys.argv[1]
 output_dir = sys.argv[2]
-os.environ['PYTHONPATH'] = build_dir + os.pathsep + pythonpath if pythonpath else build_dir
+
+# On Windows with MSBuild, the module might be in Release/Debug subdirectories
+# Add multiple possible paths to sys.path
+possible_paths = [
+    build_dir,
+    os.path.join(build_dir, 'Release'),
+    os.path.join(build_dir, 'Debug'),
+    os.path.join(build_dir, 'RelWithDebInfo'),
+    os.path.join(build_dir, 'MinSizeRel'),
+]
+
+# Add all possible paths to sys.path
+for path in possible_paths:
+    if os.path.exists(path) and path not in sys.path:
+        sys.path.insert(0, path)
+
+# Also set PYTHONPATH environment variable (colon-separated on Unix, semicolon on Windows)
+pythonpath = os.environ.get('PYTHONPATH', '')
+all_paths = os.pathsep.join(possible_paths)
+os.environ['PYTHONPATH'] = all_paths + os.pathsep + pythonpath if pythonpath else all_paths
 
 # Ensure output directory exists
 os.makedirs(output_dir, exist_ok=True)
+
+# Verify the module can be imported before running stubgen
+try:
+    print(f'Checking if game_audio module can be imported from {build_dir}...', file=sys.stderr)
+    import game_audio
+    print(f'Successfully imported game_audio from {build_dir}', file=sys.stderr)
+except ImportError as e:
+    print(f'Warning: Cannot import game_audio module: {e}', file=sys.stderr)
+    print(f'Files in build_dir: {os.listdir(build_dir) if os.path.exists(build_dir) else \"NOT FOUND\"}', file=sys.stderr)
+    # Try to continue anyway - pybind11-stubgen might still work
 
 try:
     print(f'Running pybind11-stubgen: build_dir={build_dir}, output_dir={output_dir}', file=sys.stderr)
@@ -191,7 +219,8 @@ try:
         [sys.executable, '-m', 'pybind11_stubgen', '--output-dir', output_dir, 'game_audio', '--ignore-all-errors'],
         cwd=build_dir,
         capture_output=True,
-        text=True
+        text=True,
+        env=os.environ.copy()
     )
     if result.returncode == 0:
         stub_file = os.path.join(output_dir, 'game_audio.pyi')
