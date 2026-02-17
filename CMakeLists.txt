@@ -212,9 +212,12 @@ except Exception as e:
         # ======================================================
         # Install the compiled module (.pyd on Windows, .so on Linux/Mac)
         # scikit-build-core sets CMAKE_INSTALL_PREFIX to site-packages automatically
+        # The extension will be installed to game_audio/ directory alongside __init__.py
+        # Use both LIBRARY and RUNTIME to ensure the extension is installed on all platforms
         install(TARGETS game_audio
             LIBRARY DESTINATION game_audio
             RUNTIME DESTINATION game_audio
+            ARCHIVE DESTINATION game_audio
         )
         
         # Install the __init__.py file for the package

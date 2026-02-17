@@ -13,6 +13,8 @@ on:
       - 'v*.*.*'  # Build wheels for version tags
   pull_request:
     branches: [ main, master ]
+    # Don't run on draft PRs to save CI resources
+    types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
 
 permissions:
@@ -93,7 +95,11 @@ jobs:
           exit 1
         fi
         echo "Installing wheel: $WHEEL_FILE"
+        # Debug: List wheel contents before installation
+        python -m zipfile -l "$WHEEL_FILE" | grep -E "(game_audio|\.pyd|\.so|\.dylib)" || echo "No extension files found in wheel"
         pip install "$WHEEL_FILE"
+        # Debug: Check what was installed
+        python -c "import game_audio; import os; pkg_dir = os.path.dirname(game_audio.__file__); print(f'Package directory: {pkg_dir}'); print(f'Files: {os.listdir(pkg_dir)}')"
         python -c "import game_audio; print(f'Successfully imported game_audio version {game_audio.__version__}')"
 
   # Job to upload all wheels to GitHub Release (only on tag pushes)

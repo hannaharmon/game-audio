@@ -54,5 +54,6 @@ BUILD_AUDIO_EXAMPLES = "OFF"
 [tool.scikit-build.wheel]
 # Package the game_audio module and __init__.py
 # scikit-build-core will automatically detect packages from CMake install() commands
+# The compiled extension (.pyd/.so) will be included automatically from CMake install
 packages = ["game_audio"]
 exclude = ["tests", "examples", "*.tests", "*.tests.*", "tests.*"]

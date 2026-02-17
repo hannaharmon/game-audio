@@ -27,10 +27,10 @@ __version__ = "2.0.0"
 # Import the C++ extension module
 # The compiled extension is created by pybind11 and installed in this package directory
 # Python's import system automatically handles platform-specific suffixes
-# (e.g., game_audio.cp311-win_amd64.pyd on Windows)
+# (e.g., game_audio.cp311-win_amd64.pyd on Windows, game_audio.cp310-x86_64-linux-gnu.so on Linux)
 try:
-    # Import the compiled extension module from the same package
-    # Python will find the .pyd/.so file even with platform-specific suffixes
+    # Python's import system will automatically find the extension with platform-specific suffix
+    # We use a relative import to avoid circular import issues
     from . import game_audio as _game_audio_ext
     # Import all public symbols from the extension module into this package's namespace
     from .game_audio import *
