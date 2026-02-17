@@ -145,8 +145,11 @@ if(BUILD_PYTHON_BINDINGS)
         target_link_libraries(game_audio PRIVATE audio_lib)
         
         # Set output directory for Python module
+        # Note: pybind11 will create platform-specific filenames (e.g., game_audio.cp311-win_amd64.pyd)
+        # but Python can still import it as 'game_audio'
         set_target_properties(game_audio PROPERTIES
             LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
+            OUTPUT_NAME game_audio
         )
         
         # ======================================================

@@ -79,8 +79,21 @@ jobs:
         retention-days: 30
     
     - name: Verify wheel installation
+      shell: bash
       run: |
-        pip install dist/*.whl
+        # Find the wheel file (handle different shell behaviors)
+        if [ "$RUNNER_OS" == "Windows" ]; then
+          WHEEL_FILE=$(ls dist/*.whl 2>/dev/null | head -n 1)
+        else
+          WHEEL_FILE=$(ls dist/*.whl | head -n 1)
+        fi
+        if [ -z "$WHEEL_FILE" ]; then
+          echo "ERROR: No wheel file found in dist/"
+          ls -la dist/ || echo "dist/ directory does not exist"
+          exit 1
+        fi
+        echo "Installing wheel: $WHEEL_FILE"
+        pip install "$WHEEL_FILE"
         python -c "import game_audio; print(f'Successfully imported game_audio version {game_audio.__version__}')"
 
   # Job to upload all wheels to GitHub Release (only on tag pushes)

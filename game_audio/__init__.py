@@ -25,12 +25,32 @@ Example usage:
 __version__ = "2.0.0"
 
 # Import the C++ extension module
+# The compiled extension is created by pybind11 and installed in this package directory
+# Python's import system automatically handles platform-specific suffixes
+# (e.g., game_audio.cp311-win_amd64.pyd on Windows)
 try:
+    # Import the compiled extension module from the same package
+    # Python will find the .pyd/.so file even with platform-specific suffixes
+    from . import game_audio as _game_audio_ext
+    # Import all public symbols from the extension module into this package's namespace
     from .game_audio import *
-except ImportError:
-    # If the module isn't built yet, provide helpful error message
+except ImportError as e:
+    # Provide helpful error message with debugging info
     import sys
+    import os
+    package_dir = os.path.dirname(os.path.abspath(__file__))
     print("Error: game_audio C++ extension not found.", file=sys.stderr)
+    print(f"Package directory: {package_dir}", file=sys.stderr)
+    if os.path.exists(package_dir):
+        files = os.listdir(package_dir)
+        print(f"Files in package directory: {files}", file=sys.stderr)
+        # Check for extension files
+        ext_files = [f for f in files if f.startswith('game_audio.') and (f.endswith('.pyd') or f.endswith('.so'))]
+        if ext_files:
+            print(f"Found extension files: {ext_files}", file=sys.stderr)
+        else:
+            print("No extension files (.pyd/.so) found in package directory", file=sys.stderr)
+    print(f"Import error: {e}", file=sys.stderr)
     print("Make sure to build the project with: cmake --build build", file=sys.stderr)
     raise
 
