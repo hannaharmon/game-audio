@@ -51,11 +51,12 @@ try:
     
     if extension_file and os.path.exists(extension_file):
         # Load the extension file directly using importlib
-        spec = importlib.util.spec_from_file_location('game_audio._extension', extension_file)
+        # The module name must match what pybind11 exported (PyInit_game_audio)
+        spec = importlib.util.spec_from_file_location('game_audio.game_audio', extension_file)
         if spec and spec.loader:
             ext_module = importlib.util.module_from_spec(spec)
             # Store in sys.modules to avoid re-loading and prevent circular imports
-            sys.modules['game_audio._extension'] = ext_module
+            sys.modules['game_audio.game_audio'] = ext_module
             spec.loader.exec_module(ext_module)
         else:
             raise ImportError(f"Could not load extension from {extension_file}")
