@@ -81,7 +81,7 @@ jobs:
     - name: Verify wheel installation
       run: |
         pip install dist/*.whl
-        python -c "import audio_py; print(f'Successfully imported audio_py version {audio_py.__version__}')"
+        python -c "import game_audio; print(f'Successfully imported game_audio version {game_audio.__version__}')"
 
   # Job to upload all wheels to GitHub Release (only on tag pushes)
   upload_release:
