@@ -22,7 +22,7 @@ Example usage:
     >>> # Use the core primitives to build your own playback helpers
 """
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 # Import the C++ extension module
 try:

@@ -10,7 +10,7 @@ This project follows [Semantic Versioning](https://semver.org/) (SemVer) using `
 - **MINOR** (v1.1.0): New backward-compatible features
 - **PATCH** (v1.0.1): Backward-compatible bug fixes
 
-**Current stable version**: v1.0.0
+**Current stable version**: v1.1.0
 
 ## Release Process
 

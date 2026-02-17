@@ -42,7 +42,8 @@ jobs:
       run: |
         ./tests/scripts/run_all_tests.ps1
     
-    # Note: Documentation is generated and deployed by docs.yml workflow on main branch pushes
+    # Note: Python wheels are built and uploaded by build_wheels.yml workflow
+    # Documentation is generated and deployed by docs.yml workflow on main branch pushes
     # GitHub Pages handles versioned docs automatically - no need to generate/archive here
     
     - name: Generate release notes

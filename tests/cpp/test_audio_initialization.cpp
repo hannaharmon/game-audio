@@ -49,15 +49,38 @@ void test_audio_session_usage() {
 void test_logging_controls() {
     TEST("Logging Controls")
     
+    // Test that logging is always available (no compile-time flag needed)
     auto original = AudioManager::GetLogLevel();
-    AudioManager::SetLogLevel(LogLevel::Debug);
-    ASSERT(AudioManager::GetLogLevel() == LogLevel::Debug, "SetLogLevel should update global level")
-    ASSERT(Logger::IsEnabled(LogLevel::Info), "Info should be enabled at Debug level")
+    
+    // Test all log levels can be set
+    AudioManager::SetLogLevel(LogLevel::Off);
+    ASSERT(AudioManager::GetLogLevel() == LogLevel::Off, "SetLogLevel should update to Off")
+    ASSERT(!Logger::IsEnabled(LogLevel::Error), "Nothing should be enabled at Off level")
+    
+    AudioManager::SetLogLevel(LogLevel::Error);
+    ASSERT(AudioManager::GetLogLevel() == LogLevel::Error, "SetLogLevel should update to Error")
+    ASSERT(Logger::IsEnabled(LogLevel::Error), "Error should be enabled at Error level")
+    ASSERT(!Logger::IsEnabled(LogLevel::Warn), "Warn should be disabled at Error level")
     
     AudioManager::SetLogLevel(LogLevel::Warn);
-    ASSERT(!Logger::IsEnabled(LogLevel::Info), "Info should be disabled at Warn level")
+    ASSERT(AudioManager::GetLogLevel() == LogLevel::Warn, "SetLogLevel should update to Warn")
     ASSERT(Logger::IsEnabled(LogLevel::Error), "Error should be enabled at Warn level")
+    ASSERT(Logger::IsEnabled(LogLevel::Warn), "Warn should be enabled at Warn level")
+    ASSERT(!Logger::IsEnabled(LogLevel::Info), "Info should be disabled at Warn level")
     
+    AudioManager::SetLogLevel(LogLevel::Info);
+    ASSERT(AudioManager::GetLogLevel() == LogLevel::Info, "SetLogLevel should update to Info")
+    ASSERT(Logger::IsEnabled(LogLevel::Error), "Error should be enabled at Info level")
+    ASSERT(Logger::IsEnabled(LogLevel::Warn), "Warn should be enabled at Info level")
+    ASSERT(Logger::IsEnabled(LogLevel::Info), "Info should be enabled at Info level")
+    ASSERT(!Logger::IsEnabled(LogLevel::Debug), "Debug should be disabled at Info level")
+    
+    AudioManager::SetLogLevel(LogLevel::Debug);
+    ASSERT(AudioManager::GetLogLevel() == LogLevel::Debug, "SetLogLevel should update to Debug")
+    ASSERT(Logger::IsEnabled(LogLevel::Info), "Info should be enabled at Debug level")
+    ASSERT(Logger::IsEnabled(LogLevel::Debug), "Debug should be enabled at Debug level")
+    
+    // Restore original level
     AudioManager::SetLogLevel(original);
     END_TEST
 }

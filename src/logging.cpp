@@ -21,7 +21,6 @@ bool Logger::IsEnabled(LogLevel level) {
 }
 
 void Logger::Log(LogLevel level, const std::string& message) {
-#ifdef AUDIO_ENABLE_LOGGING
     if (!IsEnabled(level)) {
         return;
     }
@@ -30,10 +29,6 @@ void Logger::Log(LogLevel level, const std::string& message) {
     } else {
         std::cout << message << std::endl;
     }
-#else
-    (void)level;
-    (void)message;
-#endif
 }
 
 } // namespace audio

@@ -13,8 +13,7 @@ namespace audio {
 /**
  * @brief Log severity levels for audio diagnostics.
  *
- * Logging is disabled by default and only emits output when
- * AUDIO_ENABLE_LOGGING is enabled at build time.
+ * Logging defaults to Off at runtime. Use set_log_level() to enable.
  */
 enum class LogLevel {
     Off = 0,   ///< Disable all logging
@@ -55,19 +54,16 @@ public:
 /**
  * @brief Logging macro for stream-style messages.
  *
- * Compiled out unless AUDIO_ENABLE_LOGGING is enabled.
+ * Logging is always compiled in but defaults to Off at runtime.
+ * Use set_log_level() to enable logging output.
  */
-#ifdef AUDIO_ENABLE_LOGGING
-    #define AUDIO_LOG(level, stream_expr)                         \
-        do {                                                       \
-            if (audio::Logger::IsEnabled(level)) {                 \
-                std::ostringstream _audio_log_stream;              \
-                _audio_log_stream << stream_expr;                  \
-                audio::Logger::Log(level, _audio_log_stream.str());\
-            }                                                      \
-        } while (0)
-#else
-    #define AUDIO_LOG(level, stream_expr) do { } while (0)
-#endif
+#define AUDIO_LOG(level, stream_expr)                         \
+    do {                                                       \
+        if (audio::Logger::IsEnabled(level)) {                 \
+            std::ostringstream _audio_log_stream;              \
+            _audio_log_stream << stream_expr;                  \
+            audio::Logger::Log(level, _audio_log_stream.str());\
+        }                                                      \
+    } while (0)
 
 } // namespace audio

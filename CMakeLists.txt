@@ -4,7 +4,7 @@
 # and test application. It's designed to work on Windows, macOS, and Linux.
 
 cmake_minimum_required(VERSION 3.10)
-project(AudioModule VERSION 1.0
+project(AudioModule VERSION 1.1
                     DESCRIPTION "Game Audio Module using miniaudio"
                     LANGUAGES CXX)
 
@@ -19,7 +19,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(BUILD_AUDIO_TESTS "Build audio system tests" ON)
 option(BUILD_AUDIO_EXAMPLES "Build audio system examples" ON)
 option(BUILD_PYTHON_BINDINGS "Build Python bindings" ON)
-option(AUDIO_ENABLE_LOGGING "Enable runtime logging output" OFF)
+# Note: Logging is always enabled at compile time but defaults to Off at runtime.
+# Use set_log_level() to enable logging output.
 
 # Source files for audio library (shared between test executables)
 set(AUDIO_SOURCES
@@ -41,9 +42,7 @@ target_include_directories(audio_lib PUBLIC
     ${CMAKE_SOURCE_DIR}/src
     ${CMAKE_SOURCE_DIR}/include
 )
-if(AUDIO_ENABLE_LOGGING)
-    target_compile_definitions(audio_lib PUBLIC AUDIO_ENABLE_LOGGING=1)
-endif()
+# Logging is always compiled in (controlled at runtime via set_log_level)
 
 # On Windows, link with winmm
 if(WIN32)
@@ -72,6 +71,7 @@ if(BUILD_AUDIO_TESTS)
     # Test executables - organized by functionality
     set(TEST_EXECUTABLES
         test_audio_initialization
+        test_audio_logging
         test_audio_volume
         test_audio_groups
         test_audio_sounds
@@ -207,9 +207,16 @@ except Exception as e:
         # ======================================================
         # Install Python module
         # ======================================================
+        # Install the compiled module (.pyd on Windows, .so on Linux/Mac)
+        # scikit-build-core sets CMAKE_INSTALL_PREFIX to site-packages automatically
         install(TARGETS audio_py
             LIBRARY DESTINATION audio_py
             RUNTIME DESTINATION audio_py
+        )
+        
+        # Install the __init__.py file for the package
+        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/audio_py/__init__.py
+            DESTINATION audio_py
         )
         
         message(STATUS "Python bindings enabled")

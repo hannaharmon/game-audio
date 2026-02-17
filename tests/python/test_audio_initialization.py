@@ -25,12 +25,30 @@ def test_audio_session_usage():
     print("PASS")
 
 def test_logging_controls():
-    """Test: Logging controls are accessible"""
+    """Test: Logging controls are accessible and work correctly"""
     print("Test: Logging controls... ", end="", flush=True)
-    audio_py.AudioManager.set_log_level(audio_py.LogLevel.Info)
-    assert audio_py.AudioManager.get_log_level() == audio_py.LogLevel.Info, "Log level should be Info"
+    
+    # Test that logging is always available (no compile-time flag needed)
+    original = audio_py.AudioManager.get_log_level()
+    
+    # Test all log levels can be set
     audio_py.AudioManager.set_log_level(audio_py.LogLevel.Off)
     assert audio_py.AudioManager.get_log_level() == audio_py.LogLevel.Off, "Log level should be Off"
+    
+    audio_py.AudioManager.set_log_level(audio_py.LogLevel.Error)
+    assert audio_py.AudioManager.get_log_level() == audio_py.LogLevel.Error, "Log level should be Error"
+    
+    audio_py.AudioManager.set_log_level(audio_py.LogLevel.Warn)
+    assert audio_py.AudioManager.get_log_level() == audio_py.LogLevel.Warn, "Log level should be Warn"
+    
+    audio_py.AudioManager.set_log_level(audio_py.LogLevel.Info)
+    assert audio_py.AudioManager.get_log_level() == audio_py.LogLevel.Info, "Log level should be Info"
+    
+    audio_py.AudioManager.set_log_level(audio_py.LogLevel.Debug)
+    assert audio_py.AudioManager.get_log_level() == audio_py.LogLevel.Debug, "Log level should be Debug"
+    
+    # Restore original level
+    audio_py.AudioManager.set_log_level(original)
     print("PASS")
 
 def test_rapid_shutdown_reinitialize():

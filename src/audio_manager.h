@@ -227,8 +227,7 @@ public:
     /**
      * @brief Set the global audio log level (runtime).
      *
-     * Logging output is compiled out unless AUDIO_ENABLE_LOGGING is enabled
-     * at build time.
+     * Logging defaults to Off. Use this method to enable logging output.
      */
     static void SetLogLevel(LogLevel level);
 

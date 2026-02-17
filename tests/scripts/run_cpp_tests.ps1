@@ -49,6 +49,7 @@ if (-not (Test-Path $buildDir)) {
 # Test executables organized by functionality
 $testExecutables = @(
     "test_audio_initialization",
+    "test_audio_logging",
     "test_audio_volume",
     "test_audio_groups",
     "test_audio_sounds",

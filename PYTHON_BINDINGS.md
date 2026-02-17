@@ -8,7 +8,52 @@ This document explains how to use the audio module in Python projects, including
 
 ## Quick Start
 
-### 1. Build the Python Module
+### Installation Methods
+
+#### Method 1: Install Pre-built Wheel (Recommended)
+
+The easiest way to use the audio module is to install a pre-built wheel:
+
+#### From PyPI (Recommended - Simplest Version Management)
+
+```bash
+# Install latest version
+pip install game-audio-py
+
+# Install specific version
+pip install game-audio-py==1.1.0
+
+# Install version range (e.g., any 1.x version, but not 2.0+)
+pip install "game-audio-py>=1.1.0,<2.0.0"
+
+# Upgrade to latest
+pip install --upgrade game-audio-py
+
+# Downgrade to specific version
+pip install game-audio-py==1.0.0
+```
+
+#### From GitHub Releases (Alternative - For Specific Versions)
+
+If you need a specific version or PyPI is unavailable, install directly from GitHub releases:
+
+```bash
+# Install specific version (pip will auto-select the correct wheel for your platform)
+pip install https://github.com/hannaharmon/game-audio/releases/download/v1.1.0/game_audio_py-1.1.0-*.whl
+
+# Or specify exact wheel for your platform (Windows example)
+pip install https://github.com/hannaharmon/game-audio/releases/download/v1.1.0/game_audio_py-1.1.0-cp311-cp311-win_amd64.whl
+```
+
+**Note**: 
+- Wheels are automatically built for Windows, Linux, and macOS for Python 3.8-3.12 on every release. Check the [GitHub Releases](https://github.com/hannaharmon/game-audio/releases) page for available wheels.
+- When installing from GitHub releases, you must uninstall before switching to PyPI (or vice versa), as pip treats them as different sources.
+
+#### Method 2: Build from Source with CMake
+
+If you need to build from source or integrate into a CMake project:
+
+**1. Build the Python Module**
 
 ```bash
 mkdir build
@@ -19,23 +64,23 @@ cmake --build . --config Release
 
 This will create the `audio_py` Python module in the build directory.
 
-### 2. Install Locally
+**2. Install Locally**
 
-#### Option A: Development Install (editable)
+##### Option A: Development Install (editable)
 ```bash
 pip install -e .
 ```
 
-#### Option B: Regular Install
+##### Option B: Regular Install
 ```bash
 cmake --install . --prefix ./python
 pip install .
 ```
 
-#### Option C: Build Python Wheel
+##### Option C: Build Python Wheel Locally
 ```bash
-pip install build
-python -m build
+pip install build scikit-build-core cmake pybind11 ninja
+python -m build --wheel
 pip install dist/game_audio_py-*.whl
 ```
 
@@ -75,34 +120,40 @@ audio.shutdown()
 
 ## Logging and Diagnostics
 
-Logging is disabled by default. To enable it, build the module with:
-
-```bash
-cmake -DAUDIO_ENABLE_LOGGING=ON ..
-```
-
-Then set the log level at runtime:
+Logging is always available but defaults to `Off`. Control it at runtime:
 
 ```python
 import audio_py
 
-audio_py.AudioManager.set_log_level(audio_py.LogLevel.Info)
+# Enable logging (default is Off, so no output until you enable it)
+audio_py.AudioManager.set_log_level(audio_py.LogLevel.Info)  # Enable info-level logging
+audio_py.AudioManager.set_log_level(audio_py.LogLevel.Debug)  # Enable debug-level logging
+audio_py.AudioManager.set_log_level(audio_py.LogLevel.Off)    # Disable logging
 ```
 
 ## Using with Basilisk Engine
 
-If you're using this audio module with the [Basilisk game engine](https://github.com/BasiliskGroup/BasiliskEngine), you can integrate it in your project's CMakeLists.txt:
+If you're using this audio module with the [Basilisk game engine](https://github.com/BasiliskGroup/BasiliskEngine), you have several integration options:
 
-### Method 1: As a Subdirectory
+### Method 1: Install via pip (Simplest - Recommended)
 
-```cmake
-# In your project's CMakeLists.txt
-add_subdirectory(path/to/audio_module)
+Just install the package using pip, no CMake configuration needed:
 
-# The audio_py module will be built automatically alongside your project
+```bash
+pip install game-audio-py
 ```
 
-### Method 2: Via FetchContent (Recommended)
+Then in your Python code:
+```python
+import audio_py
+# Use the module as normal
+```
+
+This is the simplest method and works seamlessly with Basilisk Engine's Python-based workflow.
+
+### Method 2: Via FetchContent (For CMake Integration)
+
+If you need to integrate the audio module into your CMake build system:
 
 ```cmake
 include(FetchContent)
@@ -110,18 +161,20 @@ include(FetchContent)
 FetchContent_Declare(
     audio_module
     GIT_REPOSITORY https://github.com/hannaharmon/game-audio
-    GIT_TAG v1.0.0  # Pin to specific version for stability
+    GIT_TAG v1.1.0  # Pin to specific version for stability
 )
 FetchContent_MakeAvailable(audio_module)
 ```
 
 **Note**: Always use version tags (e.g., `v1.0.0`) rather than `main` branch. This ensures your project won't break when new versions are released. See [RELEASE_MANAGEMENT.md](RELEASE_MANAGEMENT.md) for version information.
 
-### Method 3: Install and Import
+### Method 3: As a Subdirectory
 
 ```cmake
-# Install the audio module first
-find_package(AudioModule REQUIRED)
+# In your project's CMakeLists.txt
+add_subdirectory(path/to/audio_module)
+
+# The audio_py module will be built automatically alongside your project
 ```
 
 ## Python API Reference
@@ -136,6 +189,31 @@ Audio resources are returned as opaque handle objects:
 
 Handles have a `.value` property if you need the underlying integer, but the
 recommended usage is to pass the handle objects directly back into API calls.
+
+**Checking Handle Validity:**
+
+You can check if a handle is valid in two ways (both work identically):
+
+```python
+# Method 1: Using is_valid() method (matches C++ API)
+if handle.is_valid():
+    # Use handle
+    pass
+
+# Method 2: Using Python's truthiness (more Pythonic)
+if handle:
+    # Use handle
+    pass
+
+# Both are equivalent - use whichever style you prefer
+```
+
+**Getting Invalid Handles:**
+
+```python
+# Get an invalid handle (useful for default arguments)
+invalid_group = audio_py.GroupHandle.invalid()
+```
 
 ### AudioManager (Singleton)
 Main interface for the audio system.
