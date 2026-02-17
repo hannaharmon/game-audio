@@ -95,7 +95,9 @@ jobs:
         fi
         echo "Installing wheel: $WHEEL_FILE"
         # Debug: List wheel contents before installation
-        python -m zipfile -l "$WHEEL_FILE" | grep -E "(game_audio|\.pyd|\.so|\.dylib)" || echo "No extension files found in wheel"
+        python -m zipfile -l "$WHEEL_FILE" | grep -E "(game_audio|\.pyd|\.so|\.dylib|\.pyi)" || echo "No extension/stub files found in wheel"
+        echo "Checking for type stubs in wheel:"
+        python -m zipfile -l "$WHEEL_FILE" | grep "\.pyi" || echo "No .pyi stub files found in wheel"
         pip install "$WHEEL_FILE"
         # Debug: Check what was installed - use site-packages location
         python -c "import site; import os; sp = site.getsitepackages()[0]; pkg_dir = os.path.join(sp, 'game_audio'); print(f'Installed package directory: {pkg_dir}'); print(f'Exists: {os.path.exists(pkg_dir)}'); print(f'Files: {os.listdir(pkg_dir) if os.path.exists(pkg_dir) else \"NOT FOUND\"}')"
