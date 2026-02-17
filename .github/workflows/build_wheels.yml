@@ -97,12 +97,11 @@ jobs:
         # Debug: List wheel contents before installation
         python -m zipfile -l "$WHEEL_FILE" | grep -E "(game_audio|\.pyd|\.so|\.dylib|\.pyi)" || echo "No extension/stub files found in wheel"
         echo "Checking for type stubs in wheel:"
-        python -m zipfile -l "$WHEEL_FILE" | grep "\.pyi" || echo "No .pyi stub files found in wheel"
+        python -m zipfile -l "$WHEEL_FILE" | grep "__init__\.pyi" || echo "No __init__.pyi stub file found in wheel"
         pip install "$WHEEL_FILE"
-        # Debug: Check what was installed - use site-packages location
-        python -c "import site; import os; sp = site.getsitepackages()[0]; pkg_dir = os.path.join(sp, 'game_audio'); print(f'Installed package directory: {pkg_dir}'); print(f'Exists: {os.path.exists(pkg_dir)}'); print(f'Files: {os.listdir(pkg_dir) if os.path.exists(pkg_dir) else \"NOT FOUND\"}')"
-        # Change to a temp directory to avoid importing from source
-        cd /tmp 2>/dev/null || cd $TEMP 2>/dev/null || cd / 2>/dev/null || true
+        # Debug: locate the installed package by importing it from a safe working directory
+        cd /tmp 2>/dev/null || cd "${TMPDIR:-}" 2>/dev/null || cd "${TEMP:-}" 2>/dev/null || cd / 2>/dev/null || true
+        python -c "import game_audio, os; pkg_dir=os.path.dirname(game_audio.__file__); print(f'Imported from: {pkg_dir}'); print(f'Files: {os.listdir(pkg_dir)}'); print(f'Has __init__.pyi: {os.path.exists(os.path.join(pkg_dir, \"__init__.pyi\"))}')"
         python -c "import game_audio; print(f'Successfully imported game_audio version {game_audio.__version__}')"
 
   # Job to upload all wheels to GitHub Release (only on tag pushes)

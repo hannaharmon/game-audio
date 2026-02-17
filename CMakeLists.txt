@@ -275,20 +275,25 @@ except Exception as e:
             DESTINATION game_audio
         )
         
-        # Install Python type stubs (.pyi files) if they were generated
-        # These enable IDE autocomplete/IntelliSense for the compiled module
-        # Use install(CODE) to check for and install stubs at install time (after they're generated)
+        # Install Python type stubs (.pyi files) if they were generated.
+        #
+        # IMPORTANT:
+        # - Type checkers/IDEs (e.g. Pylance) look for `game_audio/__init__.pyi` for `import game_audio`.
+        # - pybind11-stubgen generates `game_audio.pyi` for the `game_audio` module.
+        #   We therefore install it *renamed* as `__init__.pyi`.
+        #
+        # Use install(CODE) so the existence check happens at install time (after stubs are generated).
         install(CODE "
             set(STUB_FILE_PATH \"${STUB_FILE}\")
             if(EXISTS \"\${STUB_FILE_PATH}\")
-                file(INSTALL \"\${STUB_FILE_PATH}\" DESTINATION \"\${CMAKE_INSTALL_PREFIX}/game_audio\")
-                message(STATUS \"Installed Python type stub: game_audio.pyi\")
+                file(INSTALL \"\${STUB_FILE_PATH}\" DESTINATION \"\${CMAKE_INSTALL_PREFIX}/game_audio\" RENAME \"__init__.pyi\")
+                message(STATUS \"Installed Python type stub: __init__.pyi\")
             else()
                 message(STATUS \"Python type stub not found at \${STUB_FILE_PATH} - skipping\")
                 message(STATUS \"Expected stub file location: ${STUB_FILE}\")
             endif()
         ")
-        message(STATUS "Python type stubs will be installed if generated")
+        message(STATUS "Python type stubs will be installed (as __init__.pyi) if generated")
         
         message(STATUS "Python bindings enabled")
     else()
