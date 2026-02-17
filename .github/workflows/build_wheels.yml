@@ -26,13 +26,14 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        # Target the most commonly used Python versions (covers ~95% of users)
+        # 3.10, 3.11, 3.12 are the most popular as of 2024
+        # 3.13 is included for users on the latest version
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
         exclude:
           # Reduce matrix size - test fewer Python versions on macOS
           - os: macos-latest
-            python-version: "3.8"
-          - os: macos-latest
-            python-version: "3.9"
+            python-version: "3.10"
     
     steps:
     - name: Checkout repository
