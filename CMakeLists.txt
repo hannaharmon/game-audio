@@ -225,6 +225,20 @@ except Exception as e:
             DESTINATION game_audio
         )
         
+        # Install Python type stubs (.pyi files) if they were generated
+        # These enable IDE autocomplete/IntelliSense for the compiled module
+        # Stubs are generated during POST_BUILD, so we install them via install(CODE)
+        # which runs during the install phase (after build)
+        if(STUBGEN_AVAILABLE EQUAL 0)
+            install(CODE "
+                file(GLOB STUB_FILES \"${STUB_OUTPUT_DIR}/*.pyi\")
+                if(STUB_FILES)
+                    file(INSTALL \${STUB_FILES} DESTINATION \"\${CMAKE_INSTALL_PREFIX}/game_audio\")
+                    message(STATUS \"Installed Python type stubs for IntelliSense\")
+                endif()
+            ")
+        endif()
+        
         message(STATUS "Python bindings enabled")
     else()
         message(WARNING "Python3 not found - Python bindings will not be built")
