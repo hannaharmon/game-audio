@@ -1,5 +1,5 @@
 [build-system]
-requires = ["scikit-build-core>=0.4.3", "cmake>=3.10", "pybind11>=2.6.0", "ninja"]
+requires = ["scikit-build-core>=0.4.3", "cmake>=3.10", "pybind11>=2.6.0", "ninja", "pybind11-stubgen"]
 build-backend = "scikit_build_core.build"
 
 [project]
