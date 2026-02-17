@@ -1,0 +1,169 @@
+name: Build Python Wheels
+
+# Wheels are built on:
+# - Every push to main/master (stored as artifacts for 30 days, for testing)
+# - Version tags (v*.*.*) - wheels are uploaded to GitHub Releases
+# - Pull requests (for testing)
+# - Manual dispatch (workflow_dispatch)
+
+on:
+  push:
+    branches: [ main, master ]
+    tags:
+      - 'v*.*.*'  # Build wheels for version tags
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build_wheels:
+    name: Build wheel on ${{ matrix.os }} (Python ${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        # Target the most commonly used Python versions (covers ~95% of users)
+        # 3.10, 3.11, 3.12 are the most popular as of 2024
+        # 3.13 is included for users on the latest version
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        exclude:
+          # Reduce matrix size - test fewer Python versions on macOS
+          - os: macos-latest
+            python-version: "3.10"
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install build dependencies (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake ninja-build
+    
+    - name: Install build dependencies (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        brew install cmake ninja
+    
+    - name: Install build dependencies (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        # CMake and ninja are pre-installed on GitHub Actions Windows runners
+        # If needed, can install via: choco install cmake ninja -y
+    
+    - name: Install Python build dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build wheel scikit-build-core cmake pybind11 ninja pybind11-stubgen
+    
+    - name: Build wheel
+      run: |
+        python -m build --wheel
+    
+    - name: Store wheel artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: wheel-${{ matrix.os }}-py${{ matrix.python-version }}
+        path: dist/*.whl
+        retention-days: 30
+    
+    - name: Verify wheel installation
+      shell: bash
+      run: |
+        # Find the wheel file (handle different shell behaviors)
+        if [ "$RUNNER_OS" == "Windows" ]; then
+          WHEEL_FILE=$(ls dist/*.whl 2>/dev/null | head -n 1)
+        else
+          WHEEL_FILE=$(ls dist/*.whl | head -n 1)
+        fi
+        if [ -z "$WHEEL_FILE" ]; then
+          echo "ERROR: No wheel file found in dist/"
+          ls -la dist/ || echo "dist/ directory does not exist"
+          exit 1
+        fi
+        echo "Installing wheel: $WHEEL_FILE"
+        # Debug: List wheel contents before installation
+        python -m zipfile -l "$WHEEL_FILE" | grep -E "(game_audio|\.pyd|\.so|\.dylib|\.pyi)" || echo "No extension/stub files found in wheel"
+        echo "Checking for type stubs in wheel:"
+        python -m zipfile -l "$WHEEL_FILE" | grep "__init__\.pyi" || echo "No __init__.pyi stub file found in wheel"
+        pip install "$WHEEL_FILE"
+        # Debug: locate the installed package by importing it from a safe working directory
+        cd /tmp 2>/dev/null || cd "${TMPDIR:-}" 2>/dev/null || cd "${TEMP:-}" 2>/dev/null || cd / 2>/dev/null || true
+        python -c "import game_audio, os; pkg_dir=os.path.dirname(game_audio.__file__); print(f'Imported from: {pkg_dir}'); print(f'Files: {os.listdir(pkg_dir)}'); print(f'Has __init__.pyi: {os.path.exists(os.path.join(pkg_dir, \"__init__.pyi\"))}')"
+        python -c "import game_audio; print(f'Successfully imported game_audio version {game_audio.__version__}')"
+
+  # Job to upload all wheels to GitHub Release (only on tag pushes)
+  upload_release:
+    name: Upload wheels to GitHub Release
+    needs: build_wheels
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+    steps:
+    - name: Download all wheels
+      uses: actions/download-artifact@v4
+      with:
+        path: dist
+        pattern: wheel-*
+        merge-multiple: true
+    
+    - name: Upload wheels to release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: dist/*.whl
+        draft: false
+        prerelease: false
+        tag_name: ${{ github.ref_name }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Job to publish to PyPI
+  # PyPI makes installation simpler: pip install game-audio
+  # To enable:
+  # 1. Create account at https://pypi.org
+  # 2. Generate API token at https://pypi.org/manage/account/token/
+  # 3. Add token as PYPI_API_TOKEN secret in GitHub repository settings
+  # Once the secret is added, PyPI publishing will automatically happen on version tags
+  publish_pypi:
+    name: Publish to PyPI
+    needs: build_wheels
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+    - name: Check if PyPI token is available
+      id: check_token
+      run: |
+        if [ -n "${{ secrets.PYPI_API_TOKEN }}" ]; then
+          echo "available=true" >> $GITHUB_OUTPUT
+          echo "PyPI_API_TOKEN secret found - will publish to PyPI"
+        else
+          echo "available=false" >> $GITHUB_OUTPUT
+          echo "PyPI_API_TOKEN secret not set - skipping PyPI publish"
+        fi
+    
+    - name: Download all wheels
+      if: steps.check_token.outputs.available == 'true'
+      uses: actions/download-artifact@v4
+      with:
+        path: dist
+        pattern: wheel-*
+        merge-multiple: true
+    
+    - name: Publish to PyPI
+      if: steps.check_token.outputs.available == 'true'
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        password: ${{ secrets.PYPI_API_TOKEN }}

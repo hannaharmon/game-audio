@@ -17,13 +17,52 @@ A C++20 audio system built on miniaudio with full Python bindings for game devel
 
 ### For Python Users
 
+**Option 1: Install via pip (Recommended for most users)**
+
+#### From PyPI (Recommended - Simplest Version Management)
+
+```bash
+# Install latest version
+pip install game-audio
+
+# Install specific version
+pip install game-audio==2.0.0
+
+# Install version range (e.g., any 1.x version, but not 2.0+)
+pip install "game-audio>=2.0.0,<3.0.0"
+
+# Upgrade to latest
+pip install --upgrade game-audio
+
+# Downgrade to specific version
+pip install game-audio==1.0.0
+```
+
+#### From GitHub Releases (Alternative - For Specific Versions)
+
+If you need a specific version or PyPI is unavailable, install directly from GitHub releases:
+
+```bash
+# Install specific version (pip will auto-select the correct wheel for your platform)
+pip install https://github.com/hannaharmon/game-audio/releases/download/v2.0.0/game_audio-2.0.0-*.whl
+
+# Or specify exact wheel for your platform (Windows example)
+pip install https://github.com/hannaharmon/game-audio/releases/download/v2.0.0/game_audio-2.0.0-cp311-cp311-win_amd64.whl
+```
+
+**Note**: When installing from GitHub releases, you must uninstall before switching to PyPI (or vice versa), as pip treats them as different sources.
+
+**Option 2: Build from source with CMake**
+
+If you need to build from source or integrate into a CMake project:
+
 **1. Add to your project's CMakeLists.txt:**
 ```cmake
 include(FetchContent)
 FetchContent_Declare(
     audio_module
     GIT_REPOSITORY https://github.com/hannaharmon/game-audio
-    GIT_TAG v1.0.0  # Use a specific version tag for stability
+    GIT_TAG v2.0.0  # Use a specific version tag for stability
 )
 FetchContent_MakeAvailable(audio_module)
 ```
@@ -32,15 +71,15 @@ FetchContent_MakeAvailable(audio_module)
 
 **2. Use in Python (recommended):**
 ```python
-import audio_py
+import game_audio
 
 # Initialize (keep the session alive for the app lifetime)
-session = audio_py.AudioSession()
-audio = audio_py.AudioManager.get_instance()
+session = game_audio.AudioSession()
+audio = game_audio.AudioManager.get_instance()
 
 # Create groups and play
-music_group = audio.create_group("music")
-sfx_group = audio.create_group("sfx")
+music_group = audio.create_group()
+sfx_group = audio.create_group()
 
 # Cleanup (optional; session destructor will also handle this)
 session.close()
@@ -48,18 +87,20 @@ session.close()
 
 **Direct Usage (advanced/engine-controlled):**
 ```python
-import audio_py
+import game_audio
 
-audio = audio_py.AudioManager.get_instance()
+audio = game_audio.AudioManager.get_instance()
 audio.initialize()
 
-music_group = audio.create_group("music")
-sfx_group = audio.create_group("sfx")
+music_group = audio.create_group()
+sfx_group = audio.create_group()
 
 audio.shutdown()
 ```
 
 **Full Guide**: [PYTHON_BINDINGS.md](PYTHON_BINDINGS.md)
+
+**Note**: For use with game engines like [Basilisk Engine](https://github.com/BasiliskGroup/BasiliskEngine), you can simply use `pip install game-audio` instead of adding it to your CMakeLists.txt. This makes integration much simpler!
 
 ### For C++ Users
 
@@ -69,7 +110,7 @@ include(FetchContent)
 FetchContent_Declare(
     audio_module
     GIT_REPOSITORY https://github.com/hannaharmon/game-audio
-    GIT_TAG v1.0.0  # Pin to specific version for stability
+    GIT_TAG v2.0.0  # Pin to specific version for stability
 )
 FetchContent_MakeAvailable(audio_module)
 target_link_libraries(your_game PRIVATE audio_module)
@@ -87,8 +128,8 @@ audio::AudioSession session;
 auto& audio = audio::AudioManager::GetInstance();
 
 // Create groups
-auto music = audio.CreateGroup("music");
-auto sfx = audio.CreateGroup("sfx");
+auto music = audio.CreateGroup();
+auto sfx = audio.CreateGroup();
 
 // Cleanup handled automatically by AudioSession destructor (or call session.Close())
 ```
@@ -100,8 +141,8 @@ auto sfx = audio.CreateGroup("sfx");
 auto& audio = audio::AudioManager::GetInstance();
 audio.Initialize();
 
-auto music = audio.CreateGroup("music");
-auto sfx = audio.CreateGroup("sfx");
+auto music = audio.CreateGroup();
+auto sfx = audio.CreateGroup();
 
 audio.Shutdown();
 ```
@@ -135,7 +176,6 @@ audio.Shutdown();
 - `-DBUILD_PYTHON_BINDINGS=OFF` - Disable Python bindings
 - `-DBUILD_AUDIO_TESTS=OFF` - Disable test builds
 - `-DBUILD_AUDIO_EXAMPLES=OFF` - Disable example builds
-- `-DAUDIO_ENABLE_LOGGING=ON` - Enable runtime logging output (default off)
 
 ## Architecture
 
@@ -155,45 +195,35 @@ audio.Shutdown();
 
 ## Testing
 
-**Test Organization:**
-```
-tests/
-  cpp/                      # C++ tests organized by functionality
-    test_audio_initialization.cpp
-    test_audio_volume.cpp
-    test_audio_groups.cpp
-    test_audio_sounds.cpp
-    test_audio_tracks.cpp
-    test_audio_validation.cpp
-    test_audio_threading.cpp
-    test_audio_resources.cpp
-    test_common.h/cpp        # Shared test utilities
-  python/                   # Python tests organized by functionality
-    test_audio_initialization.py
-    test_audio_volume.py
-    test_audio_groups.py
-    test_audio_sounds.py
-    test_audio_tracks.py
-    test_audio_validation.py
-    test_audio_threading.py
-    test_audio_resources.py
-    test_common.py          # Shared test utilities
-  scripts/                  # Test runners
-    run_all_tests.ps1
-    run_cpp_tests.ps1
-    run_python_tests.ps1
+Run the comprehensive test suite:
+
+```bash
+# Run all tests (C++ + Python, both source build and installed wheel)
+./tests/scripts/run_all_tests.ps1
+
+# Run only C++ tests
+./tests/scripts/run_cpp_tests.ps1
+
+# Run only Python tests (source build)
+./tests/scripts/run_python_tests.ps1
+
+# Run only Python tests (installed wheel)
+./tests/scripts/run_python_tests.ps1 -UseWheel
 ```
 
-**Comprehensive automated tests covering:**
-- System initialization and lifecycle
-- Volume control and clamping
-- Group operations
-- Sound loading and playback
-- Track and layer management
-- Input validation and error handling
-- Thread safety and concurrent operations
-- Resource management and cleanup
-- Cross-platform compatibility
+**The test suite covers:**
+- **System initialization and lifecycle** - AudioSession, AudioManager initialization/shutdown
+- **Logging controls** - Runtime log level configuration and output
+- **Volume control** - Master, group, and individual sound volume with proper clamping
+- **Group operations** - Creation, destruction, volume control, and management
+- **Sound loading and playback** - File loading, playback control, and state management
+- **Track and layer management** - Multi-track audio, layer control, and synchronization
+- **Input validation** - Error handling for invalid handles, paths, and parameters
+- **Thread safety** - Concurrent operations and resource access
+- **Resource management** - Proper cleanup, handle validation, and memory management
+- **Cross-platform compatibility** - Platform-specific code isolation and portability checks
+
+Tests run automatically on every push via GitHub Actions, validating both source builds and installed Python wheels on Windows, Linux, and macOS.
 
 ## Documentation
 
@@ -203,22 +233,18 @@ tests/
 
 ## Logging
 
-Logging is disabled by default. To enable runtime diagnostics, build with:
+Logging is always available but defaults to `Off`. Control it at runtime:
 
-```
-cmake -DAUDIO_ENABLE_LOGGING=ON ...
-```
-
-Then set the log level at runtime:
-
-```
+```cpp
 // C++
-audio::AudioManager::SetLogLevel(audio::LogLevel::Info);
+audio::AudioManager::SetLogLevel(audio::LogLevel::Info);  // Enable logging
+audio::AudioManager::SetLogLevel(audio::LogLevel::Off);    // Disable logging
 ```
 
-```
+```python
 # Python
-audio_py.AudioManager.set_log_level(audio_py.LogLevel.Info)
+game_audio.AudioManager.set_log_level(game_audio.LogLevel.Info)  # Enable logging
+game_audio.AudioManager.set_log_level(game_audio.LogLevel.Off)    # Disable logging
 ```
 
 ## License

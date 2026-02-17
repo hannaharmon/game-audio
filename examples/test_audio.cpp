@@ -72,8 +72,8 @@ int main(int argc, char* argv[]) {
         std::cout << "Audio system initialized successfully\n";
 
         std::cout << "Creating audio groups...\n";
-        auto music_group = audio.CreateGroup("music");
-        auto sfx_group = audio.CreateGroup("sfx");
+        auto music_group = audio.CreateGroup();
+        auto sfx_group = audio.CreateGroup();
         
         std::cout << "Setting initial group volumes...\n";
         audio.SetGroupVolume(music_group, 0.7f);  // Music quieter than SFX
@@ -85,12 +85,12 @@ int main(int argc, char* argv[]) {
         
         std::cout << "Adding layers to music track...\n";
         // Add all our layers to the music track
-        audio.AddLayer(music_track, "kick", sound_dir + "kick.wav", "music");
-        audio.AddLayer(music_track, "clap", sound_dir + "clap.wav", "music");
-        audio.AddLayer(music_track, "bass", sound_dir + "double_bass.wav", "music");
-        audio.AddLayer(music_track, "flute", sound_dir + "alto_flute.wav", "music");
-        audio.AddLayer(music_track, "clarinet", sound_dir + "clarinet.wav", "music");
-        audio.AddLayer(music_track, "horns", sound_dir + "horns.wav", "music");
+        audio.AddLayer(music_track, "kick", sound_dir + "kick.wav", music_group);
+        audio.AddLayer(music_track, "clap", sound_dir + "clap.wav", music_group);
+        audio.AddLayer(music_track, "bass", sound_dir + "double_bass.wav", music_group);
+        audio.AddLayer(music_track, "flute", sound_dir + "alto_flute.wav", music_group);
+        audio.AddLayer(music_track, "clarinet", sound_dir + "clarinet.wav", music_group);
+        audio.AddLayer(music_track, "horns", sound_dir + "horns.wav", music_group);
         std::cout << "All layers added successfully\n";
         
         std::cout << "Setting initial layer volumes...\n";

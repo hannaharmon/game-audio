@@ -8,14 +8,14 @@ from test_common import *
 def test_not_initialized():
     """Test: Using API without initialize should raise NotInitializedException"""
     print("Test: Not initialized... ", end="", flush=True)
-    audio = audio_py.AudioManager.get_instance()
+    audio = game_audio.AudioManager.get_instance()
     audio.shutdown()
     
     try:
         audio.set_master_volume(0.5)
         print("FAIL - No exception raised")
         return False
-    except audio_py.NotInitializedException:
+    except game_audio.NotInitializedException:
         print("PASS")
         return True
     except Exception as e:
@@ -25,10 +25,10 @@ def test_not_initialized():
 def test_audio_session_lifecycle():
     """Test: AudioSession initializes and shuts down properly"""
     print("Test: AudioSession lifecycle... ", end="", flush=True)
-    audio = audio_py.AudioManager.get_instance()
+    audio = game_audio.AudioManager.get_instance()
     audio.shutdown()
 
-    session = audio_py.AudioSession()
+    session = game_audio.AudioSession()
     try:
         audio.set_master_volume(0.5)
     except Exception as e:
@@ -42,7 +42,7 @@ def test_audio_session_lifecycle():
         audio.set_master_volume(0.5)
         print("FAIL - No exception after session close")
         return False
-    except audio_py.NotInitializedException:
+    except game_audio.NotInitializedException:
         print("PASS")
         return True
     except Exception as e:
@@ -52,15 +52,15 @@ def test_audio_session_lifecycle():
 def test_invalid_track_handle():
     """Test: Using invalid track handle should raise InvalidHandleException"""
     print("Test: Invalid track handle... ", end="", flush=True)
-    audio = audio_py.AudioManager.get_instance()
+    audio = game_audio.AudioManager.get_instance()
     audio.initialize()
     
     try:
-        audio.play_track(audio_py.TrackHandle(99999))
+        audio.play_track(game_audio.TrackHandle(99999))
         print("FAIL - No exception raised")
         audio.shutdown()
         return False
-    except audio_py.InvalidHandleException:
+    except game_audio.InvalidHandleException:
         print("PASS")
         audio.shutdown()
         return True
@@ -72,15 +72,15 @@ def test_invalid_track_handle():
 def test_invalid_sound_handle():
     """Test: Using invalid sound handle should raise InvalidHandleException"""
     print("Test: Invalid sound handle... ", end="", flush=True)
-    audio = audio_py.AudioManager.get_instance()
+    audio = game_audio.AudioManager.get_instance()
     audio.initialize()
     
     try:
-        audio.play_sound(audio_py.SoundHandle(99999))
+        audio.play_sound(game_audio.SoundHandle(99999))
         print("FAIL - No exception raised")
         audio.shutdown()
         return False
-    except audio_py.InvalidHandleException:
+    except game_audio.InvalidHandleException:
         print("PASS")
         audio.shutdown()
         return True
@@ -92,15 +92,15 @@ def test_invalid_sound_handle():
 def test_invalid_group_handle():
     """Test: Using invalid group handle should raise InvalidHandleException"""
     print("Test: Invalid group handle... ", end="", flush=True)
-    audio = audio_py.AudioManager.get_instance()
+    audio = game_audio.AudioManager.get_instance()
     audio.initialize()
     
     try:
-        audio.set_group_volume(audio_py.GroupHandle(99999), 0.5)
+        audio.set_group_volume(game_audio.GroupHandle(99999), 0.5)
         print("FAIL - No exception raised")
         audio.shutdown()
         return False
-    except audio_py.InvalidHandleException:
+    except game_audio.InvalidHandleException:
         print("PASS")
         audio.shutdown()
         return True
@@ -112,7 +112,7 @@ def test_invalid_group_handle():
 def test_file_not_found():
     """Test: Loading non-existent file should raise FileLoadException"""
     print("Test: File not found... ", end="", flush=True)
-    audio = audio_py.AudioManager.get_instance()
+    audio = game_audio.AudioManager.get_instance()
     audio.initialize()
     
     try:
@@ -120,7 +120,7 @@ def test_file_not_found():
         print("FAIL - No exception raised")
         audio.shutdown()
         return False
-    except audio_py.FileLoadException:
+    except game_audio.FileLoadException:
         print("PASS")
         audio.shutdown()
         return True
@@ -132,7 +132,7 @@ def test_file_not_found():
 def test_sound_playback_initialization_failure():
     """Test: Sound playback initialization failure handling"""
     print("Test: Sound playback initialization failure... ", end="", flush=True)
-    audio = audio_py.AudioManager.get_instance()
+    audio = game_audio.AudioManager.get_instance()
     audio.initialize()
     
     try:
@@ -165,7 +165,7 @@ def test_sound_playback_initialization_failure():
                 print("PASS")
                 audio.shutdown()
                 return True
-            except audio_py.FileLoadException as e:
+            except game_audio.FileLoadException as e:
                 # If FileLoadException is thrown, verify it has useful information
                 msg = str(e)
                 if "file" in msg.lower() or "playback" in msg.lower() or "initialize" in msg.lower():
@@ -178,7 +178,7 @@ def test_sound_playback_initialization_failure():
                     audio.destroy_sound(sound2)
                     audio.shutdown()
                     return False
-            except audio_py.AudioException:
+            except game_audio.AudioException:
                 # FileLoadException should be catchable as AudioException
                 print("PASS (exception caught as AudioException)")
                 audio.destroy_sound(sound2)
@@ -196,10 +196,10 @@ def test_sound_playback_initialization_failure():
 def test_fade_duration_validation():
     """Test: Fade duration validation"""
     print("Test: Fade duration validation... ", end="", flush=True)
-    audio = audio_py.AudioManager.get_instance()
+    audio = game_audio.AudioManager.get_instance()
     audio.initialize()
     
-    group = audio.create_group("test")
+    group = audio.create_group()
     
     # Test negative duration
     try:
@@ -208,7 +208,7 @@ def test_fade_duration_validation():
         audio.destroy_group(group)
         audio.shutdown()
         return False
-    except audio_py.AudioException:
+    except game_audio.AudioException:
         pass  # Expected
     except Exception as e:
         print(f"FAIL - Wrong exception type: {type(e).__name__}: {e}")
@@ -223,7 +223,7 @@ def test_fade_duration_validation():
         audio.destroy_group(group)
         audio.shutdown()
         return False
-    except audio_py.AudioException:
+    except game_audio.AudioException:
         pass  # Expected
     except Exception as e:
         print(f"FAIL - Wrong exception type: {type(e).__name__}: {e}")
@@ -239,7 +239,7 @@ def test_fade_duration_validation():
 def test_input_validation():
     """Test: Input validation for layer names and paths"""
     print("Test: Input validation... ", end="", flush=True)
-    audio = audio_py.AudioManager.get_instance()
+    audio = game_audio.AudioManager.get_instance()
     audio.initialize()
     
     track = audio.create_track()
@@ -252,7 +252,7 @@ def test_input_validation():
             audio.destroy_track(track)
             audio.shutdown()
             return False
-    except audio_py.AudioException:
+    except game_audio.AudioException:
         pass  # Expected
     except Exception as e:
         print(f"FAIL - Wrong exception type: {type(e).__name__}: {e}")
@@ -267,7 +267,7 @@ def test_input_validation():
         audio.destroy_track(track)
         audio.shutdown()
         return False
-    except audio_py.AudioException:
+    except game_audio.AudioException:
         pass  # Expected
     except Exception as e:
         print(f"FAIL - Wrong exception type: {type(e).__name__}: {e}")
@@ -277,12 +277,12 @@ def test_input_validation():
     
     # Test empty folder path
     try:
-        audio.play_random_sound_from_folder("", audio_py.GroupHandle(0))
+        audio.play_random_sound_from_folder("", game_audio.GroupHandle(0))
         print("FAIL - No exception for empty folder path")
         audio.destroy_track(track)
         audio.shutdown()
         return False
-    except audio_py.AudioException:
+    except game_audio.AudioException:
         pass  # Expected
     except Exception as e:
         print(f"FAIL - Wrong exception type: {type(e).__name__}: {e}")
@@ -298,16 +298,16 @@ def test_input_validation():
 def test_exception_hierarchy():
     """Test: Exception type hierarchy"""
     print("Test: Exception hierarchy... ", end="", flush=True)
-    audio = audio_py.AudioManager.get_instance()
+    audio = game_audio.AudioManager.get_instance()
     audio.initialize()
     
     # Test that specific exceptions can be caught as AudioException
     try:
-        audio.play_track(audio_py.TrackHandle(0))
+        audio.play_track(game_audio.TrackHandle(0))
         print("FAIL - Expected exception to be thrown")
         audio.shutdown()
         return False
-    except audio_py.AudioException:
+    except game_audio.AudioException:
         print("PASS")
         audio.shutdown()
         return True

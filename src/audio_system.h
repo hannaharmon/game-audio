@@ -62,10 +62,9 @@ class AudioSystem {
    * Creates an audio group for collective control of sounds. The caller takes
    * ownership of the returned unique_ptr.
    * 
-   * @param name Name for the group
    * @return std::unique_ptr<AudioGroup> Unique pointer to the newly created AudioGroup (caller owns)
    */
-  std::unique_ptr<AudioGroup> CreateGroup(const std::string& name);
+  std::unique_ptr<AudioGroup> CreateGroup();
 
   /**
    * @brief Sets the master volume for all audio

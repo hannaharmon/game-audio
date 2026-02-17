@@ -21,7 +21,7 @@ void test_resource_cleanup() {
     std::vector<SoundHandle> sounds;
     
     for (int i = 0; i < 10; i++) {
-        groups.push_back(audio.CreateGroup("group_" + std::to_string(i)));
+        groups.push_back(audio.CreateGroup());
         tracks.push_back(audio.CreateTrack());
         sounds.push_back(audio.LoadSound(sound_dir + "/digital_base.wav"));
     }
@@ -46,7 +46,7 @@ void test_edge_cases() {
     auto& audio = AudioManager::GetInstance();
     
     // Create and immediately destroy
-    GroupHandle g = audio.CreateGroup("temp");
+    GroupHandle g = audio.CreateGroup();
     audio.DestroyGroup(g);
     ASSERT(true, "Immediate destruction should work")
     

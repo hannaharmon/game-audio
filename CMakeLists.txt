@@ -4,7 +4,7 @@
 # and test application. It's designed to work on Windows, macOS, and Linux.
 
 cmake_minimum_required(VERSION 3.10)
-project(AudioModule VERSION 1.0
+project(AudioModule VERSION 2.0
                     DESCRIPTION "Game Audio Module using miniaudio"
                     LANGUAGES CXX)
 
@@ -19,7 +19,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(BUILD_AUDIO_TESTS "Build audio system tests" ON)
 option(BUILD_AUDIO_EXAMPLES "Build audio system examples" ON)
 option(BUILD_PYTHON_BINDINGS "Build Python bindings" ON)
-option(AUDIO_ENABLE_LOGGING "Enable runtime logging output" OFF)
+# Note: Logging is always enabled at compile time but defaults to Off at runtime.
+# Use set_log_level() to enable logging output.
 
 # Source files for audio library (shared between test executables)
 set(AUDIO_SOURCES
@@ -41,9 +42,7 @@ target_include_directories(audio_lib PUBLIC
     ${CMAKE_SOURCE_DIR}/src
     ${CMAKE_SOURCE_DIR}/include
 )
-if(AUDIO_ENABLE_LOGGING)
-    target_compile_definitions(audio_lib PUBLIC AUDIO_ENABLE_LOGGING=1)
-endif()
+# Logging is always compiled in (controlled at runtime via set_log_level)
 
 # On Windows, link with winmm
 if(WIN32)
@@ -72,6 +71,7 @@ if(BUILD_AUDIO_TESTS)
     # Test executables - organized by functionality
     set(TEST_EXECUTABLES
         test_audio_initialization
+        test_audio_logging
         test_audio_volume
         test_audio_groups
         test_audio_sounds
@@ -134,83 +134,166 @@ if(BUILD_PYTHON_BINDINGS)
             ${CMAKE_CURRENT_SOURCE_DIR}/bindings/*.cpp
         )
         
-        pybind11_add_module(audio_py ${BINDING_SOURCES})
+        pybind11_add_module(game_audio ${BINDING_SOURCES})
         
-        target_include_directories(audio_py PRIVATE
+        target_include_directories(game_audio PRIVATE
             ${CMAKE_CURRENT_SOURCE_DIR}/src
             ${CMAKE_CURRENT_SOURCE_DIR}/include
             ${CMAKE_CURRENT_SOURCE_DIR}/bindings
         )
         
-        target_link_libraries(audio_py PRIVATE audio_lib)
+        target_link_libraries(game_audio PRIVATE audio_lib)
         
         # Set output directory for Python module
-        set_target_properties(audio_py PROPERTIES
+        # Note: pybind11 will create platform-specific filenames (e.g., game_audio.cp311-win_amd64.pyd)
+        # but Python can still import it as 'game_audio'
+        set_target_properties(game_audio PROPERTIES
             LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
+            OUTPUT_NAME game_audio
         )
         
         # ======================================================
         # Generate Python type stubs with pybind11-stubgen
         # ======================================================
-        set(STUB_OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/audio_py)
+        set(STUB_OUTPUT_DIR ${CMAKE_BINARY_DIR}/stubs)
+        set(STUB_FILE ${STUB_OUTPUT_DIR}/game_audio.pyi)
         
-        # Check if pybind11-stubgen is available
-        execute_process(
-            COMMAND ${Python3_EXECUTABLE} -c "import pybind11_stubgen; print('OK')"
-            OUTPUT_QUIET
-            ERROR_QUIET
-            RESULT_VARIABLE STUBGEN_AVAILABLE
-        )
+        # Always try to generate stubs - check availability at build time, not configure time
+        # This allows pybind11-stubgen to be installed after CMake configuration
+        file(MAKE_DIRECTORY ${STUB_OUTPUT_DIR})
         
-        if(STUBGEN_AVAILABLE EQUAL 0)
-            file(MAKE_DIRECTORY ${STUB_OUTPUT_DIR})
-            
-            # Create wrapper script for stub generation
-            file(WRITE ${CMAKE_BINARY_DIR}/run_stubgen.py
+        # Create wrapper script for stub generation (handles PYTHONPATH and checks availability)
+        file(WRITE ${CMAKE_BINARY_DIR}/run_stubgen.py
 "#!/usr/bin/env python3
 import os
 import sys
 import subprocess
 
-pythonpath = os.environ.get('PYTHONPATH', '')
+# Check if pybind11_stubgen is available
+try:
+    import pybind11_stubgen
+    print('pybind11-stubgen found, generating stubs...', file=sys.stderr)
+except ImportError:
+    print('Warning: pybind11-stubgen not available - skipping stub generation', file=sys.stderr)
+    sys.exit(0)
+
 build_dir = sys.argv[1]
 output_dir = sys.argv[2]
-os.environ['PYTHONPATH'] = build_dir + os.pathsep + pythonpath if pythonpath else build_dir
+
+# On Windows with MSBuild, the module might be in Release/Debug subdirectories
+# Add multiple possible paths to sys.path
+possible_paths = [
+    build_dir,
+    os.path.join(build_dir, 'Release'),
+    os.path.join(build_dir, 'Debug'),
+    os.path.join(build_dir, 'RelWithDebInfo'),
+    os.path.join(build_dir, 'MinSizeRel'),
+]
+
+# Add all possible paths to sys.path
+for path in possible_paths:
+    if os.path.exists(path) and path not in sys.path:
+        sys.path.insert(0, path)
+
+# Also set PYTHONPATH environment variable (colon-separated on Unix, semicolon on Windows)
+pythonpath = os.environ.get('PYTHONPATH', '')
+all_paths = os.pathsep.join(possible_paths)
+os.environ['PYTHONPATH'] = all_paths + os.pathsep + pythonpath if pythonpath else all_paths
+
+# Ensure output directory exists
+os.makedirs(output_dir, exist_ok=True)
+
+# Verify the module can be imported before running stubgen
+try:
+    print(f'Checking if game_audio module can be imported from {build_dir}...', file=sys.stderr)
+    import game_audio
+    print(f'Successfully imported game_audio from {build_dir}', file=sys.stderr)
+except ImportError as e:
+    print(f'Warning: Cannot import game_audio module: {e}', file=sys.stderr)
+    print(f'Files in build_dir: {os.listdir(build_dir) if os.path.exists(build_dir) else \"NOT FOUND\"}', file=sys.stderr)
+    # Try to continue anyway - pybind11-stubgen might still work
 
 try:
+    print(f'Running pybind11-stubgen: build_dir={build_dir}, output_dir={output_dir}', file=sys.stderr)
     result = subprocess.run(
-        [sys.executable, '-m', 'pybind11_stubgen', '--output-dir', output_dir, 'audio_py', '--ignore-all-errors'],
+        [sys.executable, '-m', 'pybind11_stubgen', '--output-dir', output_dir, 'game_audio', '--ignore-all-errors'],
         cwd=build_dir,
-        capture_output=False
+        capture_output=True,
+        text=True,
+        env=os.environ.copy()
     )
+    if result.returncode == 0:
+        stub_file = os.path.join(output_dir, 'game_audio.pyi')
+        if os.path.exists(stub_file):
+            print(f'Successfully generated stub file: {stub_file}', file=sys.stderr)
+        else:
+            print(f'Warning: Stub generation completed but file not found at {stub_file}', file=sys.stderr)
+    else:
+        print(f'Warning: pybind11-stubgen exited with code {result.returncode}', file=sys.stderr)
+        if result.stdout:
+            print(f'stdout: {result.stdout}', file=sys.stderr)
+        if result.stderr:
+            print(f'stderr: {result.stderr}', file=sys.stderr)
     sys.exit(0)
 except Exception as e:
     print(f'Warning: Stub generation failed (non-fatal): {e}', file=sys.stderr)
+    import traceback
+    traceback.print_exc(file=sys.stderr)
     sys.exit(0)
 ")
-            
-            add_custom_command(TARGET audio_py POST_BUILD
-                COMMAND ${Python3_EXECUTABLE}
-                    ${CMAKE_BINARY_DIR}/run_stubgen.py
-                    ${CMAKE_BINARY_DIR}
-                    ${STUB_OUTPUT_DIR}
-                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-                COMMENT "Generating Python type stubs for audio_py module (non-fatal)"
-            )
-            
-            message(STATUS "Python type stub generation enabled")
-        else()
-            message(WARNING "pybind11-stubgen not available - type stubs will not be generated")
-            message(WARNING "  Install with: pip install pybind11-stubgen")
-        endif()
+        
+        # Create custom target to generate stubs (runs after game_audio is built)
+        # The script will check if pybind11-stubgen is available at build time
+        add_custom_target(generate_stubs ALL
+            COMMAND ${Python3_EXECUTABLE}
+                ${CMAKE_BINARY_DIR}/run_stubgen.py
+                ${CMAKE_BINARY_DIR}
+                ${STUB_OUTPUT_DIR}
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+            DEPENDS game_audio
+            COMMENT "Generating Python type stubs for game_audio module (if pybind11-stubgen available)"
+            BYPRODUCTS ${STUB_FILE}
+        )
+        
+        message(STATUS "Python type stub generation will be attempted (requires pybind11-stubgen at build time)")
         
         # ======================================================
         # Install Python module
         # ======================================================
-        install(TARGETS audio_py
-            LIBRARY DESTINATION audio_py
-            RUNTIME DESTINATION audio_py
+        # Install the compiled module (.pyd on Windows, .so on Linux/Mac)
+        # scikit-build-core sets CMAKE_INSTALL_PREFIX to site-packages automatically
+        # The extension will be installed to game_audio/ directory alongside __init__.py
+        # Use both LIBRARY and RUNTIME to ensure the extension is installed on all platforms
+        install(TARGETS game_audio
+            LIBRARY DESTINATION game_audio
+            RUNTIME DESTINATION game_audio
+            ARCHIVE DESTINATION game_audio
         )
+        
+        # Install the __init__.py file for the package
+        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/game_audio/__init__.py
+            DESTINATION game_audio
+        )
+        
+        # Install Python type stubs (.pyi files) if they were generated.
+        #
+        # IMPORTANT:
+        # - Type checkers/IDEs (e.g. Pylance) look for `game_audio/__init__.pyi` for `import game_audio`.
+        # - pybind11-stubgen generates `game_audio.pyi` for the `game_audio` module.
+        #   We therefore install it *renamed* as `__init__.pyi`.
+        #
+        # Use install(CODE) so the existence check happens at install time (after stubs are generated).
+        install(CODE "
+            set(STUB_FILE_PATH \"${STUB_FILE}\")
+            if(EXISTS \"\${STUB_FILE_PATH}\")
+                file(INSTALL \"\${STUB_FILE_PATH}\" DESTINATION \"\${CMAKE_INSTALL_PREFIX}/game_audio\" RENAME \"__init__.pyi\")
+                message(STATUS \"Installed Python type stub: __init__.pyi\")
+            else()
+                message(STATUS \"Python type stub not found at \${STUB_FILE_PATH} - skipping\")
+                message(STATUS \"Expected stub file location: ${STUB_FILE}\")
+            endif()
+        ")
+        message(STATUS "Python type stubs will be installed (as __init__.pyi) if generated")
         
         message(STATUS "Python bindings enabled")
     else()

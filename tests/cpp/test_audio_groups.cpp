@@ -17,10 +17,10 @@ void test_group_operations() {
     auto& audio = AudioManager::GetInstance();
     
     // Create groups
-    GroupHandle music = audio.CreateGroup("music");
+    GroupHandle music = audio.CreateGroup();
     ASSERT(music.IsValid(), "Music group handle should be non-zero")
     
-    GroupHandle sfx = audio.CreateGroup("sfx");
+    GroupHandle sfx = audio.CreateGroup();
     ASSERT(sfx.IsValid(), "SFX group handle should be non-zero")
     ASSERT(sfx != music, "Group handles should be unique")
     

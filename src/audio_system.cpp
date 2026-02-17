@@ -23,7 +23,7 @@ std::unique_ptr<Sound> AudioSystem::CreateSound(const std::string& filepath, Aud
   return Sound::Create(&engine_, filepath, group);
 }
 
-std::unique_ptr<AudioGroup> AudioSystem::CreateGroup(const std::string& name) {
+std::unique_ptr<AudioGroup> AudioSystem::CreateGroup() {
   return AudioGroup::Create(&engine_);
 }
 

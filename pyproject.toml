@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=42", "wheel", "cmake>=3.10", "pybind11>=2.6.0"]
-build-backend = "setuptools.build_meta"
+requires = ["scikit-build-core>=0.4.3", "cmake>=3.10", "pybind11>=2.6.0", "ninja", "pybind11-stubgen"]
+build-backend = "scikit_build_core.build"
 
 [project]
-name = "game-audio-py"
-version = "1.0.0"
+name = "game-audio"
+version = "2.0.0"
 description = "Python bindings for Game Audio Module - a C++ audio system built on miniaudio"
 readme = "README.md"
 requires-python = ">=3.7"
@@ -26,6 +26,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Programming Language :: C++",
 ]
 
@@ -35,5 +36,25 @@ Documentation = "https://hannaharmon.github.io/game-audio"
 Repository = "https://github.com/hannaharmon/game-audio"
 Issues = "https://github.com/hannaharmon/game-audio/issues"
 
-[tool.setuptools]
-packages = ["audio_py"]
+[tool.scikit-build]
+# CMake configuration for scikit-build-core
+cmake.minimum-version = "3.10"
+cmake.args = [
+    "-DBUILD_PYTHON_BINDINGS=ON",
+    "-DBUILD_AUDIO_TESTS=OFF",
+    "-DBUILD_AUDIO_EXAMPLES=OFF",
+]
+
+[tool.scikit-build.cmake.define]
+# Ensure Python bindings are built
+BUILD_PYTHON_BINDINGS = "ON"
+BUILD_AUDIO_TESTS = "OFF"
+BUILD_AUDIO_EXAMPLES = "OFF"
+# Note: Logging is always enabled (controlled at runtime via set_log_level)
+
+[tool.scikit-build.wheel]
+# Package the game_audio module and __init__.py
+# scikit-build-core will automatically detect packages from CMake install() commands
+# The compiled extension (.pyd/.so) will be included automatically from CMake install
+packages = ["game_audio"]
+exclude = ["tests", "examples", "*.tests", "*.tests.*", "tests.*"]

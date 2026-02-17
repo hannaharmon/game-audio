@@ -70,8 +70,8 @@ void test_concurrent_operations() {
     
     auto& audio = AudioManager::GetInstance();
     
-    GroupHandle music = audio.CreateGroup("music");
-    GroupHandle sfx = audio.CreateGroup("sfx");
+    GroupHandle music = audio.CreateGroup();
+    GroupHandle sfx = audio.CreateGroup();
     
     SoundHandle sound1 = audio.LoadSound(sound_dir + "/digital_base.wav", music);
     SoundHandle sound2 = audio.LoadSound(sound_dir + "/digital_battle.wav", sfx);
@@ -112,7 +112,7 @@ void test_concurrent_operations_stress() {
     std::vector<GroupHandle> groups;
     std::vector<SoundHandle> sounds;
     for (int i = 0; i < 5; i++) {
-        groups.push_back(audio.CreateGroup("group_" + std::to_string(i)));
+        groups.push_back(audio.CreateGroup());
         sounds.push_back(audio.LoadSound(sound_dir + "/digital_base.wav"));
     }
     

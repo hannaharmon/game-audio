@@ -15,7 +15,7 @@ for path in (build_release, build_debug, build_root):
     if os.path.exists(path) and path not in sys.path:
         sys.path.insert(0, path)
 
-import audio_py
+import game_audio
 from datetime import timedelta
 import time
 

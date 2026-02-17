@@ -8,14 +8,14 @@ from test_common import *
 def test_group_operations():
     """Test: Audio group operations"""
     print("Test: Group operations... ", end="", flush=True)
-    audio = audio_py.AudioManager.get_instance()
+    audio = game_audio.AudioManager.get_instance()
     audio.initialize()
     
     # Create groups
-    music = audio.create_group("music")
+    music = audio.create_group()
     assert music.value != 0, "Music group handle should be non-zero"
     
-    sfx = audio.create_group("sfx")
+    sfx = audio.create_group()
     assert sfx.value != 0, "SFX group handle should be non-zero"
     assert sfx.value != music.value, "Group handles should be unique"
     
