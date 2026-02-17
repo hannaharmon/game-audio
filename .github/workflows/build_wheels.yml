@@ -13,8 +13,6 @@ on:
       - 'v*.*.*'  # Build wheels for version tags
   pull_request:
     branches: [ main, master ]
-    # Don't run on draft PRs to save CI resources
-    types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
 
 permissions:

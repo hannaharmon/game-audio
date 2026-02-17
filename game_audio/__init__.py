@@ -29,11 +29,44 @@ __version__ = "2.0.0"
 # Python's import system automatically handles platform-specific suffixes
 # (e.g., game_audio.cp311-win_amd64.pyd on Windows, game_audio.cp310-x86_64-linux-gnu.so on Linux)
 try:
-    # Python's import system will automatically find the extension with platform-specific suffix
-    # We use a relative import to avoid circular import issues
-    from . import game_audio as _game_audio_ext
+    # Import the compiled extension module
+    # Python's import system automatically handles platform-specific suffixes
+    # We need to import it in a way that avoids circular imports
+    # The extension module is named 'game_audio' and should be in the same directory
+    import sys
+    import importlib.util
+    import os
+    
+    # Get the directory containing this __init__.py
+    package_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # Find the extension file (it has platform-specific suffix)
+    extension_file = None
+    if os.path.exists(package_dir):
+        for file in os.listdir(package_dir):
+            if file.startswith('game_audio.') and (file.endswith('.pyd') or file.endswith('.so') or file.endswith('.dylib')):
+                extension_file = os.path.join(package_dir, file)
+                break
+    
+    if extension_file and os.path.exists(extension_file):
+        # Load the extension file directly
+        spec = importlib.util.spec_from_file_location('game_audio._extension', extension_file)
+        if spec and spec.loader:
+            ext_module = importlib.util.module_from_spec(spec)
+            # Store in sys.modules to avoid re-loading
+            sys.modules['game_audio._extension'] = ext_module
+            spec.loader.exec_module(ext_module)
+        else:
+            raise ImportError(f"Could not load extension from {extension_file}")
+    else:
+        # Fallback: try standard import (should work if extension is properly installed)
+        import importlib
+        ext_module = importlib.import_module('game_audio.game_audio')
+    
     # Import all public symbols from the extension module into this package's namespace
-    from .game_audio import *
+    for name in dir(ext_module):
+        if not name.startswith('_'):
+            globals()[name] = getattr(ext_module, name)
 except ImportError as e:
     # Provide helpful error message with debugging info
     import sys
