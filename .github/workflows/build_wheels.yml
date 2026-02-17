@@ -46,31 +46,24 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     
-    - name: Install build dependencies (Linux)
-      if: runner.os == 'Linux'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y build-essential cmake ninja-build
-    
-    - name: Install build dependencies (macOS)
-      if: runner.os == 'macOS'
-      run: |
-        brew install cmake ninja
-    
-    - name: Install build dependencies (Windows)
-      if: runner.os == 'Windows'
-      run: |
-        # CMake and ninja are pre-installed on GitHub Actions Windows runners
-        # If needed, can install via: choco install cmake ninja -y
-    
-    - name: Install Python build dependencies
+    # IMPORTANT (PyPI): Linux wheels must be manylinux-tagged; PyPI rejects "linux_x86_64" wheels.
+    # cibuildwheel builds compliant manylinux wheels inside a manylinux container.
+    - name: Install cibuildwheel
       run: |
         python -m pip install --upgrade pip
-        pip install build wheel scikit-build-core cmake pybind11 ninja pybind11-stubgen
+        python -m pip install cibuildwheel
     
-    - name: Build wheel
+    - name: Build wheel (cibuildwheel)
+      env:
+        # Build only the selected Python version in this matrix job
+        CIBW_BUILD: cp${{ matrix.python-version }}-*
+        # Avoid PyPy/musllinux builds for now
+        CIBW_SKIP: "pp* *-musllinux_*"
+        # Ensure PyPI-accepted Linux wheel tags
+        CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
+        CIBW_ARCHS_LINUX: x86_64
       run: |
-        python -m build --wheel
+        python -m cibuildwheel --output-dir dist
     
     - name: Store wheel artifacts
       uses: actions/upload-artifact@v4
