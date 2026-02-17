@@ -172,6 +172,7 @@ import subprocess
 # Check if pybind11_stubgen is available
 try:
     import pybind11_stubgen
+    print('pybind11-stubgen found, generating stubs...', file=sys.stderr)
 except ImportError:
     print('Warning: pybind11-stubgen not available - skipping stub generation', file=sys.stderr)
     sys.exit(0)
@@ -181,15 +182,34 @@ build_dir = sys.argv[1]
 output_dir = sys.argv[2]
 os.environ['PYTHONPATH'] = build_dir + os.pathsep + pythonpath if pythonpath else build_dir
 
+# Ensure output directory exists
+os.makedirs(output_dir, exist_ok=True)
+
 try:
+    print(f'Running pybind11-stubgen: build_dir={build_dir}, output_dir={output_dir}', file=sys.stderr)
     result = subprocess.run(
         [sys.executable, '-m', 'pybind11_stubgen', '--output-dir', output_dir, 'game_audio', '--ignore-all-errors'],
         cwd=build_dir,
-        capture_output=False
+        capture_output=True,
+        text=True
     )
+    if result.returncode == 0:
+        stub_file = os.path.join(output_dir, 'game_audio.pyi')
+        if os.path.exists(stub_file):
+            print(f'Successfully generated stub file: {stub_file}', file=sys.stderr)
+        else:
+            print(f'Warning: Stub generation completed but file not found at {stub_file}', file=sys.stderr)
+    else:
+        print(f'Warning: pybind11-stubgen exited with code {result.returncode}', file=sys.stderr)
+        if result.stdout:
+            print(f'stdout: {result.stdout}', file=sys.stderr)
+        if result.stderr:
+            print(f'stderr: {result.stderr}', file=sys.stderr)
     sys.exit(0)
 except Exception as e:
     print(f'Warning: Stub generation failed (non-fatal): {e}', file=sys.stderr)
+    import traceback
+    traceback.print_exc(file=sys.stderr)
     sys.exit(0)
 ")
         
@@ -230,11 +250,13 @@ except Exception as e:
         # These enable IDE autocomplete/IntelliSense for the compiled module
         # Use install(CODE) to check for and install stubs at install time (after they're generated)
         install(CODE "
-            if(EXISTS \"${STUB_FILE}\")
-                file(INSTALL \"${STUB_FILE}\" DESTINATION \"\${CMAKE_INSTALL_PREFIX}/game_audio\")
+            set(STUB_FILE_PATH \"${STUB_FILE}\")
+            if(EXISTS \"\${STUB_FILE_PATH}\")
+                file(INSTALL \"\${STUB_FILE_PATH}\" DESTINATION \"\${CMAKE_INSTALL_PREFIX}/game_audio\")
                 message(STATUS \"Installed Python type stub: game_audio.pyi\")
             else()
-                message(STATUS \"Python type stub not found at ${STUB_FILE} - skipping\")
+                message(STATUS \"Python type stub not found at \${STUB_FILE_PATH} - skipping\")
+                message(STATUS \"Expected stub file location: ${STUB_FILE}\")
             endif()
         ")
         message(STATUS "Python type stubs will be installed if generated")
