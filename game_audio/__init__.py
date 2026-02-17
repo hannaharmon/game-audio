@@ -5,10 +5,10 @@ A Python wrapper for the C++ Game Audio Module built on miniaudio.
 Provides high-level audio control for game development.
 
 Example usage:
-    >>> import audio_py
+    >>> import game_audio
     >>> 
     >>> # Initialize the audio system
-    >>> audio = audio_py.AudioManager.get_instance()
+    >>> audio = game_audio.AudioManager.get_instance()
     >>> audio.initialize()
     >>> 
     >>> # Create audio groups
@@ -22,15 +22,15 @@ Example usage:
     >>> # Use the core primitives to build your own playback helpers
 """
 
-__version__ = "1.1.0"
+__version__ = "2.0.0"
 
 # Import the C++ extension module
 try:
-    from .audio_py import *
+    from .game_audio import *
 except ImportError:
     # If the module isn't built yet, provide helpful error message
     import sys
-    print("Error: audio_py C++ extension not found.", file=sys.stderr)
+    print("Error: game_audio C++ extension not found.", file=sys.stderr)
     print("Make sure to build the project with: cmake --build build", file=sys.stderr)
     raise
 

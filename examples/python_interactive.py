@@ -19,12 +19,12 @@ import os
 import random
 from datetime import timedelta
 
-# Add build directory to path to find the audio_py module
+# Add build directory to path to find the game_audio module
 build_dir = os.path.join(os.path.dirname(__file__), '..', 'build', 'Debug')
 if os.path.exists(build_dir):
     sys.path.insert(0, build_dir)
 
-import audio_py
+import game_audio
 
 # Sound directory
 SOUND_DIR = os.path.join(os.path.dirname(__file__), '..', 'sound_files')
@@ -37,8 +37,8 @@ music_on = True
 def setup_audio():
     """Initialize the audio system and create the layered music track"""
     print("Initializing audio system...")
-    session = audio_py.AudioSession()
-    audio = audio_py.AudioManager.get_instance()
+    session = game_audio.AudioSession()
+    audio = game_audio.AudioManager.get_instance()
     
     print("Audio system initialized successfully")
     

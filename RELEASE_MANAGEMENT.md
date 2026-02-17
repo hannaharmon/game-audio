@@ -6,11 +6,11 @@ This document describes how versions are managed and released for the Game Audio
 
 This project follows [Semantic Versioning](https://semver.org/) (SemVer) using `MAJOR.MINOR.PATCH`:
 
-- **MAJOR** (v2.0.0): Breaking API changes requiring code modifications
-- **MINOR** (v1.1.0): New backward-compatible features
-- **PATCH** (v1.0.1): Backward-compatible bug fixes
+- **MAJOR** (v2.0.0): Breaking API changes requiring code modifications (e.g., module rename from `audio_py` to `game_audio`)
+- **MINOR** (v2.1.0): New backward-compatible features
+- **PATCH** (v2.0.1): Backward-compatible bug fixes
 
-**Current stable version**: v1.1.0
+**Current stable version**: v2.0.0
 
 ## Release Process
 
@@ -18,7 +18,7 @@ Releases are created by tagging commits on the `main` branch. The process works 
 
 1. **Feature development**: Work is done in feature branches that are merged to `main` when complete and tested
 2. **Release preparation**: When all features/fixes for a release are merged, version numbers are updated
-3. **Release creation**: A version tag is created and pushed (e.g., `v1.1.0`)
+3. **Release creation**: A version tag is created and pushed (e.g., `v2.0.0`)
 
 When a version tag is pushed, the release workflow handles:
 
@@ -67,7 +67,7 @@ Projects that use the `main` branch instead of version tags may experience:
 
 - **New projects**: Should use the latest version tag (check [GitHub Releases](https://github.com/hannaharmon/game-audio/releases))
 - **Existing projects**: Should pin to their current version and upgrade when ready
-- **Stability**: Patch versions (e.g., `v1.0.1`) contain only bug fixes
+- **Stability**: Patch versions (e.g., `v2.0.1`) contain only bug fixes
 - **Breaking changes**: Major versions (e.g., `v2.0.0`) require code updates
 
 ## Versioned Documentation
@@ -77,7 +77,7 @@ Documentation is available for all released versions:
 - **Main site**: https://hannaharmon.github.io/game-audio
   - Landing page with version dropdown switcher
   - Defaults to "Latest" (main branch)
-- **Versioned docs**: Available at `/v1.0.0/`, `/v1.1.0/`, etc.
+- **Versioned docs**: Available at `/v1.0.0/`, `/v2.0.0/`, etc.
 - **Direct links**: https://hannaharmon.github.io/game-audio/v1.0.0/
 
 Older versions are provided for reference only. New projects should use the latest version.

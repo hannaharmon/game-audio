@@ -18,19 +18,19 @@ The easiest way to use the audio module is to install a pre-built wheel:
 
 ```bash
 # Install latest version
-pip install game-audio-py
+pip install game-audio
 
 # Install specific version
-pip install game-audio-py==1.1.0
+pip install game-audio==2.0.0
 
 # Install version range (e.g., any 1.x version, but not 2.0+)
-pip install "game-audio-py>=1.1.0,<2.0.0"
+pip install "game-audio>=2.0.0,<3.0.0"
 
 # Upgrade to latest
-pip install --upgrade game-audio-py
+pip install --upgrade game-audio
 
 # Downgrade to specific version
-pip install game-audio-py==1.0.0
+pip install game-audio==1.0.0
 ```
 
 #### From GitHub Releases (Alternative - For Specific Versions)
@@ -39,10 +39,10 @@ If you need a specific version or PyPI is unavailable, install directly from Git
 
 ```bash
 # Install specific version (pip will auto-select the correct wheel for your platform)
-pip install https://github.com/hannaharmon/game-audio/releases/download/v1.1.0/game_audio_py-1.1.0-*.whl
+pip install https://github.com/hannaharmon/game-audio/releases/download/v2.0.0/game_audio-2.0.0-*.whl
 
 # Or specify exact wheel for your platform (Windows example)
-pip install https://github.com/hannaharmon/game-audio/releases/download/v1.1.0/game_audio_py-1.1.0-cp311-cp311-win_amd64.whl
+pip install https://github.com/hannaharmon/game-audio/releases/download/v2.0.0/game_audio-2.0.0-cp311-cp311-win_amd64.whl
 ```
 
 **Note**: 
@@ -62,7 +62,7 @@ cmake ..
 cmake --build . --config Release
 ```
 
-This will create the `audio_py` Python module in the build directory.
+This will create the `game_audio` Python module in the build directory.
 
 **2. Install Locally**
 
@@ -81,17 +81,17 @@ pip install .
 ```bash
 pip install build scikit-build-core cmake pybind11 ninja
 python -m build --wheel
-pip install dist/game_audio_py-*.whl
+pip install dist/game_audio-*.whl
 ```
 
 ### 3. Use in Python (recommended)
 
 ```python
-import audio_py
+import game_audio
 
 # Initialize (keep the session alive for the app lifetime)
-session = audio_py.AudioSession()
-audio = audio_py.AudioManager.get_instance()
+session = game_audio.AudioSession()
+audio = game_audio.AudioManager.get_instance()
 
 # Create groups
 music = audio.create_group("music")
@@ -106,9 +106,9 @@ session.close()
 
 ### Direct Usage (advanced/engine-controlled)
 ```python
-import audio_py
+import game_audio
 
-audio = audio_py.AudioManager.get_instance()
+audio = game_audio.AudioManager.get_instance()
 audio.initialize()
 
 music = audio.create_group("music")
@@ -123,12 +123,12 @@ audio.shutdown()
 Logging is always available but defaults to `Off`. Control it at runtime:
 
 ```python
-import audio_py
+import game_audio
 
 # Enable logging (default is Off, so no output until you enable it)
-audio_py.AudioManager.set_log_level(audio_py.LogLevel.Info)  # Enable info-level logging
-audio_py.AudioManager.set_log_level(audio_py.LogLevel.Debug)  # Enable debug-level logging
-audio_py.AudioManager.set_log_level(audio_py.LogLevel.Off)    # Disable logging
+game_audio.AudioManager.set_log_level(game_audio.LogLevel.Info)  # Enable info-level logging
+game_audio.AudioManager.set_log_level(game_audio.LogLevel.Debug)  # Enable debug-level logging
+game_audio.AudioManager.set_log_level(game_audio.LogLevel.Off)    # Disable logging
 ```
 
 ## Using with Basilisk Engine
@@ -140,12 +140,12 @@ If you're using this audio module with the [Basilisk game engine](https://github
 Just install the package using pip, no CMake configuration needed:
 
 ```bash
-pip install game-audio-py
+pip install game-audio
 ```
 
 Then in your Python code:
 ```python
-import audio_py
+import game_audio
 # Use the module as normal
 ```
 
@@ -161,7 +161,7 @@ include(FetchContent)
 FetchContent_Declare(
     audio_module
     GIT_REPOSITORY https://github.com/hannaharmon/game-audio
-    GIT_TAG v1.1.0  # Pin to specific version for stability
+    GIT_TAG v2.0.0  # Pin to specific version for stability
 )
 FetchContent_MakeAvailable(audio_module)
 ```
@@ -174,7 +174,7 @@ FetchContent_MakeAvailable(audio_module)
 # In your project's CMakeLists.txt
 add_subdirectory(path/to/audio_module)
 
-# The audio_py module will be built automatically alongside your project
+# The game_audio module will be built automatically alongside your project
 ```
 
 ## Python API Reference
@@ -212,14 +212,14 @@ if handle:
 
 ```python
 # Get an invalid handle (useful for default arguments)
-invalid_group = audio_py.GroupHandle.invalid()
+invalid_group = game_audio.GroupHandle.invalid()
 ```
 
 ### AudioManager (Singleton)
 Main interface for the audio system.
 
 ```python
-audio = audio_py.AudioManager.get_instance()
+audio = game_audio.AudioManager.get_instance()
 audio.initialize()
 audio.shutdown()
 audio.set_master_volume(0.8)
@@ -229,8 +229,8 @@ audio.set_master_volume(0.8)
 RAII-style helper for initialization and shutdown (recommended for scripts/tests).
 
 ```python
-session = audio_py.AudioSession()
-audio = audio_py.AudioManager.get_instance()
+session = game_audio.AudioSession()
+audio = game_audio.AudioManager.get_instance()
 audio.set_master_volume(0.8)
 session.close()
 ```
@@ -239,19 +239,19 @@ session.close()
 Randomized sound playback with pitch variation.
 
 ```python
-config = audio_py.RandomSoundContainerConfig()
+config = game_audio.RandomSoundContainerConfig()
 config.avoid_repeat = True
 config.pitch_min = 0.95
 config.pitch_max = 1.05
 
-container = audio_py.RandomSoundContainer("footsteps", config)
+container = game_audio.RandomSoundContainer("footsteps", config)
 container.load_from_folder("sounds/footsteps")
 container.play()
 ```
 
 ## Type Hints and Autocomplete
 
-The build system automatically generates Python type stubs (`.pyi` files) for IDE autocomplete support. These will be generated in the `audio_py/` directory.
+The build system automatically generates Python type stubs (`.pyi` files) for IDE autocomplete support. These will be generated in the `game_audio/` directory.
 
 To enable stub generation, install pybind11-stubgen:
 ```bash
@@ -261,9 +261,9 @@ pip install pybind11-stubgen
 ## Troubleshooting
 
 ### Module Not Found
-If you get `ModuleNotFoundError: No module named 'audio_py'`:
+If you get `ModuleNotFoundError: No module named 'game_audio'`:
 1. Make sure you built the project: `cmake --build build`
-2. The module file should be in `build/audio_py.pyd` (Windows) or `build/audio_py.so` (Linux/Mac)
+2. The module file should be in `build/game_audio.pyd` (Windows) or `build/game_audio.so` (Linux/Mac)
 3. Either install the package or add the build directory to your PYTHONPATH
 
 ### Import Errors

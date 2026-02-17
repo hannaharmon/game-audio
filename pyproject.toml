@@ -3,8 +3,8 @@ requires = ["scikit-build-core>=0.4.3", "cmake>=3.10", "pybind11>=2.6.0", "ninja
 build-backend = "scikit_build_core.build"
 
 [project]
-name = "game-audio-py"
-version = "1.1.0"
+name = "game-audio"
+version = "2.0.0"
 description = "Python bindings for Game Audio Module - a C++ audio system built on miniaudio"
 readme = "README.md"
 requires-python = ">=3.7"
@@ -52,7 +52,7 @@ BUILD_AUDIO_EXAMPLES = "OFF"
 # Note: Logging is always enabled (controlled at runtime via set_log_level)
 
 [tool.scikit-build.wheel]
-# Package the audio_py module and __init__.py
+# Package the game_audio module and __init__.py
 # scikit-build-core will automatically detect packages from CMake install() commands
-packages = ["audio_py"]
+packages = ["game_audio"]
 exclude = ["tests", "examples", "*.tests", "*.tests.*", "tests.*"]

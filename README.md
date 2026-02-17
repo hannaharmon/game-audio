@@ -23,19 +23,19 @@ A C++20 audio system built on miniaudio with full Python bindings for game devel
 
 ```bash
 # Install latest version
-pip install game-audio-py
+pip install game-audio
 
 # Install specific version
-pip install game-audio-py==1.1.0
+pip install game-audio==2.0.0
 
 # Install version range (e.g., any 1.x version, but not 2.0+)
-pip install "game-audio-py>=1.1.0,<2.0.0"
+pip install "game-audio>=2.0.0,<3.0.0"
 
 # Upgrade to latest
-pip install --upgrade game-audio-py
+pip install --upgrade game-audio
 
 # Downgrade to specific version
-pip install game-audio-py==1.0.0
+pip install game-audio==1.0.0
 ```
 
 #### From GitHub Releases (Alternative - For Specific Versions)
@@ -44,10 +44,10 @@ If you need a specific version or PyPI is unavailable, install directly from Git
 
 ```bash
 # Install specific version (pip will auto-select the correct wheel for your platform)
-pip install https://github.com/hannaharmon/game-audio/releases/download/v1.1.0/game_audio_py-1.1.0-*.whl
+pip install https://github.com/hannaharmon/game-audio/releases/download/v2.0.0/game_audio-2.0.0-*.whl
 
 # Or specify exact wheel for your platform (Windows example)
-pip install https://github.com/hannaharmon/game-audio/releases/download/v1.1.0/game_audio_py-1.1.0-cp311-cp311-win_amd64.whl
+pip install https://github.com/hannaharmon/game-audio/releases/download/v2.0.0/game_audio-2.0.0-cp311-cp311-win_amd64.whl
 ```
 
 **Note**: When installing from GitHub releases, you must uninstall before switching to PyPI (or vice versa), as pip treats them as different sources.
@@ -62,7 +62,7 @@ include(FetchContent)
 FetchContent_Declare(
     audio_module
     GIT_REPOSITORY https://github.com/hannaharmon/game-audio
-    GIT_TAG v1.1.0  # Use a specific version tag for stability
+    GIT_TAG v2.0.0  # Use a specific version tag for stability
 )
 FetchContent_MakeAvailable(audio_module)
 ```
@@ -71,11 +71,11 @@ FetchContent_MakeAvailable(audio_module)
 
 **2. Use in Python (recommended):**
 ```python
-import audio_py
+import game_audio
 
 # Initialize (keep the session alive for the app lifetime)
-session = audio_py.AudioSession()
-audio = audio_py.AudioManager.get_instance()
+session = game_audio.AudioSession()
+audio = game_audio.AudioManager.get_instance()
 
 # Create groups and play
 music_group = audio.create_group("music")
@@ -87,9 +87,9 @@ session.close()
 
 **Direct Usage (advanced/engine-controlled):**
 ```python
-import audio_py
+import game_audio
 
-audio = audio_py.AudioManager.get_instance()
+audio = game_audio.AudioManager.get_instance()
 audio.initialize()
 
 music_group = audio.create_group("music")
@@ -100,7 +100,7 @@ audio.shutdown()
 
 **Full Guide**: [PYTHON_BINDINGS.md](PYTHON_BINDINGS.md)
 
-**Note**: For use with game engines like [Basilisk Engine](https://github.com/BasiliskGroup/BasiliskEngine), you can simply use `pip install game-audio-py` instead of adding it to your CMakeLists.txt. This makes integration much simpler!
+**Note**: For use with game engines like [Basilisk Engine](https://github.com/BasiliskGroup/BasiliskEngine), you can simply use `pip install game-audio` instead of adding it to your CMakeLists.txt. This makes integration much simpler!
 
 ### For C++ Users
 
@@ -110,7 +110,7 @@ include(FetchContent)
 FetchContent_Declare(
     audio_module
     GIT_REPOSITORY https://github.com/hannaharmon/game-audio
-    GIT_TAG v1.1.0  # Pin to specific version for stability
+    GIT_TAG v2.0.0  # Pin to specific version for stability
 )
 FetchContent_MakeAvailable(audio_module)
 target_link_libraries(your_game PRIVATE audio_module)
@@ -243,8 +243,8 @@ audio::AudioManager::SetLogLevel(audio::LogLevel::Off);    // Disable logging
 
 ```python
 # Python
-audio_py.AudioManager.set_log_level(audio_py.LogLevel.Info)  # Enable logging
-audio_py.AudioManager.set_log_level(audio_py.LogLevel.Off)    # Disable logging
+game_audio.AudioManager.set_log_level(game_audio.LogLevel.Info)  # Enable logging
+game_audio.AudioManager.set_log_level(game_audio.LogLevel.Off)    # Disable logging
 ```
 
 ## License

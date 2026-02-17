@@ -94,7 +94,7 @@ $wheelAvailable = $false
 $python_wheel_exit_code = 0
 
 # Check if wheel is already installed
-python -c "import audio_py" 2>&1 | Out-Null
+python -c "import game_audio" 2>&1 | Out-Null
 if ($LASTEXITCODE -eq 0) {
     Write-Host "Wheel already installed, using existing installation" -ForegroundColor Green
     $wheelAvailable = $true

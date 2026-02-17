@@ -8,7 +8,7 @@ from test_common import *
 def test_group_operations():
     """Test: Audio group operations"""
     print("Test: Group operations... ", end="", flush=True)
-    audio = audio_py.AudioManager.get_instance()
+    audio = game_audio.AudioManager.get_instance()
     audio.initialize()
     
     # Create groups

@@ -110,7 +110,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # Job to publish to PyPI
-  # PyPI makes installation simpler: pip install game-audio-py
+  # PyPI makes installation simpler: pip install game-audio
   # To enable:
   # 1. Create account at https://pypi.org
   # 2. Generate API token at https://pypi.org/manage/account/token/

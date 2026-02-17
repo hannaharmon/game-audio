@@ -81,7 +81,7 @@ try {
 
     # Step 5: Verify installation
     Write-Host "Step 4: Verifying installation..." -ForegroundColor Yellow
-    python -c "import audio_py; print(f'Successfully imported audio_py version {audio_py.__version__}')"
+    python -c "import game_audio; print(f'Successfully imported game_audio version {game_audio.__version__}')"
     if ($LASTEXITCODE -ne 0) {
         Write-Host "ERROR: Import verification failed" -ForegroundColor Red
         exit 1

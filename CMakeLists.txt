@@ -4,7 +4,7 @@
 # and test application. It's designed to work on Windows, macOS, and Linux.
 
 cmake_minimum_required(VERSION 3.10)
-project(AudioModule VERSION 1.1
+project(AudioModule VERSION 2.0
                     DESCRIPTION "Game Audio Module using miniaudio"
                     LANGUAGES CXX)
 
@@ -134,25 +134,25 @@ if(BUILD_PYTHON_BINDINGS)
             ${CMAKE_CURRENT_SOURCE_DIR}/bindings/*.cpp
         )
         
-        pybind11_add_module(audio_py ${BINDING_SOURCES})
+        pybind11_add_module(game_audio ${BINDING_SOURCES})
         
-        target_include_directories(audio_py PRIVATE
+        target_include_directories(game_audio PRIVATE
             ${CMAKE_CURRENT_SOURCE_DIR}/src
             ${CMAKE_CURRENT_SOURCE_DIR}/include
             ${CMAKE_CURRENT_SOURCE_DIR}/bindings
         )
         
-        target_link_libraries(audio_py PRIVATE audio_lib)
+        target_link_libraries(game_audio PRIVATE audio_lib)
         
         # Set output directory for Python module
-        set_target_properties(audio_py PROPERTIES
+        set_target_properties(game_audio PROPERTIES
             LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
         )
         
         # ======================================================
         # Generate Python type stubs with pybind11-stubgen
         # ======================================================
-        set(STUB_OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/audio_py)
+        set(STUB_OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/game_audio)
         
         # Check if pybind11-stubgen is available
         execute_process(
@@ -179,7 +179,7 @@ os.environ['PYTHONPATH'] = build_dir + os.pathsep + pythonpath if pythonpath els
 
 try:
     result = subprocess.run(
-        [sys.executable, '-m', 'pybind11_stubgen', '--output-dir', output_dir, 'audio_py', '--ignore-all-errors'],
+        [sys.executable, '-m', 'pybind11_stubgen', '--output-dir', output_dir, 'game_audio', '--ignore-all-errors'],
         cwd=build_dir,
         capture_output=False
     )
@@ -189,13 +189,13 @@ except Exception as e:
     sys.exit(0)
 ")
             
-            add_custom_command(TARGET audio_py POST_BUILD
+            add_custom_command(TARGET game_audio POST_BUILD
                 COMMAND ${Python3_EXECUTABLE}
                     ${CMAKE_BINARY_DIR}/run_stubgen.py
                     ${CMAKE_BINARY_DIR}
                     ${STUB_OUTPUT_DIR}
                 WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-                COMMENT "Generating Python type stubs for audio_py module (non-fatal)"
+                COMMENT "Generating Python type stubs for game_audio module (non-fatal)"
             )
             
             message(STATUS "Python type stub generation enabled")
@@ -209,14 +209,14 @@ except Exception as e:
         # ======================================================
         # Install the compiled module (.pyd on Windows, .so on Linux/Mac)
         # scikit-build-core sets CMAKE_INSTALL_PREFIX to site-packages automatically
-        install(TARGETS audio_py
-            LIBRARY DESTINATION audio_py
-            RUNTIME DESTINATION audio_py
+        install(TARGETS game_audio
+            LIBRARY DESTINATION game_audio
+            RUNTIME DESTINATION game_audio
         )
         
         # Install the __init__.py file for the package
-        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/audio_py/__init__.py
-            DESTINATION audio_py
+        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/game_audio/__init__.py
+            DESTINATION game_audio
         )
         
         message(STATUS "Python bindings enabled")

@@ -74,9 +74,9 @@ if repo_root in sys.path:
     sys.path.remove(repo_root)
 
 try:
-    import audio_py
-    package_path = os.path.dirname(audio_py.__file__)
-    print(f'Found audio_py version {audio_py.__version__}')
+    import game_audio
+    package_path = os.path.dirname(game_audio.__file__)
+    print(f'Found game_audio version {game_audio.__version__}')
     print(f'Package location: {package_path}')
     
     # Verify it's the installed package, not local source
@@ -84,7 +84,7 @@ try:
     if 'site-packages' in package_path or 'local-packages' in package_path:
         # Try to import the compiled extension
         try:
-            import audio_py.audio_py  # This will fail if it's local source without compiled extension
+            import game_audio.game_audio  # This will fail if it's local source without compiled extension
             print('Verified: Using installed wheel (compiled extension found)')
             sys.exit(0)
         except ImportError:
@@ -92,11 +92,11 @@ try:
             sys.exit(1)
     else:
         print(f'ERROR: Package appears to be from local source: {package_path}')
-        print('This is likely the local audio_py directory, not the installed wheel')
+        print('This is likely the local game_audio directory, not the installed wheel')
         sys.exit(1)
 except ImportError as e:
     print(f'ERROR: {e}')
-    print('audio_py package not found in installed packages')
+    print('game_audio package not found in installed packages')
     sys.exit(1)
 '@ | Out-File -FilePath $checkScript -Encoding utf8
     
@@ -107,8 +107,8 @@ except ImportError as e:
     $env:PYTHONPATH = $originalPYTHONPATH
     
     if ($checkResult -ne 0) {
-        Write-Host "ERROR: audio_py package not found or not properly installed." -ForegroundColor Red
-        Write-Host "Install it with: pip install game-audio-py" -ForegroundColor Yellow
+        Write-Host "ERROR: game_audio package not found or not properly installed." -ForegroundColor Red
+        Write-Host "Install it with: pip install game-audio" -ForegroundColor Yellow
         Write-Host "Or build and install a wheel locally: pip install dist/*.whl" -ForegroundColor Yellow
         exit 1
     }
@@ -137,7 +137,7 @@ except ImportError as e:
         exit 1
     }
 
-    # Add build outputs to PYTHONPATH so Python can find audio_py module
+    # Add build outputs to PYTHONPATH so Python can find game_audio module
     $env:PYTHONPATH = $buildPath
     if (Test-Path $debugBuildPath) {
         $env:PYTHONPATH = "$env:PYTHONPATH$pathSeparator$debugBuildPath"
@@ -202,20 +202,20 @@ if repo_root in sys.path:
     sys.path.remove(repo_root)
 
 # Add tests/python directory to path so test_common can be found
-# But only if it's not already there (to avoid importing local audio_py)
+# But only if it's not already there (to avoid importing local game_audio)
 tests_dir = r'$testsPythonDir'
 if tests_dir not in sys.path:
     sys.path.insert(0, tests_dir)
 
 # Verify we're using installed package
 try:
-    import audio_py
-    package_path = os.path.dirname(audio_py.__file__)
+    import game_audio
+    package_path = os.path.dirname(game_audio.__file__)
     if 'site-packages' not in package_path and 'local-packages' not in package_path:
         print(f'ERROR: Not using installed package! Found at: {package_path}')
         sys.exit(1)
 except ImportError as e:
-    print(f'ERROR: Cannot import audio_py: {e}')
+    print(f'ERROR: Cannot import game_audio: {e}')
     sys.exit(1)
 
 # Import and run the test

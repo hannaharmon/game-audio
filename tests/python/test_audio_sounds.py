@@ -8,7 +8,7 @@ from test_common import *
 def test_sound_loading():
     """Test: Sound loading and unloading"""
     print("Test: Sound loading... ", end="", flush=True)
-    audio = audio_py.AudioManager.get_instance()
+    audio = game_audio.AudioManager.get_instance()
     audio.initialize()
     
     group = audio.create_group("test")
@@ -39,7 +39,7 @@ def test_sound_loading():
 def test_sound_playback():
     """Test: Sound playback control"""
     print("Test: Sound playback... ", end="", flush=True)
-    audio = audio_py.AudioManager.get_instance()
+    audio = game_audio.AudioManager.get_instance()
     audio.initialize()
     
     if sound_exists("digital_base.wav"):
@@ -79,7 +79,7 @@ def test_sound_playback():
 def test_multiple_instances():
     """Test: Multiple sound instances"""
     print("Test: Multiple instances... ", end="", flush=True)
-    audio = audio_py.AudioManager.get_instance()
+    audio = game_audio.AudioManager.get_instance()
     audio.initialize()
     
     if sound_exists("digital_base.wav"):
@@ -107,7 +107,7 @@ def test_multiple_instances():
 def test_random_sound_folder():
     """Test: Random sound from folder"""
     print("Test: Random sound folder... ", end="", flush=True)
-    audio = audio_py.AudioManager.get_instance()
+    audio = game_audio.AudioManager.get_instance()
     audio.initialize()
     
     group = audio.create_group("random_test")

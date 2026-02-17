@@ -8,7 +8,7 @@ from test_common import *
 def test_master_volume():
     """Test: Master volume control"""
     print("Test: Master volume control... ", end="", flush=True)
-    audio = audio_py.AudioManager.get_instance()
+    audio = game_audio.AudioManager.get_instance()
     audio.initialize()
     
     audio.set_master_volume(0.5)
@@ -35,7 +35,7 @@ def test_master_volume():
 def test_volume_clamping():
     """Test: Volume clamping for all methods"""
     print("Test: Volume clamping... ", end="", flush=True)
-    audio = audio_py.AudioManager.get_instance()
+    audio = game_audio.AudioManager.get_instance()
     audio.initialize()
     
     # Test group volume clamping
@@ -74,7 +74,7 @@ def test_volume_clamping():
 def test_pitch_validation():
     """Test: Pitch validation and clamping"""
     print("Test: Pitch validation... ", end="", flush=True)
-    audio = audio_py.AudioManager.get_instance()
+    audio = game_audio.AudioManager.get_instance()
     audio.initialize()
     
     if sound_exists("digital_base.wav"):

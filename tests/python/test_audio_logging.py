@@ -11,45 +11,45 @@ def test_logging_levels():
     """Test: Logging level hierarchy"""
     print("Test: Logging level hierarchy... ", end="", flush=True)
     
-    original = audio_py.AudioManager.get_log_level()
+    original = game_audio.AudioManager.get_log_level()
     
     # Test that Off disables everything
-    audio_py.AudioManager.set_log_level(audio_py.LogLevel.Off)
-    assert audio_py.AudioManager.get_log_level() == audio_py.LogLevel.Off, "Level should be Off"
+    game_audio.AudioManager.set_log_level(game_audio.LogLevel.Off)
+    assert game_audio.AudioManager.get_log_level() == game_audio.LogLevel.Off, "Level should be Off"
     
     # Test Error level
-    audio_py.AudioManager.set_log_level(audio_py.LogLevel.Error)
-    assert audio_py.AudioManager.get_log_level() == audio_py.LogLevel.Error, "Level should be Error"
+    game_audio.AudioManager.set_log_level(game_audio.LogLevel.Error)
+    assert game_audio.AudioManager.get_log_level() == game_audio.LogLevel.Error, "Level should be Error"
     
     # Test Warn level
-    audio_py.AudioManager.set_log_level(audio_py.LogLevel.Warn)
-    assert audio_py.AudioManager.get_log_level() == audio_py.LogLevel.Warn, "Level should be Warn"
+    game_audio.AudioManager.set_log_level(game_audio.LogLevel.Warn)
+    assert game_audio.AudioManager.get_log_level() == game_audio.LogLevel.Warn, "Level should be Warn"
     
     # Test Info level
-    audio_py.AudioManager.set_log_level(audio_py.LogLevel.Info)
-    assert audio_py.AudioManager.get_log_level() == audio_py.LogLevel.Info, "Level should be Info"
+    game_audio.AudioManager.set_log_level(game_audio.LogLevel.Info)
+    assert game_audio.AudioManager.get_log_level() == game_audio.LogLevel.Info, "Level should be Info"
     
     # Test Debug level
-    audio_py.AudioManager.set_log_level(audio_py.LogLevel.Debug)
-    assert audio_py.AudioManager.get_log_level() == audio_py.LogLevel.Debug, "Level should be Debug"
+    game_audio.AudioManager.set_log_level(game_audio.LogLevel.Debug)
+    assert game_audio.AudioManager.get_log_level() == game_audio.LogLevel.Debug, "Level should be Debug"
     
     # Restore original
-    audio_py.AudioManager.set_log_level(original)
+    game_audio.AudioManager.set_log_level(original)
     print("PASS")
 
 def test_logging_output():
     """Test: Logging output works"""
     print("Test: Logging output... ", end="", flush=True)
     
-    original = audio_py.AudioManager.get_log_level()
+    original = game_audio.AudioManager.get_log_level()
     
     # Use AudioSession for proper cleanup
     try:
-        session = audio_py.AudioSession()
-        audio = audio_py.AudioManager.get_instance()
+        session = game_audio.AudioSession()
+        audio = game_audio.AudioManager.get_instance()
         
         # Test that logging can be enabled and doesn't crash
-        audio_py.AudioManager.set_log_level(audio_py.LogLevel.Info)
+        game_audio.AudioManager.set_log_level(game_audio.LogLevel.Info)
         
         # Ensure initialized (AudioSession should handle this, but check to be safe)
         if not audio.is_initialized():
@@ -66,14 +66,14 @@ def test_logging_output():
         audio.destroy_group(group)
         
         # Test that Off disables output
-        audio_py.AudioManager.set_log_level(audio_py.LogLevel.Off)
+        game_audio.AudioManager.set_log_level(game_audio.LogLevel.Off)
         
         # Operations should still work, just no logging
         group2 = audio.create_group("logging_test_2")
         audio.destroy_group(group2)
         
         # Restore original
-        audio_py.AudioManager.set_log_level(original)
+        game_audio.AudioManager.set_log_level(original)
     finally:
         # Ensure cleanup
         if 'session' in locals():
@@ -87,12 +87,12 @@ def test_logging_default_state():
     
     # After import, logging should default to Off
     # (We can't easily test the absolute default, but we can test Off works)
-    audio_py.AudioManager.set_log_level(audio_py.LogLevel.Off)
-    assert audio_py.AudioManager.get_log_level() == audio_py.LogLevel.Off, "Should be able to set to Off"
+    game_audio.AudioManager.set_log_level(game_audio.LogLevel.Off)
+    assert game_audio.AudioManager.get_log_level() == game_audio.LogLevel.Off, "Should be able to set to Off"
     
     # Test that we can enable it
-    audio_py.AudioManager.set_log_level(audio_py.LogLevel.Info)
-    assert audio_py.AudioManager.get_log_level() == audio_py.LogLevel.Info, "Should be able to enable logging"
+    game_audio.AudioManager.set_log_level(game_audio.LogLevel.Info)
+    assert game_audio.AudioManager.get_log_level() == game_audio.LogLevel.Info, "Should be able to enable logging"
     
     print("PASS")
 
@@ -100,42 +100,42 @@ def test_logging_persistence():
     """Test: Logging level persists"""
     print("Test: Logging level persistence... ", end="", flush=True)
     
-    original = audio_py.AudioManager.get_log_level()
+    original = game_audio.AudioManager.get_log_level()
     
     # Set a level
-    audio_py.AudioManager.set_log_level(audio_py.LogLevel.Warn)
-    assert audio_py.AudioManager.get_log_level() == audio_py.LogLevel.Warn, "Level should persist"
+    game_audio.AudioManager.set_log_level(game_audio.LogLevel.Warn)
+    assert game_audio.AudioManager.get_log_level() == game_audio.LogLevel.Warn, "Level should persist"
     
     # Get it back
-    retrieved = audio_py.AudioManager.get_log_level()
-    assert retrieved == audio_py.LogLevel.Warn, "get_log_level should return set level"
+    retrieved = game_audio.AudioManager.get_log_level()
+    assert retrieved == game_audio.LogLevel.Warn, "get_log_level should return set level"
     
     # Change it
-    audio_py.AudioManager.set_log_level(audio_py.LogLevel.Debug)
-    assert audio_py.AudioManager.get_log_level() == audio_py.LogLevel.Debug, "Level should update"
+    game_audio.AudioManager.set_log_level(game_audio.LogLevel.Debug)
+    assert game_audio.AudioManager.get_log_level() == game_audio.LogLevel.Debug, "Level should update"
     
     # Restore original
-    audio_py.AudioManager.set_log_level(original)
+    game_audio.AudioManager.set_log_level(original)
     print("PASS")
 
 def test_logging_always_available():
     """Test: Logging is always available (no compile-time flag needed)"""
     print("Test: Logging always available... ", end="", flush=True)
     
-    original = audio_py.AudioManager.get_log_level()
+    original = game_audio.AudioManager.get_log_level()
     
     # Logging should work regardless of how the module was built
     # (In the old system, it would only work if AUDIO_ENABLE_LOGGING was set)
     # Now it should always work
     
     # Test all levels work
-    for level in [audio_py.LogLevel.Off, audio_py.LogLevel.Error, audio_py.LogLevel.Warn, 
-                  audio_py.LogLevel.Info, audio_py.LogLevel.Debug]:
-        audio_py.AudioManager.set_log_level(level)
-        assert audio_py.AudioManager.get_log_level() == level, f"Level {level} should work"
+    for level in [game_audio.LogLevel.Off, game_audio.LogLevel.Error, game_audio.LogLevel.Warn, 
+                  game_audio.LogLevel.Info, game_audio.LogLevel.Debug]:
+        game_audio.AudioManager.set_log_level(level)
+        assert game_audio.AudioManager.get_log_level() == level, f"Level {level} should work"
     
     # Restore original
-    audio_py.AudioManager.set_log_level(original)
+    game_audio.AudioManager.set_log_level(original)
     print("PASS")
 
 def run_all_tests():

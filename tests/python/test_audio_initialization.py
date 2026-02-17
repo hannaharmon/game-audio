@@ -8,7 +8,7 @@ from test_common import *
 def test_basic_initialization():
     """Test: Basic system initialization and shutdown"""
     print("Test: Basic initialization... ", end="", flush=True)
-    audio = audio_py.AudioManager.get_instance()
+    audio = game_audio.AudioManager.get_instance()
     assert audio.initialize(), "Failed to initialize"
     audio.shutdown()
     print("PASS")
@@ -16,8 +16,8 @@ def test_basic_initialization():
 def test_audio_session_usage():
     """Test: AudioSession usage for initialization/shutdown"""
     print("Test: AudioSession usage... ", end="", flush=True)
-    session = audio_py.AudioSession()
-    audio = audio_py.AudioManager.get_instance()
+    session = game_audio.AudioSession()
+    audio = game_audio.AudioManager.get_instance()
     group = audio.create_group("session_test")
     audio.set_group_volume(group, 0.5)
     audio.destroy_group(group)
@@ -29,32 +29,32 @@ def test_logging_controls():
     print("Test: Logging controls... ", end="", flush=True)
     
     # Test that logging is always available (no compile-time flag needed)
-    original = audio_py.AudioManager.get_log_level()
+    original = game_audio.AudioManager.get_log_level()
     
     # Test all log levels can be set
-    audio_py.AudioManager.set_log_level(audio_py.LogLevel.Off)
-    assert audio_py.AudioManager.get_log_level() == audio_py.LogLevel.Off, "Log level should be Off"
+    game_audio.AudioManager.set_log_level(game_audio.LogLevel.Off)
+    assert game_audio.AudioManager.get_log_level() == game_audio.LogLevel.Off, "Log level should be Off"
     
-    audio_py.AudioManager.set_log_level(audio_py.LogLevel.Error)
-    assert audio_py.AudioManager.get_log_level() == audio_py.LogLevel.Error, "Log level should be Error"
+    game_audio.AudioManager.set_log_level(game_audio.LogLevel.Error)
+    assert game_audio.AudioManager.get_log_level() == game_audio.LogLevel.Error, "Log level should be Error"
     
-    audio_py.AudioManager.set_log_level(audio_py.LogLevel.Warn)
-    assert audio_py.AudioManager.get_log_level() == audio_py.LogLevel.Warn, "Log level should be Warn"
+    game_audio.AudioManager.set_log_level(game_audio.LogLevel.Warn)
+    assert game_audio.AudioManager.get_log_level() == game_audio.LogLevel.Warn, "Log level should be Warn"
     
-    audio_py.AudioManager.set_log_level(audio_py.LogLevel.Info)
-    assert audio_py.AudioManager.get_log_level() == audio_py.LogLevel.Info, "Log level should be Info"
+    game_audio.AudioManager.set_log_level(game_audio.LogLevel.Info)
+    assert game_audio.AudioManager.get_log_level() == game_audio.LogLevel.Info, "Log level should be Info"
     
-    audio_py.AudioManager.set_log_level(audio_py.LogLevel.Debug)
-    assert audio_py.AudioManager.get_log_level() == audio_py.LogLevel.Debug, "Log level should be Debug"
+    game_audio.AudioManager.set_log_level(game_audio.LogLevel.Debug)
+    assert game_audio.AudioManager.get_log_level() == game_audio.LogLevel.Debug, "Log level should be Debug"
     
     # Restore original level
-    audio_py.AudioManager.set_log_level(original)
+    game_audio.AudioManager.set_log_level(original)
     print("PASS")
 
 def test_rapid_shutdown_reinitialize():
     """Test: Rapid shutdown/reinitialize cycles"""
     print("Test: Rapid shutdown/reinitialize... ", end="", flush=True)
-    audio = audio_py.AudioManager.get_instance()
+    audio = game_audio.AudioManager.get_instance()
     
     for i in range(5):
         audio.shutdown()

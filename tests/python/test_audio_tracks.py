@@ -8,7 +8,7 @@ from test_common import *
 def test_track_operations():
     """Test: Audio track operations"""
     print("Test: Track operations... ", end="", flush=True)
-    audio = audio_py.AudioManager.get_instance()
+    audio = game_audio.AudioManager.get_instance()
     audio.initialize()
     
     # Create track
@@ -54,7 +54,7 @@ def test_track_operations():
 def test_audio_track_update_fix():
     """Test: AudioTrack update fix (no redundant volume calls)"""
     print("Test: Track update fix... ", end="", flush=True)
-    audio = audio_py.AudioManager.get_instance()
+    audio = game_audio.AudioManager.get_instance()
     audio.initialize()
     
     if sound_exists("digital_base.wav") and sound_exists("digital_battle.wav"):

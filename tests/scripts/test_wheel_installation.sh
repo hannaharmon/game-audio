@@ -66,7 +66,7 @@ echo ""
 
 # Step 5: Verify installation
 echo "Step 4: Verifying installation..."
-python3 -c "import audio_py; print(f'Successfully imported audio_py version {audio_py.__version__}')"
+python3 -c "import game_audio; print(f'Successfully imported game_audio version {game_audio.__version__}')"
 if [ $? -ne 0 ]; then
     echo "ERROR: Import verification failed" >&2
     exit 1

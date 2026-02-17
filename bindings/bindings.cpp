@@ -11,7 +11,7 @@ void bind_audio_manager(py::module_&);
 void bind_random_sound_container(py::module_&);
 void bind_audio_session(py::module_&);
 
-PYBIND11_MODULE(audio_py, m) {
+PYBIND11_MODULE(game_audio, m) {
     m.doc() = "Python bindings for the Game Audio Module";
 
     // Register custom exceptions with proper inheritance hierarchy

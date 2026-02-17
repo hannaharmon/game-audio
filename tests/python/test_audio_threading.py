@@ -9,7 +9,7 @@ import threading
 def test_thread_safety_get_master_volume():
     """Test: Thread safety for GetMasterVolume"""
     print("Test: Thread safety GetMasterVolume... ", end="", flush=True)
-    audio = audio_py.AudioManager.get_instance()
+    audio = game_audio.AudioManager.get_instance()
     audio.initialize()
     
     # Set initial volume
@@ -62,7 +62,7 @@ def test_thread_safety_get_master_volume():
 def test_concurrent_operations():
     """Test: Concurrent operations"""
     print("Test: Concurrent operations... ", end="", flush=True)
-    audio = audio_py.AudioManager.get_instance()
+    audio = game_audio.AudioManager.get_instance()
     audio.initialize()
     
     music = audio.create_group("music")

@@ -8,7 +8,7 @@ from test_common import *
 def test_resource_cleanup():
     """Test: Resource cleanup"""
     print("Test: Resource cleanup... ", end="", flush=True)
-    audio = audio_py.AudioManager.get_instance()
+    audio = game_audio.AudioManager.get_instance()
     audio.initialize()
     
     # Create many resources
@@ -44,7 +44,7 @@ def test_resource_cleanup():
 def test_edge_cases():
     """Test: Edge cases"""
     print("Test: Edge cases... ", end="", flush=True)
-    audio = audio_py.AudioManager.get_instance()
+    audio = game_audio.AudioManager.get_instance()
     audio.initialize()
     
     # Create and immediately destroy
