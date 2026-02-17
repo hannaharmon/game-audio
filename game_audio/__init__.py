@@ -31,35 +31,37 @@ __version__ = "2.0.0"
 try:
     # Import the compiled extension module
     # Python's import system automatically handles platform-specific suffixes
-    # We need to import it in a way that avoids circular imports
-    # The extension module is named 'game_audio' and should be in the same directory
+    # The extension module is created by pybind11 and named 'game_audio'
+    # It should be in the same directory as this __init__.py
     import sys
-    import importlib.util
     import os
+    import importlib.util
     
     # Get the directory containing this __init__.py
     package_dir = os.path.dirname(os.path.abspath(__file__))
     
-    # Find the extension file (it has platform-specific suffix)
+    # Find and load the extension file directly (it has platform-specific suffix)
     extension_file = None
     if os.path.exists(package_dir):
         for file in os.listdir(package_dir):
+            # Look for the extension file with platform-specific suffix
             if file.startswith('game_audio.') and (file.endswith('.pyd') or file.endswith('.so') or file.endswith('.dylib')):
                 extension_file = os.path.join(package_dir, file)
                 break
     
     if extension_file and os.path.exists(extension_file):
-        # Load the extension file directly
+        # Load the extension file directly using importlib
         spec = importlib.util.spec_from_file_location('game_audio._extension', extension_file)
         if spec and spec.loader:
             ext_module = importlib.util.module_from_spec(spec)
-            # Store in sys.modules to avoid re-loading
+            # Store in sys.modules to avoid re-loading and prevent circular imports
             sys.modules['game_audio._extension'] = ext_module
             spec.loader.exec_module(ext_module)
         else:
             raise ImportError(f"Could not load extension from {extension_file}")
     else:
-        # Fallback: try standard import (should work if extension is properly installed)
+        # Extension file not found - try standard import as fallback
+        # This will work if Python's import system can find it automatically
         import importlib
         ext_module = importlib.import_module('game_audio.game_audio')
     

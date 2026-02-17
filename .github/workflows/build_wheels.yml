@@ -96,8 +96,10 @@ jobs:
         # Debug: List wheel contents before installation
         python -m zipfile -l "$WHEEL_FILE" | grep -E "(game_audio|\.pyd|\.so|\.dylib)" || echo "No extension files found in wheel"
         pip install "$WHEEL_FILE"
-        # Debug: Check what was installed
-        python -c "import game_audio; import os; pkg_dir = os.path.dirname(game_audio.__file__); print(f'Package directory: {pkg_dir}'); print(f'Files: {os.listdir(pkg_dir)}')"
+        # Debug: Check what was installed - use site-packages location
+        python -c "import site; import os; sp = site.getsitepackages()[0]; pkg_dir = os.path.join(sp, 'game_audio'); print(f'Installed package directory: {pkg_dir}'); print(f'Exists: {os.path.exists(pkg_dir)}'); print(f'Files: {os.listdir(pkg_dir) if os.path.exists(pkg_dir) else \"NOT FOUND\"}')"
+        # Change to a temp directory to avoid importing from source
+        cd /tmp 2>/dev/null || cd $TEMP 2>/dev/null || cd / 2>/dev/null || true
         python -c "import game_audio; print(f'Successfully imported game_audio version {game_audio.__version__}')"
 
   # Job to upload all wheels to GitHub Release (only on tag pushes)
