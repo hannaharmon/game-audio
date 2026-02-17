@@ -23,7 +23,7 @@ void test_not_initialized() {
         "SetMasterVolume without Initialize throws NotInitializedException");
     
     ASSERT_THROWS(NotInitializedException,
-        manager.CreateGroup("test_group"),
+        manager.CreateGroup(),
         "CreateGroup without Initialize throws NotInitializedException");
     
     ASSERT_THROWS(NotInitializedException,
@@ -257,7 +257,7 @@ void test_fade_duration_validation() {
     
     AudioManager& manager = AudioManager::GetInstance();
     
-    GroupHandle group = manager.CreateGroup("test");
+    GroupHandle group = manager.CreateGroup();
     TrackHandle track = manager.CreateTrack();
     manager.AddLayer(track, "layer1", sound_dir + "/digital_base.wav");
     
@@ -424,7 +424,7 @@ void test_valid_operations_no_exceptions() {
     // Create and manipulate group
     GroupHandle group = GroupHandle::Invalid();
     ASSERT_NO_THROW(
-        group = manager.CreateGroup("test_group"),
+        group = manager.CreateGroup(),
         "CreateGroup does not throw");
     
     ASSERT_NO_THROW(

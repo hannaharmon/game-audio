@@ -13,7 +13,7 @@ void test_sound_loading() {
     TEST("Sound Loading and Unloading")
     
     auto& audio = AudioManager::GetInstance();
-    GroupHandle group = audio.CreateGroup("test");
+    GroupHandle group = audio.CreateGroup();
     
     // Test basic loading
     std::string sound_path = sound_dir + "/digital_base.wav";
@@ -100,7 +100,7 @@ void test_random_sound_folder() {
     TEST("Random Sound From Folder")
     
     auto& audio = AudioManager::GetInstance();
-    GroupHandle group = audio.CreateGroup("random_test");
+    GroupHandle group = audio.CreateGroup();
     
     // This should load all .wav files from the folder and play one randomly
     audio.PlayRandomSoundFromFolder(sound_dir, group);
@@ -117,7 +117,7 @@ void test_random_sound_folder() {
     // Simulate a typical shutdown/reinitialize cycle to ensure folder cache resets cleanly
     audio.Shutdown();
     ASSERT(audio.Initialize(), "Reinitialize after shutdown should work")
-    GroupHandle group2 = audio.CreateGroup("random_test_2");
+    GroupHandle group2 = audio.CreateGroup();
     audio.PlayRandomSoundFromFolder(sound_dir, group2);
     wait_ms(200);
     ASSERT(true, "Random sound playback should work after reinitialize")

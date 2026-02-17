@@ -44,8 +44,8 @@ def setup_audio():
     
     # Create groups
     print("Creating audio groups...")
-    music_group = audio.create_group("music")
-    sfx_group = audio.create_group("sfx")
+    music_group = audio.create_group()
+    sfx_group = audio.create_group()
     
     # Set initial volumes
     print("Setting initial group volumes...")
@@ -58,14 +58,14 @@ def setup_audio():
     
     # Add layers
     print("Adding layers to music track...")
-    audio.add_layer(music_track, "digital_base", 
-                   os.path.join(SOUND_DIR, "digital_base.wav"), "music")
-    audio.add_layer(music_track, "digital_battle", 
-                   os.path.join(SOUND_DIR, "digital_battle.wav"), "music")
-    audio.add_layer(music_track, "strings_base", 
-                   os.path.join(SOUND_DIR, "strings_base.wav"), "music")
-    audio.add_layer(music_track, "strings_battle", 
-                   os.path.join(SOUND_DIR, "strings_battle.wav"), "music")
+    audio.add_layer(music_track, "digital_base",
+                   os.path.join(SOUND_DIR, "digital_base.wav"), music_group)
+    audio.add_layer(music_track, "digital_battle",
+                   os.path.join(SOUND_DIR, "digital_battle.wav"), music_group)
+    audio.add_layer(music_track, "strings_base",
+                   os.path.join(SOUND_DIR, "strings_base.wav"), music_group)
+    audio.add_layer(music_track, "strings_battle",
+                   os.path.join(SOUND_DIR, "strings_battle.wav"), music_group)
     
     print("Setting initial layer volumes...")
     # Start with digital base

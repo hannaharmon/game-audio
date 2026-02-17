@@ -12,8 +12,8 @@ Example usage:
     >>> audio.initialize()
     >>> 
     >>> # Create audio groups
-    >>> music_group = audio.create_group("music")
-    >>> sfx_group = audio.create_group("sfx")
+    >>> music_group = audio.create_group()
+    >>> sfx_group = audio.create_group()
     >>> 
     >>> # Set volumes
     >>> audio.set_master_volume(0.8)

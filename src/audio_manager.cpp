@@ -152,7 +152,6 @@ void AudioManager::Shutdown() {
     tracks_.clear();
     sounds_.clear();  // Clear sounds before groups
     groups_.clear();  // Clear groups before audio system
-    group_names_.clear();
     folder_sounds_.clear();
 
     // Explicitly destroy the audio system to ensure miniaudio threads are stopped
@@ -232,7 +231,7 @@ void AudioManager::StopTrack(TrackHandle track) {
 
 // Layer operations
 void AudioManager::AddLayer(TrackHandle track, const string& layerName, 
-                           const string& filepath, const string& group) {
+                           const string& filepath, GroupHandle group) {
     EnsureInitialized();
     if (layerName.empty()) {
         throw AudioException("Layer name cannot be empty");
@@ -246,16 +245,14 @@ void AudioManager::AddLayer(TrackHandle track, const string& layerName,
         throw InvalidHandleException("Invalid track handle: " + std::to_string(track.Value()));
     }
     
-    // Look up the group by name if provided
+    // Resolve group handle if provided
     AudioGroup* group_ptr = nullptr;
-    if (!group.empty()) {
-        auto group_it = group_names_.find(group);
-        if (group_it != group_names_.end()) {
-            auto groups_it = groups_.find(group_it->second);
-            if (groups_it != groups_.end() && groups_it->second) {
-                group_ptr = groups_it->second.get();
-            }
+    if (group.IsValid()) {
+        auto groups_it = groups_.find(group);
+        if (groups_it == groups_.end() || !groups_it->second) {
+            throw InvalidHandleException("Invalid group handle: " + std::to_string(group.Value()));
         }
+        group_ptr = groups_it->second.get();
     }
     
     track_it->second->AddLayer(layerName, filepath, group_ptr, true);
@@ -299,7 +296,7 @@ void AudioManager::FadeLayer(TrackHandle track, const string& layerName,
 }
 
 // Group operations
-GroupHandle AudioManager::CreateGroup(const string& name) {
+GroupHandle AudioManager::CreateGroup() {
     EnsureInitialized();
     lock_guard<mutex> lock(resource_mutex_);
     
@@ -307,18 +304,13 @@ GroupHandle AudioManager::CreateGroup(const string& name) {
     GroupHandle handle = NextGroupHandle();
     
     // Create the group in the audio system
-    auto group = audio_system_->CreateGroup(name);
+    auto group = audio_system_->CreateGroup();
     if (!group) {
         throw AudioException("Failed to create audio group");
     }
     
     // Store the group
     groups_[handle] = std::move(group);
-    
-    // Store name mapping if provided
-    if (!name.empty()) {
-        group_names_[name] = handle;
-    }
     
     return handle;
 }
@@ -328,14 +320,6 @@ void AudioManager::DestroyGroup(GroupHandle group) {
     lock_guard<mutex> lock(resource_mutex_);
     auto it = groups_.find(group);
     if (it != groups_.end()) {
-        // Remove from name mapping if present
-        for (auto name_it = group_names_.begin(); name_it != group_names_.end(); ) {
-            if (name_it->second == group) {
-                name_it = group_names_.erase(name_it);
-            } else {
-                ++name_it;
-            }
-        }
         groups_.erase(it);
     }
 }

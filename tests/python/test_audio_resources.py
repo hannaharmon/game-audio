@@ -18,7 +18,7 @@ def test_resource_cleanup():
     
     if sound_exists("digital_base.wav"):
         for i in range(10):
-            groups.append(audio.create_group(f"group_{i}"))
+            groups.append(audio.create_group())
             tracks.append(audio.create_track())
             sounds.append(audio.load_sound(get_sound_path("digital_base.wav")))
         
@@ -48,7 +48,7 @@ def test_edge_cases():
     audio.initialize()
     
     # Create and immediately destroy
-    g = audio.create_group("temp")
+    g = audio.create_group()
     audio.destroy_group(g)
     assert True, "Immediate destruction should work"
     

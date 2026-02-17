@@ -167,14 +167,14 @@ void bind_audio_manager(py::module_& m) {
              py::arg("track"),
              py::arg("layer_name"),
              py::arg("filepath"),
-             py::arg("group") = "",
+             py::arg("group") = GroupHandle::Invalid(),
              "Add an audio layer to a track.\n\n"
              "Layers are individual sounds that play simultaneously within a track.\n\n"
              "Args:\n"
              "    track (TrackHandle): Handle to the track\n"
              "    layer_name (str): Name identifier for the layer\n"
              "    filepath (str): Path to the audio file\n"
-             "    group (str, optional): Name of the group this layer belongs to\n\n"
+             "    group (GroupHandle, optional): Group handle to route the layer through (invalid = default/master)\n\n"
              "Raises:\n"
              "    InvalidHandleException: If track handle is invalid\n"
              "    FileLoadException: If audio file cannot be loaded")
@@ -211,11 +211,8 @@ void bind_audio_manager(py::module_& m) {
         
         // Group Operations
         .def("create_group", &AudioManager::CreateGroup,
-             py::arg("name") = "",
              "Create a new audio group.\n\n"
              "Groups allow collective control of multiple sounds.\n\n"
-             "Args:\n"
-             "    name (str, optional): Optional name for the group\n\n"
              "Returns:\n"
              "    GroupHandle: Handle to the newly created group\n\n"
              "Raises:\n"

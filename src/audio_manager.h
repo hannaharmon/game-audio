@@ -286,19 +286,19 @@ public:
     ///@{
     
     /**
-     * @brief Add an audio layer to a track
-     * 
+     * @brief Add an audio layer to a track.
+     *
      * Layers are individual sounds that play simultaneously within a track.
      * They can be controlled individually for volume and transitions.
-     * 
+     *
      * @param track Handle to the track
-     * @param layerName Name identifier for the layer
+     * @param layerName Name identifier for the layer (unique within the track)
      * @param filepath Path to the audio file
-     * @param group Optional name of the group this layer should belong to
-     * @throws InvalidHandleException If the track handle is invalid
+     * @param group Optional handle of the group this layer should belong to (invalid = default/master)
+     * @throws InvalidHandleException If the track handle is invalid or the group handle is invalid
      * @throws FileLoadException If the audio file cannot be loaded
      */
-    void AddLayer(TrackHandle track, const string& layerName, const string& filepath, const string& group = "");
+    void AddLayer(TrackHandle track, const string& layerName, const string& filepath, GroupHandle group = GroupHandle::Invalid());
     
     /**
      * @brief Remove a layer from a track
@@ -332,15 +332,15 @@ public:
     ///@{
     
     /**
-     * @brief Create a new audio group
-     * 
+     * @brief Create a new audio group.
+     *
      * Audio groups allow for collective control of multiple sounds.
-     * 
-     * @param name Optional name for the group
+     * Groups are referenced by handle; names are not part of the public API.
+     *
      * @return GroupHandle Handle to the newly created group
      * @throws AudioException If group creation fails
      */
-    GroupHandle CreateGroup(const string& name = "");
+    GroupHandle CreateGroup();
     
     /**
      * @brief Destroy an audio group
@@ -520,7 +520,6 @@ private:
     unordered_map<TrackHandle, unique_ptr<AudioTrack>> tracks_;  ///< Track storage
     unordered_map<GroupHandle, unique_ptr<AudioGroup>> groups_;  ///< Group storage
     unordered_map<SoundHandle, unique_ptr<Sound>> sounds_;       ///< Sound storage
-    unordered_map<string, GroupHandle> group_names_;             ///< Name-to-handle mapping for groups
     unordered_map<string, std::vector<SoundHandle>> folder_sounds_; ///< Cached sounds per folder
     ///@}
 

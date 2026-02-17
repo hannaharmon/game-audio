@@ -199,7 +199,7 @@ def test_fade_duration_validation():
     audio = game_audio.AudioManager.get_instance()
     audio.initialize()
     
-    group = audio.create_group("test")
+    group = audio.create_group()
     
     # Test negative duration
     try:

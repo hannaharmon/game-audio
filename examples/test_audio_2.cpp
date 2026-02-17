@@ -81,8 +81,8 @@ int main(int argc, char* argv[]) {
         std::cout << "Audio system initialized successfully\n";
 
         std::cout << "Creating audio groups...\n";
-        auto music_group = audio.CreateGroup("music");
-        auto sfx_group = audio.CreateGroup("sfx");
+        auto music_group = audio.CreateGroup();
+        auto sfx_group = audio.CreateGroup();
         
         std::cout << "Setting initial group volumes...\n";
         audio.SetGroupVolume(music_group, 0.7f);  // Music quieter than SFX
@@ -94,10 +94,10 @@ int main(int argc, char* argv[]) {
         
         std::cout << "Adding layers to music track...\n";
         // Add all our layers to the music track
-        audio.AddLayer(music_track, "digital_base", sound_dir + "digital_base.wav", "music");
-        audio.AddLayer(music_track, "digital_battle", sound_dir + "digital_battle.wav", "music");
-        audio.AddLayer(music_track, "strings_base", sound_dir + "strings_base.wav", "music");
-        audio.AddLayer(music_track, "strings_battle", sound_dir + "strings_battle.wav", "music");
+        audio.AddLayer(music_track, "digital_base", sound_dir + "digital_base.wav", music_group);
+        audio.AddLayer(music_track, "digital_battle", sound_dir + "digital_battle.wav", music_group);
+        audio.AddLayer(music_track, "strings_base", sound_dir + "strings_base.wav", music_group);
+        audio.AddLayer(music_track, "strings_battle", sound_dir + "strings_battle.wav", music_group);
         std::cout << "All layers added successfully\n";
         
         std::cout << "Setting initial layer volumes...\n";

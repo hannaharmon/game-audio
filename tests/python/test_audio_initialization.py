@@ -18,7 +18,7 @@ def test_audio_session_usage():
     print("Test: AudioSession usage... ", end="", flush=True)
     session = game_audio.AudioSession()
     audio = game_audio.AudioManager.get_instance()
-    group = audio.create_group("session_test")
+    group = audio.create_group()
     audio.set_group_volume(group, 0.5)
     audio.destroy_group(group)
     session.close()
@@ -63,7 +63,7 @@ def test_rapid_shutdown_reinitialize():
         wait_ms(50)
         
         # Verify system works after reinitialize
-        group = audio.create_group("test")
+        group = audio.create_group()
         audio.set_group_volume(group, 0.5)
         assert abs(audio.get_group_volume(group) - 0.5) < 0.01, "System should work after reinitialize"
         audio.destroy_group(group)

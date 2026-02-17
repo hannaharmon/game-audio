@@ -11,7 +11,7 @@ def test_sound_loading():
     audio = game_audio.AudioManager.get_instance()
     audio.initialize()
     
-    group = audio.create_group("test")
+    group = audio.create_group()
     
     if sound_exists("digital_base.wav"):
         sound_path = get_sound_path("digital_base.wav")
@@ -110,7 +110,7 @@ def test_random_sound_folder():
     audio = game_audio.AudioManager.get_instance()
     audio.initialize()
     
-    group = audio.create_group("random_test")
+    group = audio.create_group()
     
     # This should load all .wav files from the folder and play one randomly
     audio.play_random_sound_from_folder(SOUND_DIR, group)
@@ -127,7 +127,7 @@ def test_random_sound_folder():
     # Simulate a typical shutdown/reinitialize cycle
     audio.shutdown()
     assert audio.initialize(), "Reinitialize after shutdown should work"
-    group2 = audio.create_group("random_test_2")
+    group2 = audio.create_group()
     audio.play_random_sound_from_folder(SOUND_DIR, group2)
     wait_ms(200)
     assert True, "Random sound playback should work after reinitialize"

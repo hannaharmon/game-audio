@@ -78,8 +78,8 @@ session = game_audio.AudioSession()
 audio = game_audio.AudioManager.get_instance()
 
 # Create groups and play
-music_group = audio.create_group("music")
-sfx_group = audio.create_group("sfx")
+music_group = audio.create_group()
+sfx_group = audio.create_group()
 
 # Cleanup (optional; session destructor will also handle this)
 session.close()
@@ -92,8 +92,8 @@ import game_audio
 audio = game_audio.AudioManager.get_instance()
 audio.initialize()
 
-music_group = audio.create_group("music")
-sfx_group = audio.create_group("sfx")
+music_group = audio.create_group()
+sfx_group = audio.create_group()
 
 audio.shutdown()
 ```
@@ -128,8 +128,8 @@ audio::AudioSession session;
 auto& audio = audio::AudioManager::GetInstance();
 
 // Create groups
-auto music = audio.CreateGroup("music");
-auto sfx = audio.CreateGroup("sfx");
+auto music = audio.CreateGroup();
+auto sfx = audio.CreateGroup();
 
 // Cleanup handled automatically by AudioSession destructor (or call session.Close())
 ```
@@ -141,8 +141,8 @@ auto sfx = audio.CreateGroup("sfx");
 auto& audio = audio::AudioManager::GetInstance();
 audio.Initialize();
 
-auto music = audio.CreateGroup("music");
-auto sfx = audio.CreateGroup("sfx");
+auto music = audio.CreateGroup();
+auto sfx = audio.CreateGroup();
 
 audio.Shutdown();
 ```

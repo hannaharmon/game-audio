@@ -43,7 +43,7 @@ void test_volume_clamping() {
     auto& audio = AudioManager::GetInstance();
     
     // Test group volume clamping
-    GroupHandle group = audio.CreateGroup("test");
+    GroupHandle group = audio.CreateGroup();
     audio.SetGroupVolume(group, -1.0f);
     ASSERT(audio.GetGroupVolume(group) >= 0.0f, "Negative group volume should be clamped")
     

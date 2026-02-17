@@ -65,8 +65,8 @@ def test_concurrent_operations():
     audio = game_audio.AudioManager.get_instance()
     audio.initialize()
     
-    music = audio.create_group("music")
-    sfx = audio.create_group("sfx")
+    music = audio.create_group()
+    sfx = audio.create_group()
     
     if sound_exists("digital_base.wav") and sound_exists("digital_battle.wav"):
         sound1 = audio.load_sound(get_sound_path("digital_base.wav"), music)

@@ -39,7 +39,7 @@ def test_volume_clamping():
     audio.initialize()
     
     # Test group volume clamping
-    group = audio.create_group("test")
+    group = audio.create_group()
     audio.set_group_volume(group, -1.0)
     assert audio.get_group_volume(group) >= 0.0, "Negative group volume should be clamped"
     

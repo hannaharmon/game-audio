@@ -35,7 +35,7 @@ void test_audio_session_usage() {
     
     {
         AudioSession session;
-        GroupHandle group = audio.CreateGroup("session_group");
+        GroupHandle group = audio.CreateGroup();
         ASSERT(group.IsValid(), "AudioSession should allow group creation")
         audio.SetGroupVolume(group, 0.5f);
         audio.DestroyGroup(group);
@@ -98,7 +98,7 @@ void test_rapid_shutdown_reinitialize() {
         wait_ms(50);
         
         // Verify system works after reinitialize
-        GroupHandle group = audio.CreateGroup("test");
+        GroupHandle group = audio.CreateGroup();
         audio.SetGroupVolume(group, 0.5f);
         ASSERT(std::abs(audio.GetGroupVolume(group) - 0.5f) < 0.01f, 
                "System should work after reinitialize")

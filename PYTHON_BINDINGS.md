@@ -45,8 +45,8 @@ pip install https://github.com/hannaharmon/game-audio/releases/download/v2.0.0/g
 pip install https://github.com/hannaharmon/game-audio/releases/download/v2.0.0/game_audio-2.0.0-cp311-cp311-win_amd64.whl
 ```
 
-**Note**: 
-- Wheels are automatically built for Windows, Linux, and macOS for Python 3.8-3.12 on every release. Check the [GitHub Releases](https://github.com/hannaharmon/game-audio/releases) page for available wheels.
+- **Note**:
+- Wheels are automatically built for Windows, Linux, and macOS for Python **3.10–3.13** on every release. Check the [GitHub Releases](https://github.com/hannaharmon/game-audio/releases) page for available wheels.
 - When installing from GitHub releases, you must uninstall before switching to PyPI (or vice versa), as pip treats them as different sources.
 
 #### Method 2: Build from Source with CMake
@@ -94,8 +94,8 @@ session = game_audio.AudioSession()
 audio = game_audio.AudioManager.get_instance()
 
 # Create groups
-music = audio.create_group("music")
-sfx = audio.create_group("sfx")
+music = audio.create_group()
+sfx = audio.create_group()
 
 # Use the audio system
 audio.set_master_volume(0.8)
@@ -111,8 +111,8 @@ import game_audio
 audio = game_audio.AudioManager.get_instance()
 audio.initialize()
 
-music = audio.create_group("music")
-sfx = audio.create_group("sfx")
+music = audio.create_group()
+sfx = audio.create_group()
 
 audio.set_master_volume(0.8)
 audio.shutdown()
@@ -251,11 +251,30 @@ container.play()
 
 ## Type Hints and Autocomplete
 
-The build system automatically generates Python type stubs (`.pyi` files) for IDE autocomplete support. These will be generated in the `game_audio/` directory.
+Wheels include Python type stubs (`.pyi`) for IDE autocomplete/IntelliSense (e.g., Pylance).
 
-To enable stub generation, install pybind11-stubgen:
+If you're building from source and want stubs, install `pybind11-stubgen`:
 ```bash
 pip install pybind11-stubgen
+```
+
+## Tracks, Layers, and Groups
+
+Layers are identified by a **string name within a track** (e.g., `"digital_base"`), but **group routing uses a `GroupHandle`** (not a group name string):
+
+```python
+import game_audio
+import os
+
+session = game_audio.AudioSession()
+audio = game_audio.AudioManager.get_instance()
+
+music_group = audio.create_group()
+track = audio.create_track()
+
+audio.add_layer(track, "alto_flute", os.path.join("sound_files", "alto_flute.wav"), music_group)
+audio.set_layer_volume(track, "alto_flute", 0.7)
+audio.play_track(track)
 ```
 
 ## Troubleshooting

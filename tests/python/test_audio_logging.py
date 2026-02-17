@@ -56,7 +56,7 @@ def test_logging_output():
             audio.initialize()
         
         # Create a group (should generate logs)
-        group = audio.create_group("logging_test")
+        group = audio.create_group()
         assert group.is_valid(), "Group should be valid"
         
         # Set volume (should generate logs at Debug level)
@@ -69,7 +69,7 @@ def test_logging_output():
         game_audio.AudioManager.set_log_level(game_audio.LogLevel.Off)
         
         # Operations should still work, just no logging
-        group2 = audio.create_group("logging_test_2")
+        group2 = audio.create_group()
         audio.destroy_group(group2)
         
         # Restore original
