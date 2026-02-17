@@ -87,7 +87,7 @@ jobs:
         # Build only the selected Python version in this matrix job
         CIBW_BUILD: ${{ matrix.cibw-build }}
         # Avoid PyPy/musllinux builds for now
-        CIBW_SKIP: "pp* *-musllinux_*"
+        CIBW_SKIP: "*-musllinux_*"
         # Ensure PyPI-accepted Linux wheel tags
         CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
         # Keep architecture matrix small and aligned with our release targets

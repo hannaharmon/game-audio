@@ -112,9 +112,22 @@ if(BUILD_PYTHON_BINDINGS)
     if(DEFINED Python_EXECUTABLE AND NOT Python3_EXECUTABLE)
         set(Python3_EXECUTABLE ${Python_EXECUTABLE} CACHE FILEPATH "Python3 executable" FORCE)
     endif()
+    # If still not specified, try to locate a usable interpreter explicitly.
+    # This helps in some wheel build environments where only `python` is on PATH (not `python3`).
+    if(NOT Python3_EXECUTABLE)
+        find_program(_GAME_AUDIO_PYTHON_EXECUTABLE NAMES python3 python)
+        if(_GAME_AUDIO_PYTHON_EXECUTABLE)
+            set(Python3_EXECUTABLE ${_GAME_AUDIO_PYTHON_EXECUTABLE} CACHE FILEPATH "Python3 executable" FORCE)
+        endif()
+    endif()
 
-    # Find Python before pybind11 to ensure correct Python is used
-    find_package(Python3 COMPONENTS Interpreter Development QUIET)
+    # Find Python before pybind11 to ensure correct Python is used.
+    #
+    # IMPORTANT (manylinux/cibuildwheel):
+    # - The "Development" component can fail in some wheel build environments because it expects
+    #   libpython for embedding. For extension modules we only need headers + module build support,
+    #   which is provided by Development.Module.
+    find_package(Python3 COMPONENTS Interpreter Development.Module QUIET)
     
     if(Python3_FOUND)
         message(STATUS "Found Python ${Python3_VERSION}: ${Python3_EXECUTABLE}")
@@ -297,8 +310,14 @@ except Exception as e:
         
         message(STATUS "Python bindings enabled")
     else()
-        message(WARNING "Python3 not found - Python bindings will not be built")
-        message(WARNING "  Set PYTHON_EXECUTABLE or Python3_EXECUTABLE to specify Python location")
+        # For local C++-only builds, this can be a warning.
+        # For wheel builds (scikit-build), missing Python must fail so we don't produce a broken wheel.
+        if(DEFINED SKBUILD)
+            message(FATAL_ERROR "Python3 not found - Python bindings are required for wheel builds. Set PYTHON_EXECUTABLE or Python3_EXECUTABLE.")
+        else()
+            message(WARNING "Python3 not found - Python bindings will not be built")
+            message(WARNING "  Set PYTHON_EXECUTABLE or Python3_EXECUTABLE to specify Python location")
+        endif()
     endif()
 endif()
 
