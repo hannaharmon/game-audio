@@ -154,6 +154,7 @@ audio.Shutdown();
 
 - **Python Interactive**: [examples/python_interactive.py](examples/python_interactive.py) - Layered music with volume controls
 - **Python Spatial Audio**: [examples/spatial_audio_example.py](examples/spatial_audio_example.py) - 3D spatialized audio demo
+- **Python Overlapping Spatial Sounds**: [examples/overlapping_spatial_sounds.py](examples/overlapping_spatial_sounds.py) - Multiple overlapping spatialized sounds from the same file
 - **C++ Basic**: [examples/test_audio.cpp](examples/test_audio.cpp)
 - **C++ Advanced**: [examples/test_audio_2.cpp](examples/test_audio_2.cpp)
 

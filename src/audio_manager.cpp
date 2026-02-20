@@ -5,6 +5,7 @@
 #include "audio_group.h"
 #include "sound.h"
 #include "logging.h"
+#include "path_utils.h"
 
 #include <chrono>
 #include <thread>
@@ -435,6 +436,16 @@ void AudioManager::PlaySound(SoundHandle sound) {
     it->second->Play();
 }
 
+void AudioManager::PlaySound(SoundHandle sound, const Vec3& position) {
+    EnsureInitialized();
+    lock_guard<mutex> lock(resource_mutex_);
+    auto it = sounds_.find(sound);
+    if (it == sounds_.end() || !it->second) {
+        throw InvalidHandleException("Invalid sound handle: " + std::to_string(sound.Value()));
+    }
+    it->second->Play(position);
+}
+
 void AudioManager::StopSound(SoundHandle sound) {
     EnsureInitialized();
     lock_guard<mutex> lock(resource_mutex_);
@@ -493,6 +504,9 @@ void AudioManager::PlayRandomSoundFromFolder(const string& folderPath, GroupHand
     }
     lock_guard<mutex> lock(resource_mutex_);
     
+    // Resolve the folder path relative to the working directory
+    string resolved_folder_path = ResolvePath(folderPath);
+    
     // Get the AudioGroup pointer for this handle
     AudioGroup* group_ptr = nullptr;
     if (group.IsValid()) {
@@ -506,15 +520,15 @@ void AudioManager::PlayRandomSoundFromFolder(const string& folderPath, GroupHand
         
         // Get all .wav files in the folder
         #ifdef _WIN32
-        string searchPath = folderPath + "/*.wav";
+        string searchPath = resolved_folder_path + "/*.wav";
         WIN32_FIND_DATAA findData;
         HANDLE hFind = FindFirstFileA(searchPath.c_str(), &findData);
         
         if (hFind != INVALID_HANDLE_VALUE) {
-            AUDIO_LOG(LogLevel::Info, "Found sounds in folder: " << folderPath);
+            AUDIO_LOG(LogLevel::Info, "Found sounds in folder: " << folderPath << " (resolved to: " << resolved_folder_path << ")");
             do {
                 if (!(findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
-                    string filepath = folderPath + "/" + findData.cFileName;
+                    string filepath = resolved_folder_path + "/" + findData.cFileName;
                     
                     // Load the sound
                     SoundHandle handle = NextSoundHandle();
@@ -529,9 +543,9 @@ void AudioManager::PlayRandomSoundFromFolder(const string& folderPath, GroupHand
         }
         #else
         // Unix/Linux/macOS implementation using opendir/readdir
-        DIR* dir = opendir(folderPath.c_str());
+        DIR* dir = opendir(resolved_folder_path.c_str());
         if (dir != nullptr) {
-            AUDIO_LOG(LogLevel::Info, "Found sounds in folder: " << folderPath);
+            AUDIO_LOG(LogLevel::Info, "Found sounds in folder: " << folderPath << " (resolved to: " << resolved_folder_path << ")");
             struct dirent* entry;
             while ((entry = readdir(dir)) != nullptr) {
                 string filename = entry->d_name;
@@ -549,7 +563,7 @@ void AudioManager::PlayRandomSoundFromFolder(const string& folderPath, GroupHand
                                    [](unsigned char c) { return std::tolower(c); });
                     
                     if (extension == ".wav") {
-                        string filepath = folderPath + "/" + filename;
+                        string filepath = resolved_folder_path + "/" + filename;
                         
                         // Verify it's a regular file (not a directory or symlink to directory)
                         struct stat statbuf;

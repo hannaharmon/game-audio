@@ -31,6 +31,7 @@ set(AUDIO_SOURCES
     src/audio_manager.cpp
     src/audio_session.cpp
     src/random_sound_container.cpp
+    src/path_utils.cpp
     src/logging.cpp
     include/miniaudio/miniaudio.cpp
 )

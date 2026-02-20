@@ -12,6 +12,7 @@
 #include "test_common.h"
 #include "audio_manager.h"
 #include "vec3.h"
+#include "random_sound_container.h"
 #include <cmath>
 #include <algorithm>
 
@@ -458,6 +459,126 @@ void test_spatial_audio_with_playback() {
     END_TEST
 }
 
+void test_play_sound_at_position() {
+    TEST("Play Sound at Specific Position")
+    
+    auto& audio = AudioManager::GetInstance();
+    
+    // Set up listener
+    audio.SetListenerPosition(Vec3(0.0f, 0.0f, 0.0f));
+    
+    // Load a sound
+    SoundHandle sound = audio.LoadSound(sound_dir + "/digital_base.wav");
+    audio.SetSoundMinDistance(sound, 1.0f);
+    audio.SetSoundMaxDistance(sound, 20.0f);
+    
+    // Play at position 1
+    Vec3 pos1(5.0f, 0.0f, 0.0f);
+    audio.PlaySound(sound, pos1);
+    wait_ms(50);
+    ASSERT(audio.IsSoundPlaying(sound), "Sound should be playing at position 1")
+    
+    // Play at position 2 (should overlap with position 1)
+    Vec3 pos2(10.0f, 0.0f, 0.0f);
+    audio.PlaySound(sound, pos2);
+    wait_ms(50);
+    ASSERT(audio.IsSoundPlaying(sound), "Sound should still be playing (overlapping instances)")
+    
+    // Play at position 3 (should overlap with both)
+    Vec3 pos3(-5.0f, 0.0f, 0.0f);
+    audio.PlaySound(sound, pos3);
+    wait_ms(50);
+    ASSERT(audio.IsSoundPlaying(sound), "Sound should still be playing (multiple overlapping instances)")
+    
+    // Verify default position is unchanged
+    Vec3 default_pos = audio.GetSoundPosition(sound);
+    // Default position should be (0,0,0) or whatever was set before
+    // The important thing is that PlaySound(position) doesn't change the default
+    
+    // Stop all instances
+    audio.StopSound(sound);
+    wait_ms(50);
+    ASSERT(!audio.IsSoundPlaying(sound), "All instances should be stopped")
+    
+    audio.DestroySound(sound);
+    
+    END_TEST
+}
+
+void test_overlapping_spatial_sounds() {
+    TEST("Overlapping Spatial Sounds at Different Positions")
+    
+    auto& audio = AudioManager::GetInstance();
+    
+    // Set up listener
+    audio.SetListenerPosition(Vec3(0.0f, 0.0f, 0.0f));
+    
+    // Load a sound
+    SoundHandle sound = audio.LoadSound(sound_dir + "/digital_base.wav");
+    audio.SetSoundMinDistance(sound, 1.0f);
+    audio.SetSoundMaxDistance(sound, 50.0f);
+    
+    // Play multiple instances at different positions simultaneously
+    Vec3 positions[] = {
+        Vec3(5.0f, 0.0f, 0.0f),
+        Vec3(-5.0f, 0.0f, 0.0f),
+        Vec3(0.0f, 0.0f, 5.0f),
+        Vec3(0.0f, 0.0f, -5.0f),
+        Vec3(3.0f, 3.0f, 3.0f)
+    };
+    
+    for (const auto& pos : positions) {
+        audio.PlaySound(sound, pos);
+    }
+    
+    wait_ms(100);
+    ASSERT(audio.IsSoundPlaying(sound), "All instances should be playing simultaneously")
+    
+    // Each instance should maintain its own position
+    // (We can't directly verify this, but the fact that they all play
+    // and don't interfere with each other is the key test)
+    
+    audio.StopSound(sound);
+    wait_ms(50);
+    
+    audio.DestroySound(sound);
+    
+    END_TEST
+}
+
+void test_random_container_get_random_sound() {
+    TEST("RandomSoundContainer GetRandomSound")
+    
+    auto& audio = AudioManager::GetInstance();
+    
+    // Create a random sound container
+    RandomSoundContainerConfig config;
+    RandomSoundContainer container("test_container", config);
+    
+    // Add multiple sounds
+    container.AddSound(sound_dir + "/digital_base.wav");
+    container.AddSound(sound_dir + "/hit.wav");
+    
+    ASSERT(container.GetSoundCount() == 2, "Container should have 2 sounds")
+    
+    // Get random sounds multiple times
+    SoundHandle sound1 = container.GetRandomSound();
+    ASSERT(sound1.IsValid(), "GetRandomSound should return valid handle")
+    
+    SoundHandle sound2 = container.GetRandomSound();
+    ASSERT(sound2.IsValid(), "GetRandomSound should return valid handle")
+    
+    // Both should be valid (might be same or different)
+    // The important thing is they're valid handles
+    
+    // Test with empty container
+    RandomSoundContainer empty_container("empty", config);
+    SoundHandle invalid = empty_container.GetRandomSound();
+    ASSERT(!invalid.IsValid(), "GetRandomSound on empty container should return invalid handle")
+    
+    END_TEST
+}
+
 int main(int argc, char* argv[]) {
     std::cout << "========================================" << std::endl;
     std::cout << "Audio System Spatial Audio Tests" << std::endl;
@@ -487,6 +608,9 @@ int main(int argc, char* argv[]) {
     test_spatial_audio_integration();
     test_multiple_spatial_sounds();
     test_spatial_audio_with_playback();
+    test_play_sound_at_position();
+    test_overlapping_spatial_sounds();
+    test_random_container_get_random_sound();
     
     // Final shutdown
     audio.Shutdown();

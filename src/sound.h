@@ -107,9 +107,26 @@ class Sound {
    * Creates and plays a new instance of this sound, allowing
    * multiple overlapping playbacks of the same sound.
    * 
+   * Uses the default position set via SetPosition().
+   * 
    * @throws FileLoadException If the sound file cannot be loaded or initialized for playback
    */
   void Play();
+  
+  /**
+   * @brief Starts a new instance of the sound at a specific position
+   * 
+   * Creates and plays a new instance of this sound at the specified position.
+   * This allows multiple overlapping spatialized sounds from the same audio file
+   * to play at different positions simultaneously (e.g., multiple gunshots).
+   * 
+   * The position is only applied to this new instance. Existing instances
+   * keep their positions unchanged.
+   * 
+   * @param position 3D position for this instance
+   * @throws FileLoadException If the sound file cannot be loaded or initialized for playback
+   */
+  void Play(const Vec3& position);
   
   /**
    * @brief Stops all instances of this sound

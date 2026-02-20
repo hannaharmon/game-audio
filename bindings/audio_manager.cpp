@@ -353,13 +353,32 @@ void bind_audio_manager(py::module_& m) {
              "Args:\n"
              "    sound (SoundHandle): Handle to the sound to destroy")
         
-        .def("play_sound", &AudioManager::PlaySound,
+        .def("play_sound", py::overload_cast<SoundHandle>(&AudioManager::PlaySound),
              py::arg("sound"),
-             "Play a sound.\n\n"
+             "Play a sound using its current position.\n\n"
              "Args:\n"
              "    sound (SoundHandle): Handle to the sound to play\n\n"
              "Raises:\n"
              "    InvalidHandleException: If sound handle is invalid")
+        .def("play_sound", py::overload_cast<SoundHandle, const Vec3&>(&AudioManager::PlaySound),
+             py::arg("sound"), py::arg("position"),
+             "Play a sound at a specific position.\n\n"
+             "This allows multiple overlapping spatialized sounds from the same\n"
+             "audio file to play at different positions simultaneously (e.g.,\n"
+             "multiple gunshots). The position is only applied to this new\n"
+             "playback instance. Existing instances keep their positions unchanged.\n\n"
+             "Args:\n"
+             "    sound (SoundHandle): Handle to the sound to play\n"
+             "    position (Vec3): 3D position for this playback instance\n\n"
+             "Raises:\n"
+             "    InvalidHandleException: If sound handle is invalid\n\n"
+             "Example:\n"
+             "    # Load gunshot sound once\n"
+             "    gunshot = audio.load_sound(\"gunshot.wav\")\n"
+             "    \n"
+             "    # Play multiple gunshots at different positions\n"
+             "    audio.play_sound(gunshot, game_audio.Vec3(10, 0, 0))  # Enemy 1\n"
+             "    audio.play_sound(gunshot, game_audio.Vec3(20, 0, 0))  # Enemy 2")
         
         .def("stop_sound", &AudioManager::StopSound,
              py::arg("sound"),

@@ -292,6 +292,128 @@ def test_spatial_audio_integration():
     audio.destroy_sound(sound)
     session.close()
 
+def test_play_sound_at_position():
+    """Test playing sound at specific position"""
+    print("\nTEST: Play Sound at Specific Position")
+    
+    session = game_audio.AudioSession()
+    audio = game_audio.AudioManager.get_instance()
+    
+    # Set up listener
+    audio.set_listener_position(game_audio.Vec3(0.0, 0.0, 0.0))
+    
+    # Load a sound
+    sound_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'sound_files')
+    sound = audio.load_sound(os.path.join(sound_dir, "digital_base.wav"))
+    audio.set_sound_min_distance(sound, 1.0)
+    audio.set_sound_max_distance(sound, 20.0)
+    
+    # Play at position 1
+    pos1 = game_audio.Vec3(5.0, 0.0, 0.0)
+    audio.play_sound(sound, pos1)
+    import time
+    time.sleep(0.1)
+    assert audio.is_sound_playing(sound), "Sound should be playing at position 1"
+    print("  PASS: Sound plays at position 1")
+    
+    # Play at position 2 (should overlap with position 1)
+    pos2 = game_audio.Vec3(10.0, 0.0, 0.0)
+    audio.play_sound(sound, pos2)
+    time.sleep(0.1)
+    assert audio.is_sound_playing(sound), "Sound should still be playing (overlapping instances)"
+    print("  PASS: Overlapping sounds work correctly")
+    
+    # Play at position 3 (should overlap with both)
+    pos3 = game_audio.Vec3(-5.0, 0.0, 0.0)
+    audio.play_sound(sound, pos3)
+    time.sleep(0.1)
+    assert audio.is_sound_playing(sound), "Sound should still be playing (multiple overlapping instances)"
+    print("  PASS: Multiple overlapping instances work")
+    
+    # Stop all instances
+    audio.stop_sound(sound)
+    time.sleep(0.1)
+    assert not audio.is_sound_playing(sound), "All instances should be stopped"
+    print("  PASS: All instances stopped correctly")
+    
+    audio.destroy_sound(sound)
+    session.close()
+
+def test_overlapping_spatial_sounds():
+    """Test overlapping spatial sounds at different positions"""
+    print("\nTEST: Overlapping Spatial Sounds at Different Positions")
+    
+    session = game_audio.AudioSession()
+    audio = game_audio.AudioManager.get_instance()
+    
+    # Set up listener
+    audio.set_listener_position(game_audio.Vec3(0.0, 0.0, 0.0))
+    
+    # Load a sound
+    sound_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'sound_files')
+    sound = audio.load_sound(os.path.join(sound_dir, "digital_base.wav"))
+    audio.set_sound_min_distance(sound, 1.0)
+    audio.set_sound_max_distance(sound, 50.0)
+    
+    # Play multiple instances at different positions simultaneously
+    positions = [
+        game_audio.Vec3(5.0, 0.0, 0.0),
+        game_audio.Vec3(-5.0, 0.0, 0.0),
+        game_audio.Vec3(0.0, 0.0, 5.0),
+        game_audio.Vec3(0.0, 0.0, -5.0),
+        game_audio.Vec3(3.0, 3.0, 3.0)
+    ]
+    
+    for pos in positions:
+        audio.play_sound(sound, pos)
+    
+    import time
+    time.sleep(0.2)
+    assert audio.is_sound_playing(sound), "All instances should be playing simultaneously"
+    print("  PASS: Multiple overlapping spatial sounds play correctly")
+    
+    audio.stop_sound(sound)
+    time.sleep(0.1)
+    
+    audio.destroy_sound(sound)
+    session.close()
+
+def test_random_container_get_random_sound():
+    """Test RandomSoundContainer GetRandomSound method"""
+    print("\nTEST: RandomSoundContainer GetRandomSound")
+    
+    session = game_audio.AudioSession()
+    audio = game_audio.AudioManager.get_instance()
+    
+    # Create a random sound container
+    config = game_audio.RandomSoundContainerConfig()
+    container = game_audio.RandomSoundContainer("test_container", config)
+    
+    # Add multiple sounds
+    sound_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'sound_files')
+    container.add_sound(os.path.join(sound_dir, "digital_base.wav"))
+    container.add_sound(os.path.join(sound_dir, "hit.wav"))
+    
+    assert container.get_sound_count() == 2, "Container should have 2 sounds"
+    print("  PASS: Container has correct sound count")
+    
+    # Get random sounds multiple times
+    sound1 = container.get_random_sound()
+    assert sound1.value != 0, "GetRandomSound should return valid handle"
+    print("  PASS: GetRandomSound returns valid handle")
+    
+    sound2 = container.get_random_sound()
+    assert sound2.value != 0, "GetRandomSound should return valid handle"
+    print("  PASS: GetRandomSound works multiple times")
+    
+    # Test with empty container
+    empty_container = game_audio.RandomSoundContainer("empty", config)
+    invalid = empty_container.get_random_sound()
+    assert invalid.value == 0, "GetRandomSound on empty container should return invalid handle"
+    print("  PASS: Empty container returns invalid handle")
+    
+    session.close()
+
 def main():
     """Run all spatial audio tests"""
     print("========================================")
@@ -307,8 +429,11 @@ def main():
         test_listener_direction()
         test_sound_position()
         test_sound_distance_attenuation()
-        test_sound_spatialization_enabled()
-        test_spatial_audio_integration()
+    test_sound_spatialization_enabled()
+    test_spatial_audio_integration()
+    test_play_sound_at_position()
+    test_overlapping_spatial_sounds()
+    test_random_container_get_random_sound()
         
         print("\n========================================")
         print("ALL TESTS PASSED ✓")

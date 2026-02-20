@@ -1,6 +1,7 @@
 #include "random_sound_container.h"
 #include "audio_manager.h"
 #include "logging.h"
+#include "path_utils.h"
 #include <iostream>
 #include <random>
 #include <filesystem>
@@ -57,9 +58,11 @@ void RandomSoundContainer::AddSound(const std::string& filepath) {
 void RandomSoundContainer::LoadFromFolder(const std::string& folderPath) {
     AudioManager& audio = AudioManager::GetInstance();
 
-    fs::path dir(folderPath);
+    // Resolve the folder path relative to the working directory
+    std::string resolved_path = ResolvePath(folderPath);
+    fs::path dir(resolved_path);
     if (!fs::exists(dir) || !fs::is_directory(dir)) {
-        AUDIO_LOG(LogLevel::Warn, "Folder does not exist or is not a directory: " << folderPath);
+        AUDIO_LOG(LogLevel::Warn, "Folder does not exist or is not a directory: " << folderPath << " (resolved to: " << resolved_path << ")");
         return;
     }
 
@@ -140,6 +143,22 @@ void RandomSoundContainer::SetPitchRange(float minPitch, float maxPitch) {
 
 void RandomSoundContainer::SetAvoidRepeat(bool avoid) {
     config_.avoidRepeat = avoid;
+}
+
+SoundHandle RandomSoundContainer::GetRandomSound() const {
+    if (sounds_.empty()) {
+        return SoundHandle::Invalid();
+    }
+    if (sounds_.size() == 1) {
+        return sounds_[0];
+    }
+    
+    // Use a temporary RNG for const method
+    static thread_local std::mt19937 temp_rng(std::random_device{}());
+    std::uniform_int_distribution<size_t> dist(0, sounds_.size() - 1);
+    
+    size_t index = dist(temp_rng);
+    return sounds_[index];
 }
 
 SoundHandle RandomSoundContainer::SelectRandomSound() {

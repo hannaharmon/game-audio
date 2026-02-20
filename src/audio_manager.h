@@ -415,7 +415,31 @@ public:
      * @throws InvalidHandleException If the sound handle is invalid
      * @throws FileLoadException If the sound file cannot be loaded or initialized for playback
      */
+    /**
+     * @brief Play a sound
+     * 
+     * Starts playback of the sound using its current position.
+     * 
+     * @param sound Handle to the sound
+     * @throws InvalidHandleException If the sound handle is invalid
+     */
     void PlaySound(SoundHandle sound);
+    
+    /**
+     * @brief Play a sound at a specific position
+     * 
+     * Starts playback of the sound at the specified position. This allows
+     * multiple overlapping spatialized sounds from the same audio file to
+     * play at different positions simultaneously (e.g., multiple gunshots).
+     * 
+     * The position is only applied to this new playback instance. Existing
+     * instances keep their positions unchanged.
+     * 
+     * @param sound Handle to the sound
+     * @param position 3D position for this playback instance
+     * @throws InvalidHandleException If the sound handle is invalid
+     */
+    void PlaySound(SoundHandle sound, const Vec3& position);
     
     /**
      * @brief Stop a currently playing sound

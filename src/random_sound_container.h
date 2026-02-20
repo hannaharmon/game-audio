@@ -102,6 +102,16 @@ public:
      * @return size_t Number of loaded sounds
      */
     size_t GetSoundCount() const { return sounds_.size(); }
+    
+    /**
+     * @brief Get a random sound handle without playing it
+     * 
+     * Useful for playing sounds at specific positions while still
+     * using the container's random selection logic.
+     * 
+     * @return SoundHandle Handle to a randomly selected sound
+     */
+    SoundHandle GetRandomSound() const;
 
 private:
     std::string name_;                          ///< Container name

@@ -3,6 +3,7 @@
 #include "audio_group.h"
 #include "audio_manager.h"
 #include "logging.h"
+#include "path_utils.h"
 #include <iostream>
 #include <algorithm>
 #include <fstream>
@@ -10,14 +11,17 @@
 namespace audio {
 
 std::unique_ptr<Sound> Sound::Create(ma_engine* engine, const std::string& filepath, AudioGroup* group) {
+  // Resolve the path relative to the working directory
+  std::string resolved_path = ResolvePath(filepath);
+  
   // Validate that file exists
-  std::ifstream file(filepath, std::ios::binary);
+  std::ifstream file(resolved_path, std::ios::binary);
   if (!file.good()) {
-    throw FileLoadException("File not found or cannot be opened: " + filepath);
+    throw FileLoadException("File not found or cannot be opened: " + filepath + " (resolved to: " + resolved_path + ")");
   }
   file.close();
   
-  return std::unique_ptr<Sound>(new Sound(engine, filepath, group));
+  return std::unique_ptr<Sound>(new Sound(engine, resolved_path, group));
 }
 
 SoundInstance::SoundInstance() : sound(nullptr), finished(false) {}
@@ -60,6 +64,10 @@ void Sound::CleanupFinishedInstances() {
 }
 
 void Sound::Play() {
+  Play(position_);  // Use default position
+}
+
+void Sound::Play(const Vec3& position) {
   // First cleanup any finished instances
   CleanupFinishedInstances();
   
@@ -106,10 +114,10 @@ void Sound::Play() {
   ma_sound_set_volume(instance->sound, volume_);
   ma_sound_set_pitch(instance->sound, pitch_);
   
-  // Configure spatial audio
+  // Configure spatial audio - use the provided position for this instance only
   ma_sound_set_spatialization_enabled(instance->sound, spatialization_enabled_ ? MA_TRUE : MA_FALSE);
   if (spatialization_enabled_) {
-    ma_sound_set_position(instance->sound, position_.x, position_.y, position_.z);
+    ma_sound_set_position(instance->sound, position.x, position.y, position.z);
     ma_sound_set_min_distance(instance->sound, min_distance_);
     ma_sound_set_max_distance(instance->sound, max_distance_);
     ma_sound_set_rolloff(instance->sound, rolloff_);
