@@ -436,7 +436,7 @@ def main():
         test_random_container_get_random_sound()
         
         print("\n========================================")
-        print("ALL TESTS PASSED ✓")
+        print("ALL TESTS PASSED OK")
         print("========================================")
         return 0
     except Exception as e:
