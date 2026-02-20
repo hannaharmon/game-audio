@@ -101,5 +101,10 @@ void bind_random_sound_container(py::module_& m) {
         .def("get_name", &RandomSoundContainer::GetName,
              "Get the name of this container.\n\n"
              "Returns:\n"
-             "    str: Container name");
+             "    str: Container name")
+        
+        .def("get_sound_count", &RandomSoundContainer::GetSoundCount,
+             "Get the number of sounds in this container.\n\n"
+             "Returns:\n"
+             "    int: Number of loaded sounds");
 }
