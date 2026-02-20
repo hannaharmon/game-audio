@@ -11,6 +11,11 @@
 namespace audio {
 
 std::unique_ptr<Sound> Sound::Create(ma_engine* engine, const std::string& filepath, AudioGroup* group) {
+  // Validate that filepath is not empty before resolving
+  if (filepath.empty()) {
+    throw FileLoadException("File not found or cannot be opened: " + filepath);
+  }
+  
   // Resolve the path relative to the working directory
   std::string resolved_path = ResolvePath(filepath);
   

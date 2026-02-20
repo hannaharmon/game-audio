@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <cstring>
 #include <random>
+#include <filesystem>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -528,11 +529,11 @@ void AudioManager::PlayRandomSoundFromFolder(const string& folderPath, GroupHand
             AUDIO_LOG(LogLevel::Info, "Found sounds in folder: " << folderPath << " (resolved to: " << resolved_folder_path << ")");
             do {
                 if (!(findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
-                    string filepath = resolved_folder_path + "/" + findData.cFileName;
+                    std::filesystem::path filepath = std::filesystem::path(resolved_folder_path) / findData.cFileName;
                     
                     // Load the sound
                     SoundHandle handle = NextSoundHandle();
-                    auto sound = audio_system_->CreateSound(filepath, group_ptr);
+                    auto sound = audio_system_->CreateSound(filepath.string(), group_ptr);
                     if (sound) {
                         sounds_[handle] = std::move(sound);
                         loaded_sounds.push_back(handle);
@@ -563,14 +564,14 @@ void AudioManager::PlayRandomSoundFromFolder(const string& folderPath, GroupHand
                                    [](unsigned char c) { return std::tolower(c); });
                     
                     if (extension == ".wav") {
-                        string filepath = resolved_folder_path + "/" + filename;
+                        std::filesystem::path filepath = std::filesystem::path(resolved_folder_path) / filename;
                         
                         // Verify it's a regular file (not a directory or symlink to directory)
                         struct stat statbuf;
-                        if (stat(filepath.c_str(), &statbuf) == 0 && S_ISREG(statbuf.st_mode)) {
+                        if (stat(filepath.string().c_str(), &statbuf) == 0 && S_ISREG(statbuf.st_mode)) {
                             // Load the sound
                             SoundHandle handle = NextSoundHandle();
-                            auto sound = audio_system_->CreateSound(filepath, group_ptr);
+                            auto sound = audio_system_->CreateSound(filepath.string(), group_ptr);
                             if (sound) {
                                 sounds_[handle] = std::move(sound);
                                 loaded_sounds.push_back(handle);
