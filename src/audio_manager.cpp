@@ -5,7 +5,6 @@
 #include "audio_group.h"
 #include "sound.h"
 #include "logging.h"
-#include "path_utils.h"
 
 #include <chrono>
 #include <thread>
@@ -15,7 +14,6 @@
 #include <algorithm>
 #include <cstring>
 #include <random>
-#include <filesystem>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -505,9 +503,6 @@ void AudioManager::PlayRandomSoundFromFolder(const string& folderPath, GroupHand
     }
     lock_guard<mutex> lock(resource_mutex_);
     
-    // Resolve the folder path relative to the working directory
-    string resolved_folder_path = ResolvePath(folderPath);
-    
     // Get the AudioGroup pointer for this handle
     AudioGroup* group_ptr = nullptr;
     if (group.IsValid()) {
@@ -521,19 +516,19 @@ void AudioManager::PlayRandomSoundFromFolder(const string& folderPath, GroupHand
         
         // Get all .wav files in the folder
         #ifdef _WIN32
-        string searchPath = resolved_folder_path + "/*.wav";
+        string searchPath = folderPath + "/*.wav";
         WIN32_FIND_DATAA findData;
         HANDLE hFind = FindFirstFileA(searchPath.c_str(), &findData);
         
         if (hFind != INVALID_HANDLE_VALUE) {
-            AUDIO_LOG(LogLevel::Info, "Found sounds in folder: " << folderPath << " (resolved to: " << resolved_folder_path << ")");
+            AUDIO_LOG(LogLevel::Info, "Found sounds in folder: " << folderPath);
             do {
                 if (!(findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
-                    std::filesystem::path filepath = std::filesystem::path(resolved_folder_path) / findData.cFileName;
+                    string filepath = folderPath + "/" + findData.cFileName;
                     
                     // Load the sound
                     SoundHandle handle = NextSoundHandle();
-                    auto sound = audio_system_->CreateSound(filepath.string(), group_ptr);
+                    auto sound = audio_system_->CreateSound(filepath, group_ptr);
                     if (sound) {
                         sounds_[handle] = std::move(sound);
                         loaded_sounds.push_back(handle);
@@ -544,9 +539,9 @@ void AudioManager::PlayRandomSoundFromFolder(const string& folderPath, GroupHand
         }
         #else
         // Unix/Linux/macOS implementation using opendir/readdir
-        DIR* dir = opendir(resolved_folder_path.c_str());
+        DIR* dir = opendir(folderPath.c_str());
         if (dir != nullptr) {
-            AUDIO_LOG(LogLevel::Info, "Found sounds in folder: " << folderPath << " (resolved to: " << resolved_folder_path << ")");
+            AUDIO_LOG(LogLevel::Info, "Found sounds in folder: " << folderPath);
             struct dirent* entry;
             while ((entry = readdir(dir)) != nullptr) {
                 string filename = entry->d_name;
@@ -564,14 +559,14 @@ void AudioManager::PlayRandomSoundFromFolder(const string& folderPath, GroupHand
                                    [](unsigned char c) { return std::tolower(c); });
                     
                     if (extension == ".wav") {
-                        std::filesystem::path filepath = std::filesystem::path(resolved_folder_path) / filename;
+                        string filepath = folderPath + "/" + filename;
                         
                         // Verify it's a regular file (not a directory or symlink to directory)
                         struct stat statbuf;
-                        if (stat(filepath.string().c_str(), &statbuf) == 0 && S_ISREG(statbuf.st_mode)) {
+                        if (stat(filepath.c_str(), &statbuf) == 0 && S_ISREG(statbuf.st_mode)) {
                             // Load the sound
                             SoundHandle handle = NextSoundHandle();
-                            auto sound = audio_system_->CreateSound(filepath.string(), group_ptr);
+                            auto sound = audio_system_->CreateSound(filepath, group_ptr);
                             if (sound) {
                                 sounds_[handle] = std::move(sound);
                                 loaded_sounds.push_back(handle);

@@ -1,7 +1,6 @@
 #include "random_sound_container.h"
 #include "audio_manager.h"
 #include "logging.h"
-#include "path_utils.h"
 #include <iostream>
 #include <random>
 #include <filesystem>
@@ -58,11 +57,9 @@ void RandomSoundContainer::AddSound(const std::string& filepath) {
 void RandomSoundContainer::LoadFromFolder(const std::string& folderPath) {
     AudioManager& audio = AudioManager::GetInstance();
 
-    // Resolve the folder path relative to the working directory
-    std::string resolved_path = ResolvePath(folderPath);
-    fs::path dir(resolved_path);
+    fs::path dir(folderPath);
     if (!fs::exists(dir) || !fs::is_directory(dir)) {
-        AUDIO_LOG(LogLevel::Warn, "Folder does not exist or is not a directory: " << folderPath << " (resolved to: " << resolved_path << ")");
+        AUDIO_LOG(LogLevel::Warn, "Folder does not exist or is not a directory: " << folderPath);
         return;
     }
 

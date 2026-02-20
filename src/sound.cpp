@@ -3,7 +3,6 @@
 #include "audio_group.h"
 #include "audio_manager.h"
 #include "logging.h"
-#include "path_utils.h"
 #include <iostream>
 #include <algorithm>
 #include <fstream>
@@ -11,22 +10,14 @@
 namespace audio {
 
 std::unique_ptr<Sound> Sound::Create(ma_engine* engine, const std::string& filepath, AudioGroup* group) {
-  // Validate that filepath is not empty before resolving
-  if (filepath.empty()) {
-    throw FileLoadException("File not found or cannot be opened: " + filepath);
-  }
-  
-  // Resolve the path relative to the working directory
-  std::string resolved_path = ResolvePath(filepath);
-  
   // Validate that file exists
-  std::ifstream file(resolved_path, std::ios::binary);
+  std::ifstream file(filepath, std::ios::binary);
   if (!file.good()) {
-    throw FileLoadException("File not found or cannot be opened: " + filepath + " (resolved to: " + resolved_path + ")");
+    throw FileLoadException("File not found or cannot be opened: " + filepath);
   }
   file.close();
   
-  return std::unique_ptr<Sound>(new Sound(engine, resolved_path, group));
+  return std::unique_ptr<Sound>(new Sound(engine, filepath, group));
 }
 
 SoundInstance::SoundInstance() : sound(nullptr), finished(false) {}
