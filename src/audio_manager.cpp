@@ -466,6 +466,16 @@ void AudioManager::SetSoundPitch(SoundHandle sound, float pitch) {
     }
 }
 
+void AudioManager::SetSoundLooping(SoundHandle sound, bool should_loop) {
+    EnsureInitialized();
+    lock_guard<mutex> lock(resource_mutex_);
+    auto it = sounds_.find(sound);
+    if (it == sounds_.end() || !it->second) {
+        throw InvalidHandleException("Invalid sound handle: " + std::to_string(sound.Value()));
+    }
+    it->second->SetLooping(should_loop);
+}
+
 bool AudioManager::IsSoundPlaying(SoundHandle sound) const {
     EnsureInitialized();
     lock_guard<mutex> lock(resource_mutex_);
@@ -606,6 +616,152 @@ void AudioManager::PlayRandomSoundFromFolder(const string& folderPath, GroupHand
             sound_it->second->Play();
         }
     }
+}
+
+// Spatial Audio Methods
+void AudioManager::SetListenerPosition(const Vec3& position, uint32_t listenerIndex) {
+    EnsureInitialized();
+    lock_guard<mutex> lock(resource_mutex_);
+    if (audio_system_) {
+        audio_system_->SetListenerPosition(position, listenerIndex);
+    }
+}
+
+Vec3 AudioManager::GetListenerPosition(uint32_t listenerIndex) const {
+    EnsureInitialized();
+    lock_guard<mutex> lock(resource_mutex_);
+    if (!audio_system_) return Vec3();
+    return audio_system_->GetListenerPosition(listenerIndex);
+}
+
+void AudioManager::SetListenerDirection(const Vec3& direction, uint32_t listenerIndex) {
+    EnsureInitialized();
+    lock_guard<mutex> lock(resource_mutex_);
+    if (audio_system_) {
+        audio_system_->SetListenerDirection(direction, listenerIndex);
+    }
+}
+
+Vec3 AudioManager::GetListenerDirection(uint32_t listenerIndex) const {
+    EnsureInitialized();
+    lock_guard<mutex> lock(resource_mutex_);
+    if (!audio_system_) return Vec3(0.0f, 0.0f, -1.0f);
+    return audio_system_->GetListenerDirection(listenerIndex);
+}
+
+void AudioManager::SetListenerUp(const Vec3& up, uint32_t listenerIndex) {
+    EnsureInitialized();
+    lock_guard<mutex> lock(resource_mutex_);
+    if (audio_system_) {
+        audio_system_->SetListenerUp(up, listenerIndex);
+    }
+}
+
+Vec3 AudioManager::GetListenerUp(uint32_t listenerIndex) const {
+    EnsureInitialized();
+    lock_guard<mutex> lock(resource_mutex_);
+    if (!audio_system_) return Vec3(0.0f, 1.0f, 0.0f);
+    return audio_system_->GetListenerUp(listenerIndex);
+}
+
+void AudioManager::SetSoundPosition(SoundHandle sound, const Vec3& position) {
+    EnsureInitialized();
+    lock_guard<mutex> lock(resource_mutex_);
+    auto it = sounds_.find(sound);
+    if (it == sounds_.end() || !it->second) {
+        throw InvalidHandleException("Invalid sound handle: " + std::to_string(sound.Value()));
+    }
+    it->second->SetPosition(position);
+}
+
+Vec3 AudioManager::GetSoundPosition(SoundHandle sound) const {
+    EnsureInitialized();
+    lock_guard<mutex> lock(resource_mutex_);
+    auto it = sounds_.find(sound);
+    if (it == sounds_.end() || !it->second) {
+        throw InvalidHandleException("Invalid sound handle: " + std::to_string(sound.Value()));
+    }
+    return it->second->GetPosition();
+}
+
+void AudioManager::SetSoundMinDistance(SoundHandle sound, float minDistance) {
+    EnsureInitialized();
+    lock_guard<mutex> lock(resource_mutex_);
+    auto it = sounds_.find(sound);
+    if (it == sounds_.end() || !it->second) {
+        throw InvalidHandleException("Invalid sound handle: " + std::to_string(sound.Value()));
+    }
+    it->second->SetMinDistance(minDistance);
+}
+
+float AudioManager::GetSoundMinDistance(SoundHandle sound) const {
+    EnsureInitialized();
+    lock_guard<mutex> lock(resource_mutex_);
+    auto it = sounds_.find(sound);
+    if (it == sounds_.end() || !it->second) {
+        throw InvalidHandleException("Invalid sound handle: " + std::to_string(sound.Value()));
+    }
+    return it->second->GetMinDistance();
+}
+
+void AudioManager::SetSoundMaxDistance(SoundHandle sound, float maxDistance) {
+    EnsureInitialized();
+    lock_guard<mutex> lock(resource_mutex_);
+    auto it = sounds_.find(sound);
+    if (it == sounds_.end() || !it->second) {
+        throw InvalidHandleException("Invalid sound handle: " + std::to_string(sound.Value()));
+    }
+    it->second->SetMaxDistance(maxDistance);
+}
+
+float AudioManager::GetSoundMaxDistance(SoundHandle sound) const {
+    EnsureInitialized();
+    lock_guard<mutex> lock(resource_mutex_);
+    auto it = sounds_.find(sound);
+    if (it == sounds_.end() || !it->second) {
+        throw InvalidHandleException("Invalid sound handle: " + std::to_string(sound.Value()));
+    }
+    return it->second->GetMaxDistance();
+}
+
+void AudioManager::SetSoundRolloff(SoundHandle sound, float rolloff) {
+    EnsureInitialized();
+    lock_guard<mutex> lock(resource_mutex_);
+    auto it = sounds_.find(sound);
+    if (it == sounds_.end() || !it->second) {
+        throw InvalidHandleException("Invalid sound handle: " + std::to_string(sound.Value()));
+    }
+    it->second->SetRolloff(rolloff);
+}
+
+float AudioManager::GetSoundRolloff(SoundHandle sound) const {
+    EnsureInitialized();
+    lock_guard<mutex> lock(resource_mutex_);
+    auto it = sounds_.find(sound);
+    if (it == sounds_.end() || !it->second) {
+        throw InvalidHandleException("Invalid sound handle: " + std::to_string(sound.Value()));
+    }
+    return it->second->GetRolloff();
+}
+
+void AudioManager::SetSoundSpatializationEnabled(SoundHandle sound, bool enabled) {
+    EnsureInitialized();
+    lock_guard<mutex> lock(resource_mutex_);
+    auto it = sounds_.find(sound);
+    if (it == sounds_.end() || !it->second) {
+        throw InvalidHandleException("Invalid sound handle: " + std::to_string(sound.Value()));
+    }
+    it->second->SetSpatializationEnabled(enabled);
+}
+
+bool AudioManager::IsSoundSpatializationEnabled(SoundHandle sound) const {
+    EnsureInitialized();
+    lock_guard<mutex> lock(resource_mutex_);
+    auto it = sounds_.find(sound);
+    if (it == sounds_.end() || !it->second) {
+        throw InvalidHandleException("Invalid sound handle: " + std::to_string(sound.Value()));
+    }
+    return it->second->IsSpatializationEnabled();
 }
 
 } // namespace audio

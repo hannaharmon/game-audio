@@ -9,6 +9,7 @@ A C++20 audio system built on miniaudio with full Python bindings for game devel
 - **Volume Control**: Master, group, and individual sound volume
 - **Smooth Transitions**: Fade sounds in/out with customizable durations
 - **Random Sound Containers**: Randomized playback with pitch variation
+- **Spatial Audio**: 3D positional audio with distance attenuation and directional panning
 - **High-Level API**: Core primitives designed for user-defined wrappers
 - **Python Bindings**: Full pybind11 bindings for Python projects (including [Basilisk engine](https://github.com/BasiliskGroup/BasiliskEngine))
 - **Cross-Platform**: Windows, macOS, Linux via miniaudio
@@ -151,7 +152,8 @@ audio.Shutdown();
 
 ## Examples
 
-- **Python**: [examples/python_interactive.py](examples/python_interactive.py)
+- **Python Interactive**: [examples/python_interactive.py](examples/python_interactive.py) - Layered music with volume controls
+- **Python Spatial Audio**: [examples/spatial_audio_example.py](examples/spatial_audio_example.py) - 3D spatialized audio demo
 - **C++ Basic**: [examples/test_audio.cpp](examples/test_audio.cpp)
 - **C++ Advanced**: [examples/test_audio_2.cpp](examples/test_audio_2.cpp)
 

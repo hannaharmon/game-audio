@@ -56,7 +56,8 @@ $testExecutables = @(
     "test_audio_tracks",
     "test_audio_validation",
     "test_audio_threading",
-    "test_audio_resources"
+    "test_audio_resources",
+    "test_audio_spatial"
 )
 
 $testResults = @{}

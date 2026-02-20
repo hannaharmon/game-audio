@@ -5,11 +5,80 @@
 #include <functional>
 
 #include "audio_manager.h"
+#include "vec3.h"
 
 namespace py = pybind11;
 using namespace audio;
 
 void bind_audio_manager(py::module_& m) {
+    // Bind Vec3 for 3D positions
+    py::class_<Vec3>(m, "Vec3",
+        "3D vector for spatial audio positioning.\n\n"
+        "Represents a position or direction in 3D space. This is engine-agnostic\n"
+        "and can be used with any game engine by converting from the engine's\n"
+        "vector type to Vec3.\n\n"
+        "Coordinate System:\n"
+        "The audio system uses OpenGL/miniaudio convention:\n"
+        "- Positive X: Right\n"
+        "- Positive Y: Up\n"
+        "- Negative Z: Forward (camera looks down -Z axis)\n\n"
+        "To convert from a game engine (e.g., Basilisk Engine nodes):\n"
+        "  node_pos = node.get_position()\n"
+        "  audio_pos = game_audio.Vec3(node_pos.x, node_pos.y, node_pos.z)\n"
+        "  audio.set_sound_position(sound, audio_pos)")
+        .def(py::init<>(), "Create a Vec3 at the origin (0, 0, 0)")
+        .def(py::init<float, float, float>(), 
+             py::arg("x"), py::arg("y"), py::arg("z"),
+             "Create a Vec3 with components.\n\n"
+             "Args:\n"
+             "    x (float): X component\n"
+             "    y (float): Y component\n"
+             "    z (float): Z component")
+        .def_readwrite("x", &Vec3::x, "X component")
+        .def_readwrite("y", &Vec3::y, "Y component")
+        .def_readwrite("z", &Vec3::z, "Z component")
+        .def("length", &Vec3::Length,
+             "Get the length of the vector.\n\n"
+             "Returns:\n"
+             "    float: Length of the vector")
+        .def("length_squared", &Vec3::LengthSquared,
+             "Get the squared length of the vector (faster, no sqrt).\n\n"
+             "Returns:\n"
+             "    float: Squared length of the vector")
+        .def("normalize", &Vec3::Normalize,
+             "Normalize the vector in place.")
+        .def("normalized", &Vec3::Normalized,
+             "Get a normalized copy of the vector.\n\n"
+             "Returns:\n"
+             "    Vec3: Normalized vector")
+        .def("distance", &Vec3::Distance,
+             py::arg("other"),
+             "Calculate distance to another point.\n\n"
+             "Args:\n"
+             "    other (Vec3): Other point\n\n"
+             "Returns:\n"
+             "    float: Distance between points")
+        .def("distance_squared", &Vec3::DistanceSquared,
+             py::arg("other"),
+             "Calculate squared distance to another point (faster, no sqrt).\n\n"
+             "Args:\n"
+             "    other (Vec3): Other point\n\n"
+             "Returns:\n"
+             "    float: Squared distance between points")
+        .def(py::self + py::self)
+        .def(py::self - py::self)
+        .def(py::self * float())
+        .def(py::self / float())
+        .def(py::self += py::self)
+        .def(py::self -= py::self)
+        .def(py::self *= float())
+        .def(py::self /= float())
+        .def(py::self == py::self)
+        .def(py::self != py::self)
+        .def("__repr__", [](const Vec3& v) {
+            return "Vec3(" + std::to_string(v.x) + ", " + std::to_string(v.y) + ", " + std::to_string(v.z) + ")";
+        });
+
     py::class_<TrackHandle>(m, "TrackHandle")
         .def(py::init<uint32_t>(), py::arg("value") = 0)
         .def_property_readonly("value", &TrackHandle::Value)
@@ -318,6 +387,16 @@ void bind_audio_manager(py::module_& m) {
              "    sound (SoundHandle): Handle to the sound\n"
              "    pitch (float): Pitch multiplier (1.0 = normal, 0.5 = half speed, 2.0 = double speed)")
         
+        .def("set_sound_looping", &AudioManager::SetSoundLooping,
+             py::arg("sound"),
+             py::arg("should_loop"),
+             "Set whether a sound should loop.\n\n"
+             "Args:\n"
+             "    sound (SoundHandle): Handle to the sound\n"
+             "    should_loop (bool): Whether the sound should loop continuously\n\n"
+             "Raises:\n"
+             "    InvalidHandleException: If sound handle is invalid")
+        
         .def("is_sound_playing", &AudioManager::IsSoundPlaying,
              py::arg("sound"),
              "Check if a sound is currently playing.\n\n"
@@ -334,5 +413,167 @@ void bind_audio_manager(py::module_& m) {
              "Sounds are cached after first load for efficiency.\n\n"
              "Args:\n"
              "    folder_path (str): Path to the folder containing sound files\n"
-             "    group (GroupHandle, optional): Group handle to assign the sounds to");
+             "    group (GroupHandle, optional): Group handle to assign the sounds to")
+        
+        // Spatial Audio (3D Positioning)
+        .def("set_listener_position", &AudioManager::SetListenerPosition,
+             py::arg("position"),
+             py::arg("listener_index") = 0,
+             "Set the listener position in 3D space.\n\n"
+             "The listener represents the 'ears' of the player/camera.\n"
+             "All spatialized sounds are positioned relative to the listener.\n\n"
+             "Args:\n"
+             "    position (Vec3): 3D position of the listener\n"
+             "    listener_index (int, optional): Index of the listener (default 0)")
+        
+        .def("get_listener_position", &AudioManager::GetListenerPosition,
+             py::arg("listener_index") = 0,
+             "Get the listener position.\n\n"
+             "Args:\n"
+             "    listener_index (int, optional): Index of the listener (default 0)\n\n"
+             "Returns:\n"
+             "    Vec3: Current listener position")
+        
+        .def("set_listener_direction", &AudioManager::SetListenerDirection,
+             py::arg("direction"),
+             py::arg("listener_index") = 0,
+             "Set the listener direction (forward vector).\n\n"
+             "The direction vector represents which way the listener is facing.\n"
+             "Should be normalized.\n\n"
+             "Args:\n"
+             "    direction (Vec3): Forward direction vector (should be normalized)\n"
+             "    listener_index (int, optional): Index of the listener (default 0)")
+        
+        .def("get_listener_direction", &AudioManager::GetListenerDirection,
+             py::arg("listener_index") = 0,
+             "Get the listener direction.\n\n"
+             "Args:\n"
+             "    listener_index (int, optional): Index of the listener (default 0)\n\n"
+             "Returns:\n"
+             "    Vec3: Current listener direction")
+        
+        .def("set_listener_up", &AudioManager::SetListenerUp,
+             py::arg("up"),
+             py::arg("listener_index") = 0,
+             "Set the listener up vector.\n\n"
+             "The up vector defines the orientation of the listener.\n"
+             "Typically (0, 1, 0) for a standard Y-up coordinate system.\n\n"
+             "Args:\n"
+             "    up (Vec3): Up vector (should be normalized)\n"
+             "    listener_index (int, optional): Index of the listener (default 0)")
+        
+        .def("get_listener_up", &AudioManager::GetListenerUp,
+             py::arg("listener_index") = 0,
+             "Get the listener up vector.\n\n"
+             "Args:\n"
+             "    listener_index (int, optional): Index of the listener (default 0)\n\n"
+             "Returns:\n"
+             "    Vec3: Current listener up vector")
+        
+        .def("set_sound_position", &AudioManager::SetSoundPosition,
+             py::arg("sound"),
+             py::arg("position"),
+             "Set the 3D position of a sound.\n\n"
+             "Sets the position for the sound. The sound will be spatialized\n"
+             "relative to the listener position.\n\n"
+             "Args:\n"
+             "    sound (SoundHandle): Handle to the sound\n"
+             "    position (Vec3): 3D position of the sound\n\n"
+             "Raises:\n"
+             "    InvalidHandleException: If sound handle is invalid")
+        
+        .def("get_sound_position", &AudioManager::GetSoundPosition,
+             py::arg("sound"),
+             "Get the 3D position of a sound.\n\n"
+             "Args:\n"
+             "    sound (SoundHandle): Handle to the sound\n\n"
+             "Returns:\n"
+             "    Vec3: Current 3D position\n\n"
+             "Raises:\n"
+             "    InvalidHandleException: If sound handle is invalid")
+        
+        .def("set_sound_min_distance", &AudioManager::SetSoundMinDistance,
+             py::arg("sound"),
+             py::arg("min_distance"),
+             "Set the minimum distance for distance attenuation.\n\n"
+             "At distances less than minDistance, the sound will be at full volume.\n"
+             "Beyond minDistance, volume will attenuate based on the attenuation model.\n\n"
+             "Args:\n"
+             "    sound (SoundHandle): Handle to the sound\n"
+             "    min_distance (float): Minimum distance (must be > 0)\n\n"
+             "Raises:\n"
+             "    InvalidHandleException: If sound handle is invalid")
+        
+        .def("get_sound_min_distance", &AudioManager::GetSoundMinDistance,
+             py::arg("sound"),
+             "Get the minimum distance of a sound.\n\n"
+             "Args:\n"
+             "    sound (SoundHandle): Handle to the sound\n\n"
+             "Returns:\n"
+             "    float: Current minimum distance\n\n"
+             "Raises:\n"
+             "    InvalidHandleException: If sound handle is invalid")
+        
+        .def("set_sound_max_distance", &AudioManager::SetSoundMaxDistance,
+             py::arg("sound"),
+             py::arg("max_distance"),
+             "Set the maximum distance for distance attenuation.\n\n"
+             "At distances beyond maxDistance, the sound will be at minimum gain.\n\n"
+             "Args:\n"
+             "    sound (SoundHandle): Handle to the sound\n"
+             "    max_distance (float): Maximum distance (must be > minDistance)\n\n"
+             "Raises:\n"
+             "    InvalidHandleException: If sound handle is invalid")
+        
+        .def("get_sound_max_distance", &AudioManager::GetSoundMaxDistance,
+             py::arg("sound"),
+             "Get the maximum distance of a sound.\n\n"
+             "Args:\n"
+             "    sound (SoundHandle): Handle to the sound\n\n"
+             "Returns:\n"
+             "    float: Current maximum distance\n\n"
+             "Raises:\n"
+             "    InvalidHandleException: If sound handle is invalid")
+        
+        .def("set_sound_rolloff", &AudioManager::SetSoundRolloff,
+             py::arg("sound"),
+             py::arg("rolloff"),
+             "Set the rolloff factor for distance attenuation.\n\n"
+             "Higher values mean faster volume dropoff with distance.\n"
+             "Typical values: 1.0 (linear), 2.0 (inverse square)\n\n"
+             "Args:\n"
+             "    sound (SoundHandle): Handle to the sound\n"
+             "    rolloff (float): Rolloff factor (typically 1.0 to 2.0)\n\n"
+             "Raises:\n"
+             "    InvalidHandleException: If sound handle is invalid")
+        
+        .def("get_sound_rolloff", &AudioManager::GetSoundRolloff,
+             py::arg("sound"),
+             "Get the rolloff factor of a sound.\n\n"
+             "Args:\n"
+             "    sound (SoundHandle): Handle to the sound\n\n"
+             "Returns:\n"
+             "    float: Current rolloff factor\n\n"
+             "Raises:\n"
+             "    InvalidHandleException: If sound handle is invalid")
+        
+        .def("set_sound_spatialization_enabled", &AudioManager::SetSoundSpatializationEnabled,
+             py::arg("sound"),
+             py::arg("enabled"),
+             "Enable or disable spatialization for a sound.\n\n"
+             "Args:\n"
+             "    sound (SoundHandle): Handle to the sound\n"
+             "    enabled (bool): Whether to enable spatialization\n\n"
+             "Raises:\n"
+             "    InvalidHandleException: If sound handle is invalid")
+        
+        .def("is_sound_spatialization_enabled", &AudioManager::IsSoundSpatializationEnabled,
+             py::arg("sound"),
+             "Check if spatialization is enabled for a sound.\n\n"
+             "Args:\n"
+             "    sound (SoundHandle): Handle to the sound\n\n"
+             "Returns:\n"
+             "    bool: True if spatialization is enabled\n\n"
+             "Raises:\n"
+             "    InvalidHandleException: If sound handle is invalid");
 }
