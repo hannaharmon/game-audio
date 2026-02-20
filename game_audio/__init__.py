@@ -22,7 +22,7 @@ Example usage:
     >>> # Use the core primitives to build your own playback helpers
 """
 
-__version__ = "2.0.0"
+__version__ = "2.1.0"
 
 # Import the C++ extension module
 # The compiled extension is created by pybind11 and installed in this package directory

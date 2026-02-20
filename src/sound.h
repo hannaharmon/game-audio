@@ -1,6 +1,7 @@
 #pragma once
 
 #include "miniaudio/miniaudio.h"
+#include "vec3.h"
 #include <memory>
 #include <string>
 #include <vector>
@@ -106,9 +107,26 @@ class Sound {
    * Creates and plays a new instance of this sound, allowing
    * multiple overlapping playbacks of the same sound.
    * 
+   * Uses the default position set via SetPosition().
+   * 
    * @throws FileLoadException If the sound file cannot be loaded or initialized for playback
    */
   void Play();
+  
+  /**
+   * @brief Starts a new instance of the sound at a specific position
+   * 
+   * Creates and plays a new instance of this sound at the specified position.
+   * This allows multiple overlapping spatialized sounds from the same audio file
+   * to play at different positions simultaneously (e.g., multiple gunshots).
+   * 
+   * The position is only applied to this new instance. Existing instances
+   * keep their positions unchanged.
+   * 
+   * @param position 3D position for this instance
+   * @throws FileLoadException If the sound file cannot be loaded or initialized for playback
+   */
+  void Play(const Vec3& position);
   
   /**
    * @brief Stops all instances of this sound
@@ -137,6 +155,93 @@ class Sound {
    * @param pitch Pitch multiplier (1.0 = normal pitch, 0.5 = half speed, 2.0 = double speed)
    */
   void SetPitch(float pitch);
+  
+  ///@name Spatial Audio (3D Positioning)
+  ///@{
+  
+  /**
+   * @brief Set the 3D position of the sound
+   * 
+   * Sets the position for all instances of this sound. The sound will be
+   * spatialized relative to the listener position.
+   * 
+   * @param position 3D position of the sound
+   */
+  void SetPosition(const Vec3& position);
+  
+  /**
+   * @brief Get the 3D position of the sound
+   * 
+   * @return Vec3 Current 3D position
+   */
+  Vec3 GetPosition() const { return position_; }
+  
+  /**
+   * @brief Set the minimum distance for distance attenuation
+   * 
+   * At distances less than minDistance, the sound will be at full volume.
+   * Beyond minDistance, volume will attenuate based on the attenuation model.
+   * 
+   * @param minDistance Minimum distance (must be > 0)
+   */
+  void SetMinDistance(float minDistance);
+  
+  /**
+   * @brief Get the minimum distance
+   * 
+   * @return float Current minimum distance
+   */
+  float GetMinDistance() const { return min_distance_; }
+  
+  /**
+   * @brief Set the maximum distance for distance attenuation
+   * 
+   * At distances beyond maxDistance, the sound will be at minimum gain.
+   * 
+   * @param maxDistance Maximum distance (must be > minDistance)
+   */
+  void SetMaxDistance(float maxDistance);
+  
+  /**
+   * @brief Get the maximum distance
+   * 
+   * @return float Current maximum distance
+   */
+  float GetMaxDistance() const { return max_distance_; }
+  
+  /**
+   * @brief Set the rolloff factor for distance attenuation
+   * 
+   * Higher values mean faster volume dropoff with distance.
+   * Typical values: 1.0 (linear), 2.0 (inverse square)
+   * 
+   * @param rolloff Rolloff factor (typically 1.0 to 2.0)
+   */
+  void SetRolloff(float rolloff);
+  
+  /**
+   * @brief Get the rolloff factor
+   * 
+   * @return float Current rolloff factor
+   */
+  float GetRolloff() const { return rolloff_; }
+  
+  /**
+   * @brief Enable or disable spatialization for this sound
+   * 
+   * @param enabled Whether to enable spatialization
+   */
+  void SetSpatializationEnabled(bool enabled);
+  
+  /**
+   * @brief Check if spatialization is enabled
+   * 
+   * @return bool True if spatialization is enabled
+   */
+  bool IsSpatializationEnabled() const { return spatialization_enabled_; }
+  
+  ///@}
+  
   ///@}
 
   ///@name State Queries
@@ -179,6 +284,15 @@ class Sound {
   bool looping_;                                     ///< Whether new instances should loop
   float volume_;                                     ///< Current volume level
   float pitch_;                                      ///< Pitch for next instance (1.0 = normal)
+  
+  ///@name Spatial Audio State
+  ///@{
+  Vec3 position_;                                   ///< 3D position of the sound
+  float min_distance_;                              ///< Minimum distance for attenuation
+  float max_distance_;                              ///< Maximum distance for attenuation
+  float rolloff_;                                   ///< Rolloff factor for distance attenuation
+  bool spatialization_enabled_;                     ///< Whether spatialization is enabled
+  ///@}
 };
 
 }  // namespace audio

@@ -13,6 +13,7 @@
 #include <random>
 #include <functional>
 #include "logging.h"
+#include "vec3.h"
 
 #ifdef PlaySound
 #undef PlaySound
@@ -414,7 +415,31 @@ public:
      * @throws InvalidHandleException If the sound handle is invalid
      * @throws FileLoadException If the sound file cannot be loaded or initialized for playback
      */
+    /**
+     * @brief Play a sound
+     * 
+     * Starts playback of the sound using its current position.
+     * 
+     * @param sound Handle to the sound
+     * @throws InvalidHandleException If the sound handle is invalid
+     */
     void PlaySound(SoundHandle sound);
+    
+    /**
+     * @brief Play a sound at a specific position
+     * 
+     * Starts playback of the sound at the specified position. This allows
+     * multiple overlapping spatialized sounds from the same audio file to
+     * play at different positions simultaneously (e.g., multiple gunshots).
+     * 
+     * The position is only applied to this new playback instance. Existing
+     * instances keep their positions unchanged.
+     * 
+     * @param sound Handle to the sound
+     * @param position 3D position for this playback instance
+     * @throws InvalidHandleException If the sound handle is invalid
+     */
+    void PlaySound(SoundHandle sound, const Vec3& position);
     
     /**
      * @brief Stop a currently playing sound
@@ -442,6 +467,15 @@ public:
     void SetSoundPitch(SoundHandle sound, float pitch);
     
     /**
+     * @brief Set whether a sound should loop
+     * 
+     * @param sound Handle to the sound
+     * @param should_loop Whether the sound should loop continuously
+     * @throws InvalidHandleException If the sound handle is invalid
+     */
+    void SetSoundLooping(SoundHandle sound, bool should_loop);
+    
+    /**
      * @brief Check if a sound is currently playing
      * 
      * @param sound Handle to the sound
@@ -461,6 +495,207 @@ public:
      * @throws FileLoadException If the selected sound file cannot be loaded or initialized for playback
      */
     void PlayRandomSoundFromFolder(const string& folderPath, GroupHandle group = GroupHandle::Invalid());
+    ///@}
+
+    ///@name Spatial Audio (3D Positioning)
+    ///@{
+    
+    /**
+     * @brief Set the listener position in 3D space
+     * 
+     * The listener represents the "ears" of the player/camera.
+     * All spatialized sounds are positioned relative to the listener.
+     * 
+     * Coordinate System: Uses OpenGL/miniaudio convention:
+     * - +X = Right, +Y = Up, -Z = Forward
+     * 
+     * For 2D games (Node2D): Simply use z=0:
+     * ```cpp
+     * Vec3 audio_pos(node2d_pos.x, node2d_pos.y, 0.0f);
+     * SetListenerPosition(audio_pos);
+     * ```
+     * 
+     * To use with game engines (e.g., Basilisk Engine nodes):
+     * Simply convert your engine's position vector to Vec3:
+     * ```cpp
+     * auto node_pos = camera_node.get_position();
+     * Vec3 audio_pos(node_pos.x, node_pos.y, node_pos.z);
+     * SetListenerPosition(audio_pos);
+     * ```
+     * 
+     * Performance: This method is optimized to skip updates when the position
+     * hasn't changed, so it's safe to call every frame. The mutex overhead
+     * is minimal, and spatial audio requires frequent updates for accurate
+     * positioning.
+     * 
+     * @param position 3D position of the listener
+     * @param listenerIndex Index of the listener (default 0)
+     */
+    void SetListenerPosition(const Vec3& position, uint32_t listenerIndex = 0);
+    
+    /**
+     * @brief Get the listener position
+     * 
+     * @param listenerIndex Index of the listener (default 0)
+     * @return Vec3 Current listener position
+     */
+    Vec3 GetListenerPosition(uint32_t listenerIndex = 0) const;
+    
+    /**
+     * @brief Set the listener direction (forward vector)
+     * 
+     * The direction vector represents which way the listener is facing.
+     * Should be normalized.
+     * 
+     * @param direction Forward direction vector (should be normalized)
+     * @param listenerIndex Index of the listener (default 0)
+     */
+    void SetListenerDirection(const Vec3& direction, uint32_t listenerIndex = 0);
+    
+    /**
+     * @brief Get the listener direction
+     * 
+     * @param listenerIndex Index of the listener (default 0)
+     * @return Vec3 Current listener direction
+     */
+    Vec3 GetListenerDirection(uint32_t listenerIndex = 0) const;
+    
+    /**
+     * @brief Set the listener up vector
+     * 
+     * The up vector defines the orientation of the listener.
+     * Typically (0, 1, 0) for a standard Y-up coordinate system.
+     * 
+     * @param up Up vector (should be normalized)
+     * @param listenerIndex Index of the listener (default 0)
+     */
+    void SetListenerUp(const Vec3& up, uint32_t listenerIndex = 0);
+    
+    /**
+     * @brief Get the listener up vector
+     * 
+     * @param listenerIndex Index of the listener (default 0)
+     * @return Vec3 Current listener up vector
+     */
+    Vec3 GetListenerUp(uint32_t listenerIndex = 0) const;
+    
+    /**
+     * @brief Set the 3D position of a sound
+     * 
+     * Sets the position for the sound. The sound will be spatialized
+     * relative to the listener position.
+     * 
+     * Coordinate System: Uses OpenGL/miniaudio convention:
+     * - +X = Right, +Y = Up, -Z = Forward
+     * 
+     * For 2D games (Node2D): Simply use z=0:
+     * ```cpp
+     * Vec3 audio_pos(node2d_pos.x, node2d_pos.y, 0.0f);
+     * SetSoundPosition(sound, audio_pos);
+     * ```
+     * 
+     * To use with game engines (e.g., Basilisk Engine nodes):
+     * Simply convert your engine's node position to Vec3:
+     * ```cpp
+     * auto node_pos = game_object.get_position();
+     * Vec3 audio_pos(node_pos.x, node_pos.y, node_pos.z);
+     * SetSoundPosition(sound, audio_pos);
+     * ```
+     * 
+     * @param sound Handle to the sound
+     * @param position 3D position of the sound
+     * @throws InvalidHandleException If the sound handle is invalid
+     */
+    void SetSoundPosition(SoundHandle sound, const Vec3& position);
+    
+    /**
+     * @brief Get the 3D position of a sound
+     * 
+     * @param sound Handle to the sound
+     * @return Vec3 Current 3D position
+     * @throws InvalidHandleException If the sound handle is invalid
+     */
+    Vec3 GetSoundPosition(SoundHandle sound) const;
+    
+    /**
+     * @brief Set the minimum distance for distance attenuation
+     * 
+     * At distances less than minDistance, the sound will be at full volume.
+     * Beyond minDistance, volume will attenuate based on the attenuation model.
+     * 
+     * @param sound Handle to the sound
+     * @param minDistance Minimum distance (must be > 0)
+     * @throws InvalidHandleException If the sound handle is invalid
+     */
+    void SetSoundMinDistance(SoundHandle sound, float minDistance);
+    
+    /**
+     * @brief Get the minimum distance of a sound
+     * 
+     * @param sound Handle to the sound
+     * @return float Current minimum distance
+     * @throws InvalidHandleException If the sound handle is invalid
+     */
+    float GetSoundMinDistance(SoundHandle sound) const;
+    
+    /**
+     * @brief Set the maximum distance for distance attenuation
+     * 
+     * At distances beyond maxDistance, the sound will be at minimum gain.
+     * 
+     * @param sound Handle to the sound
+     * @param maxDistance Maximum distance (must be > minDistance)
+     * @throws InvalidHandleException If the sound handle is invalid
+     */
+    void SetSoundMaxDistance(SoundHandle sound, float maxDistance);
+    
+    /**
+     * @brief Get the maximum distance of a sound
+     * 
+     * @param sound Handle to the sound
+     * @return float Current maximum distance
+     * @throws InvalidHandleException If the sound handle is invalid
+     */
+    float GetSoundMaxDistance(SoundHandle sound) const;
+    
+    /**
+     * @brief Set the rolloff factor for distance attenuation
+     * 
+     * Higher values mean faster volume dropoff with distance.
+     * Typical values: 1.0 (linear), 2.0 (inverse square)
+     * 
+     * @param sound Handle to the sound
+     * @param rolloff Rolloff factor (typically 1.0 to 2.0)
+     * @throws InvalidHandleException If the sound handle is invalid
+     */
+    void SetSoundRolloff(SoundHandle sound, float rolloff);
+    
+    /**
+     * @brief Get the rolloff factor of a sound
+     * 
+     * @param sound Handle to the sound
+     * @return float Current rolloff factor
+     * @throws InvalidHandleException If the sound handle is invalid
+     */
+    float GetSoundRolloff(SoundHandle sound) const;
+    
+    /**
+     * @brief Enable or disable spatialization for a sound
+     * 
+     * @param sound Handle to the sound
+     * @param enabled Whether to enable spatialization
+     * @throws InvalidHandleException If the sound handle is invalid
+     */
+    void SetSoundSpatializationEnabled(SoundHandle sound, bool enabled);
+    
+    /**
+     * @brief Check if spatialization is enabled for a sound
+     * 
+     * @param sound Handle to the sound
+     * @return bool True if spatialization is enabled
+     * @throws InvalidHandleException If the sound handle is invalid
+     */
+    bool IsSoundSpatializationEnabled(SoundHandle sound) const;
     ///@}
 
     /**

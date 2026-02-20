@@ -142,6 +142,22 @@ void RandomSoundContainer::SetAvoidRepeat(bool avoid) {
     config_.avoidRepeat = avoid;
 }
 
+SoundHandle RandomSoundContainer::GetRandomSound() const {
+    if (sounds_.empty()) {
+        return SoundHandle::Invalid();
+    }
+    if (sounds_.size() == 1) {
+        return sounds_[0];
+    }
+    
+    // Use a temporary RNG for const method
+    static thread_local std::mt19937 temp_rng(std::random_device{}());
+    std::uniform_int_distribution<size_t> dist(0, sounds_.size() - 1);
+    
+    size_t index = dist(temp_rng);
+    return sounds_[index];
+}
+
 SoundHandle RandomSoundContainer::SelectRandomSound() {
     if (sounds_.size() == 1) {
         return sounds_[0];

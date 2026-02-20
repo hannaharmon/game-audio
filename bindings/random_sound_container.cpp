@@ -83,8 +83,28 @@ void bind_random_sound_container(py::module_& m) {
              "    avoid (bool): True to avoid playing the same sound twice in a row")
         
         // Getters
+        .def("get_random_sound", &RandomSoundContainer::GetRandomSound,
+             "Get a random sound handle without playing it.\n\n"
+             "Useful for playing sounds at specific positions while still\n"
+             "using the container's random selection logic.\n\n"
+             "Returns:\n"
+             "    SoundHandle: Handle to a randomly selected sound\n\n"
+             "Example:\n"
+             "    container = game_audio.RandomSoundContainer(\"sfx\")\n"
+             "    container.add_sound(\"sound1.wav\")\n"
+             "    container.add_sound(\"sound2.wav\")\n"
+             "    \n"
+             "    # Get random sound and play at specific position\n"
+             "    sound = container.get_random_sound()\n"
+             "    audio.play_sound(sound, game_audio.Vec3(10, 0, 0))")
+        
         .def("get_name", &RandomSoundContainer::GetName,
              "Get the name of this container.\n\n"
              "Returns:\n"
-             "    str: Container name");
+             "    str: Container name")
+        
+        .def("get_sound_count", &RandomSoundContainer::GetSoundCount,
+             "Get the number of sounds in this container.\n\n"
+             "Returns:\n"
+             "    int: Number of loaded sounds");
 }

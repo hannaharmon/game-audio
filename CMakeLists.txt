@@ -4,7 +4,7 @@
 # and test application. It's designed to work on Windows, macOS, and Linux.
 
 cmake_minimum_required(VERSION 3.10)
-project(AudioModule VERSION 2.0
+project(AudioModule VERSION 2.1
                     DESCRIPTION "Game Audio Module using miniaudio"
                     LANGUAGES CXX)
 
@@ -61,6 +61,11 @@ if(BUILD_AUDIO_EXAMPLES)
     target_compile_definitions(test_audio PRIVATE
         SOUND_FILES_DIR="${CMAKE_SOURCE_DIR}/sound_files/"
     )
+    
+    # Note: Python examples are also available (no build required):
+    # - examples/python_interactive.py - Layered music with volume controls
+    # - examples/spatial_audio_example.py - 3D spatialized audio demo
+    # These can be run directly with Python after the module is built.
 endif()
 
 if(BUILD_AUDIO_TESTS)
@@ -79,6 +84,7 @@ if(BUILD_AUDIO_TESTS)
         test_audio_validation
         test_audio_threading
         test_audio_resources
+        test_audio_spatial
     )
     
     foreach(TEST_NAME ${TEST_EXECUTABLES})

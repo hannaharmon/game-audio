@@ -4,7 +4,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "game-audio"
-version = "2.0.0"
+version = "2.1.0"
 description = "Python bindings for Game Audio Module - a C++ audio system built on miniaudio"
 readme = "README.md"
 requires-python = ">=3.7"

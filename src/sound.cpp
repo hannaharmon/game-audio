@@ -35,7 +35,12 @@ Sound::Sound(ma_engine* engine, const std::string& filepath, AudioGroup* group)
       looping_(false), 
       volume_(1.0f),
       pitch_(1.0f),
-      group_(group ? group->GetHandle() : nullptr) {
+      group_(group ? group->GetHandle() : nullptr),
+      position_(0.0f, 0.0f, 0.0f),
+      min_distance_(1.0f),
+      max_distance_(1000.0f),
+      rolloff_(1.0f),
+      spatialization_enabled_(true) {
 }
 
 Sound::~Sound() {
@@ -55,6 +60,10 @@ void Sound::CleanupFinishedInstances() {
 }
 
 void Sound::Play() {
+  Play(position_);  // Use default position
+}
+
+void Sound::Play(const Vec3& position) {
   // First cleanup any finished instances
   CleanupFinishedInstances();
   
@@ -100,6 +109,16 @@ void Sound::Play() {
   ma_sound_set_looping(instance->sound, looping_);
   ma_sound_set_volume(instance->sound, volume_);
   ma_sound_set_pitch(instance->sound, pitch_);
+  
+  // Configure spatial audio - use the provided position for this instance only
+  ma_sound_set_spatialization_enabled(instance->sound, spatialization_enabled_ ? MA_TRUE : MA_FALSE);
+  if (spatialization_enabled_) {
+    ma_sound_set_position(instance->sound, position.x, position.y, position.z);
+    ma_sound_set_min_distance(instance->sound, min_distance_);
+    ma_sound_set_max_distance(instance->sound, max_distance_);
+    ma_sound_set_rolloff(instance->sound, rolloff_);
+  }
+  
   ma_sound_start(instance->sound);
   
   // Add to our list of instances
@@ -152,6 +171,74 @@ bool Sound::IsPlaying() const {
     }
   }
   return false;
+}
+
+// Spatial Audio Methods
+void Sound::SetPosition(const Vec3& position) {
+  position_ = position;
+  
+  // Update all existing instances
+  for (auto& instance : sound_instances_) {
+    if (instance->sound) {
+      ma_sound_set_position(instance->sound, position_.x, position_.y, position_.z);
+    }
+  }
+}
+
+void Sound::SetMinDistance(float minDistance) {
+  if (minDistance <= 0.0f) {
+    AUDIO_LOG(LogLevel::Warn, "[Sound::SetMinDistance] Invalid minDistance: " << minDistance << ", clamping to 0.1");
+    minDistance = 0.1f;
+  }
+  min_distance_ = minDistance;
+  
+  // Update all existing instances
+  for (auto& instance : sound_instances_) {
+    if (instance->sound) {
+      ma_sound_set_min_distance(instance->sound, min_distance_);
+    }
+  }
+}
+
+void Sound::SetMaxDistance(float maxDistance) {
+  if (maxDistance <= min_distance_) {
+    AUDIO_LOG(LogLevel::Warn, "[Sound::SetMaxDistance] maxDistance must be > minDistance, setting to minDistance + 1.0");
+    maxDistance = min_distance_ + 1.0f;
+  }
+  max_distance_ = maxDistance;
+  
+  // Update all existing instances
+  for (auto& instance : sound_instances_) {
+    if (instance->sound) {
+      ma_sound_set_max_distance(instance->sound, max_distance_);
+    }
+  }
+}
+
+void Sound::SetRolloff(float rolloff) {
+  if (rolloff < 0.0f) {
+    AUDIO_LOG(LogLevel::Warn, "[Sound::SetRolloff] Invalid rolloff: " << rolloff << ", clamping to 0.0");
+    rolloff = 0.0f;
+  }
+  rolloff_ = rolloff;
+  
+  // Update all existing instances
+  for (auto& instance : sound_instances_) {
+    if (instance->sound) {
+      ma_sound_set_rolloff(instance->sound, rolloff_);
+    }
+  }
+}
+
+void Sound::SetSpatializationEnabled(bool enabled) {
+  spatialization_enabled_ = enabled;
+  
+  // Update all existing instances
+  for (auto& instance : sound_instances_) {
+    if (instance->sound) {
+      ma_sound_set_spatialization_enabled(instance->sound, enabled ? MA_TRUE : MA_FALSE);
+    }
+  }
 }
 
 }  // namespace audio
