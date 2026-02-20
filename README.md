@@ -63,7 +63,7 @@ include(FetchContent)
 FetchContent_Declare(
     audio_module
     GIT_REPOSITORY https://github.com/hannaharmon/game-audio
-    GIT_TAG v2.0.0  # Use a specific version tag for stability
+    GIT_TAG v2.1.0  # Use a specific version tag for stability
 )
 FetchContent_MakeAvailable(audio_module)
 ```
@@ -111,7 +111,7 @@ include(FetchContent)
 FetchContent_Declare(
     audio_module
     GIT_REPOSITORY https://github.com/hannaharmon/game-audio
-    GIT_TAG v2.0.0  # Pin to specific version for stability
+    GIT_TAG v2.1.0  # Pin to specific version for stability
 )
 FetchContent_MakeAvailable(audio_module)
 target_link_libraries(your_game PRIVATE audio_module)
